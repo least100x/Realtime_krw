@@ -12,7 +12,7 @@
             box-sizing: border-box;
         }
 
-```
+
     body {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -52,8 +52,9 @@
     .card-flex {
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        align-items: flex-start;
         margin-bottom: 8px;
+        gap: 12px;
     }
 
     .card {
@@ -69,6 +70,8 @@
         color: #666;
         margin-bottom: 8px; 
         font-weight: 600;
+        flex: 1;
+        line-height: 1.4;
     }
     
     .kimp-info {
@@ -132,6 +135,8 @@
         font-size: 14px;
         margin-top: 4px;
         font-weight: 600;
+        white-space: nowrap;
+        flex-shrink: 0;
     }
 
     .premium.positive {
@@ -213,6 +218,18 @@
         .small-card-value {
             font-size: 18px;
         }
+        
+        .card-title {
+            font-size: 13px;
+        }
+        
+        .premium {
+            font-size: 13px;
+        }
+        
+        .kimp-info {
+            font-size: 13px;
+        }
     }
 </style>
 ```
@@ -225,7 +242,7 @@
             <div class="update-time" id="updateTime">로딩 중...</div>
         </div>
 
-```
+
     <div id="content" class="loading">데이터를 불러오는 중...</div>
 </div>
 
@@ -434,36 +451,36 @@
     }
     
     function renderKimpCard(coin, upbitPrice, binancePrice, kimp) {
-        return `<div class="card" style="margin-bottom: 16px;">
-            <div class="card-flex">
-                <div class="card-title">${coin} 시세 및 김프</div>
-                ${renderPremium(kimp, true)}
-            </div>
-            <div class="kimp-info">
-                <strong>업비트 (KRW):</strong> <span style="font-size: 16px; color: #333; font-weight: bold;">₩${upbitPrice}</span><br>
-                <strong>바이낸스 (USDT):</strong> <span style="font-size: 16px; color: #333; font-weight: bold;">$${binancePrice}</span>
-            </div>
-            <div style="margin-top: 8px;">
-                <span class="source-tag">업비트 / 바이낸스</span>
-            </div>
-        </div>`;
+        return '<div class="card" style="margin-bottom: 16px;">' +
+            '<div class="card-flex">' +
+                '<div class="card-title">' + coin + ' 시세 및 김프</div>' +
+                renderPremium(kimp, true) +
+            '</div>' +
+            '<div class="kimp-info">' +
+                '<strong>업비트 (KRW):</strong> <span style="font-size: 16px; color: #333; font-weight: bold;">₩' + upbitPrice + '</span><br>' +
+                '<strong>바이낸스 (USDT):</strong> <span style="font-size: 16px; color: #333; font-weight: bold;">$' + binancePrice + '</span>' +
+            '</div>' +
+            '<div style="margin-top: 8px;">' +
+                '<span class="source-tag">업비트 / 바이낸스</span>' +
+            '</div>' +
+        '</div>';
     }
     
     function renderStableKimpCard(coin, upbitPrice, usdKrw, kimp) {
-        const fxKrw = parseFloat(usdKrw).toLocaleString('ko-KR', { maximumFractionDigits: 2 });
-        return `<div class="card" style="margin-bottom: 16px;">
-            <div class="card-flex">
-                <div class="card-title">${coin} (업비트) 시세 및 환율 대비 김프</div>
-                ${renderPremium(kimp, true)}
-            </div>
-            <div class="kimp-info">
-                <strong>업비트 (KRW):</strong> <span style="font-size: 16px; color: #333; font-weight: bold;">₩${upbitPrice}</span><br>
-                <strong>환율 기준 (1 USD):</strong> <span style="font-size: 16px; color: #333; font-weight: bold;">₩${fxKrw}</span>
-            </div>
-            <div style="margin-top: 8px;">
-                <span class="source-tag">업비트 / ExchangeRate-API</span>
-            </div>
-        </div>`;
+        var fxKrw = parseFloat(usdKrw).toLocaleString('ko-KR', { maximumFractionDigits: 2 });
+        return '<div class="card" style="margin-bottom: 16px;">' +
+            '<div class="card-flex">' +
+                '<div class="card-title">' + coin + ' (업비트) 시세 및 환율 대비 김프</div>' +
+                renderPremium(kimp, true) +
+            '</div>' +
+            '<div class="kimp-info">' +
+                '<strong>업비트 (KRW):</strong> <span style="font-size: 16px; color: #333; font-weight: bold;">₩' + upbitPrice + '</span><br>' +
+                '<strong>환율 기준 (1 USD):</strong> <span style="font-size: 16px; color: #333; font-weight: bold;">₩' + fxKrw + '</span>' +
+            '</div>' +
+            '<div style="margin-top: 8px;">' +
+                '<span class="source-tag">업비트 / ExchangeRate-API</span>' +
+            '</div>' +
+        '</div>';
     }
 
     function displayData(data, isFromCache = false) {
@@ -475,71 +492,65 @@
         const cacheWarning = isFromCache ? ' <span style="color: #f39c12;">(캐시)</span>' : '';
         document.getElementById('updateTime').innerHTML = `마지막 업데이트: ${timeString} (${data.loadTime}초)${cacheWarning}`;
 
-        const content = `
-            <div class="card">
-                <div class="card-title">USD/KRW 환율</div>
-                <div class="card-value">₩${data.usdKrw}</div>
-                <div class="card-sub">1달러당</div>
-                <div class="source-tag">ExchangeRate-API</div>
-            </div>
+        const content = '<div class="card">' +
+                '<div class="card-title">USD/KRW 환율</div>' +
+                '<div class="card-value">₩' + data.usdKrw + '</div>' +
+                '<div class="card-sub">1달러당</div>' +
+                '<div class="source-tag">ExchangeRate-API</div>' +
+            '</div>' +
             
-            <div class="section-title">💲 스테이블코인 김프 현황 (환율 대비)</div>
-            ${renderStableKimpCard('USDT (테더)', data.upbitUsdt, data.usdKrw, data.usdtPremium)}
-            ${renderStableKimpCard('USDC', data.upbitUsdc, data.usdKrw, data.usdcPremium)}
+            '<div class="section-title">💲 스테이블코인 김프 현황 (환율 대비)</div>' +
+            renderStableKimpCard('USDT (테더)', data.upbitUsdt, data.usdKrw, data.usdtPremium) +
+            renderStableKimpCard('USDC', data.upbitUsdc, data.usdKrw, data.usdcPremium) +
+            '<div class="section-title" style="margin-top: 40px;">⚓ 해외 스테이블코인 페그(Peg) 현황 (1 USD 대비)</div>' +
+            '<div class="grid">' +
+                '<div class="small-card">' +
+                    '<div class="small-card-title">바이낸스 USDT</div>' +
+                    '<div class="small-card-value">$' + data.binanceUsdt + '</div>' +
+                    renderPremium(data.binanceUsdtDiff, true) +
+                    '<div class="source-tag">바이낸스</div>' +
+                '</div>' +
+                '<div class="small-card">' +
+                    '<div class="small-card-title">바이낸스 USDC</div>' +
+                    '<div class="small-card-value">$' + data.binanceUsdc + '</div>' +
+                    renderPremium(data.binanceUsdcDiff, true) +
+                    '<div class="source-tag">바이낸스</div>' +
+                '</div>' +
+            '</div>' +
+                            '<div class="section-title">📈 주요 코인 김프 현황 (업비트 vs 바이낸스)</div>' +
+            renderKimpCard('비트코인 (BTC)', data.upbitBtc, data.binanceBtc, data.btcKimp) +
+            renderKimpCard('이더리움 (ETH)', data.upbitEth, data.binanceEth, data.ethKimp) +
 
-            <div class="section-title" style="margin-top: 40px;">⚓ 해외 스테이블코인 페그(Peg) 현황 (1 USD 대비)</div>
-            <div class="grid">
-                <div class="small-card">
-                    <div class="small-card-title">바이낸스 USDT</div>
-                    <div class="small-card-value">$${data.binanceUsdt}</div>
-                    ${renderPremium(data.binanceUsdtDiff, true)}
-                    <div class="source-tag">바이낸스</div>
-                </div>
-
-                <div class="small-card">
-                    <div class="small-card-title">바이낸스 USDC</div>
-                    <div class="small-card-value">$${data.binanceUsdc}</div>
-                    ${renderPremium(data.binanceUsdcDiff, true)}
-                    <div class="source-tag">바이낸스</div>
-                </div>
-            </div>
-            
-            <div class="section-title">📈 주요 코인 김프 현황 (업비트 vs 바이낸스)</div>
-            ${renderKimpCard('비트코인 (BTC)', data.upbitBtc, data.binanceBtc, data.btcKimp)}
-            ${renderKimpCard('이더리움 (ETH)', data.upbitEth, data.binanceEth, data.ethKimp)}
-
-            <div class="info-card">
-                <strong>💡 페깅(Pegging)이 중요한 이유</strong><br>
-                스테이블코인(USDT/USDC)은 <b>1달러 가치 유지</b>가 핵심입니다.<br>
-                이 페깅 상태는 김프 계산의 <b>'해외 기준값'</b>이 믿을만한지 확인하는 잣대가 됩니다.<br>
-                만약 페그가 깨지면(예: $0.98), 김프가 높아 보여도 실제로는 <b>해외 기준 통화에 문제</b>가 생긴 것일 수 있습니다.<br><br>
+            '<div class="info-card">' +
+                '<strong>💡 페깅(Pegging)이 중요한 이유</strong><br>' +
+                '스테이블코인(USDT/USDC)은 <b>1달러 가치 유지</b>가 핵심입니다.<br>' +
+                '이 페깅 상태는 김프 계산의 <b>\'해외 기준값\'</b>이 믿을만한지 확인하는 잣대가 됩니다.<br>' +
+                '만약 페그가 깨지면(예: $0.98), 김프가 높아 보여도 실제로는 <b>해외 기준 통화에 문제</b>가 생긴 것일 수 있습니다.<br><br>' +
                 
-                <strong>📊 김프 계산 방식</strong><br>
-                <strong>1. 스테이블코인 (USDT/USDC - 업비트):</strong><br>
-                &nbsp;&nbsp;&nbsp;김프(%) = (업비트 가격 / 환율 - 1) × 100<br>
-                <strong>2. 코인 (BTC/ETH - 업비트 vs 바이낸스):</strong><br>
-                &nbsp;&nbsp;&nbsp;김프(%) = (업비트 KRW 가격 / (바이낸스 USDT 가격 × 환율) - 1) × 100<br>
-                <strong>3. 페그(Peg) 현황 (USDT/USDC - 바이낸스):</strong><br>
-                &nbsp;&nbsp;&nbsp;차이(%) = (바이낸스 가격 / 1 - 1) × 100<br><br>
+                '<strong>📊 김프 계산 방식</strong><br>' +
+                '<strong>1. 스테이블코인 (USDT/USDC - 업비트):</strong><br>' +
+                '&nbsp;&nbsp;&nbsp;김프(%) = (업비트 가격 / 환율 - 1) × 100<br>' +
+                '<strong>2. 코인 (BTC/ETH - 업비트 vs 바이낸스):</strong><br>' +
+                '&nbsp;&nbsp;&nbsp;김프(%) = (업비트 KRW 가격 / (바이낸스 USDT 가격 × 환율) - 1) × 100<br>' +
+                '<strong>3. 페그(Peg) 현황 (USDT/USDC - 바이낸스):</strong><br>' +
+                '&nbsp;&nbsp;&nbsp;차이(%) = (바이낸스 가격 / 1 - 1) × 100<br><br>' +
                 
-                <strong style="color: #e74c3c;">플러스(+)</strong>: 한국이 더 비쌈 (김치 프리미엄) 또는 1달러보다 비쌈<br>
-                <strong style="color: #3498db;">마이너스(-)</strong>: 한국이 더 쌈 (역프/디스카운트) 또는 1달러보다 쌈<br><br>
+                '<strong style="color: #e74c3c;">플러스(+)</strong>: 한국이 더 비쌈 (김치 프리미엄) 또는 1달러보다 비쌈<br>' +
+                '<strong style="color: #3498db;">마이너스(-)</strong>: 한국이 더 쌈 (역프/디스카운트) 또는 1달러보다 쌈<br><br>' +
 
-                <div style="border-top: 1px solid #eee; margin-top: 12px; padding-top: 12px; font-size: 12px;">
-                    ⚠️ <strong>안내사항</strong><br>
-                    • 현재 페이지에서는 <b>주요 코인(BTC/ETH)</b>에 대한 <b>원래 의미의 김프</b> 정보를 제공하고 있습니다.<br>
-                    • 전문적인 김프 정보를 확인하시려면
-                    <a href="https://kimpga.com/" target="_blank" style="color: #667eea; font-weight: bold; text-decoration: none;">https://kimpga.com/</a>
-                    을 참조해 주세요.
-                    <br>
-                    • 자동 업데이트: 90초마다 (API 부하 감소)<br>
-                    • 새로고침 버튼을 연속으로 누르지 마세요<br>
-                    <strong style="color: #e67e22;">📌 정확한 데이터는 직접 확인하시는 것을 추천드립니다.</strong><br>
-                </div>
-            </div>
+                '<div style="border-top: 1px solid #eee; margin-top: 12px; padding-top: 12px; font-size: 12px;">' +
+                    '⚠️ <strong>안내사항</strong><br>' +
+                    '• 현재 페이지에서는 <b>주요 코인(BTC/ETH)</b>에 대한 <b>원래 의미의 김프</b> 정보를 제공하고 있습니다.<br>' +
+                    '• 전문적인 김프 정보를 확인하시려면 ' +
+                    '<a href="https://kimpga.com/" target="_blank" style="color: #667eea; font-weight: bold; text-decoration: none;">https://kimpga.com/</a>' +
+                    '을 참조해 주세요.<br>' +
+                    '• 자동 업데이트: 90초마다 (API 부하 감소)<br>' +
+                    '• 새로고침 버튼을 연속으로 누르지 마세요<br>' +
+                    '<strong style="color: #e67e22;">📌 정확한 데이터는 직접 확인하시는 것을 추천드립니다.</strong><br>' +
+                '</div>' +
+            '</div>' +
 
-            <button class="refresh-btn" onclick="manualRefresh()">🔄 새로고침</button>
-        `;
+            '<button class="refresh-btn" onclick="manualRefresh()">🔄 새로고침</button>';
 
         document.getElementById('content').innerHTML = content;
     }
@@ -550,7 +561,6 @@
     // 90초마다 자동 업데이트 
     setInterval(fetchData, 90000);
 </script>
-```
 
 </body>
 </html>
