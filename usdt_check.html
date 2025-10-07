@@ -176,13 +176,24 @@
     </div>
 
     <script>
+        // 타임아웃 설정
+        async function fetchWithTimeout(url, timeout = 5000) {
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), timeout);
+            
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(id);
+                return response;
+            } catch (error) {
+                clearTimeout(id);
+                throw error;
+            }
+        }
+
         // 환율 가져오기 (여러 API 시도)
         async function getExchangeRate() {
             const apis = [
-                {
-                    url: 'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json',
-                    parse: (data) => data.usd.krw
-                },
                 {
                     url: 'https://open.er-api.com/v6/latest/USD',
                     parse: (data) => data.rates.KRW
@@ -190,32 +201,45 @@
                 {
                     url: 'https://api.exchangerate-api.com/v4/latest/USD',
                     parse: (data) => data.rates.KRW
+                },
+                {
+                    url: 'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json',
+                    parse: (data) => data.usd.krw
                 }
             ];
 
             for (const api of apis) {
                 try {
-                    const res = await fetch(api.url);
+                    console.log(`환율 API 시도: ${api.url}`);
+                    const res = await fetchWithTimeout(api.url, 3000);
                     const data = await res.json();
                     const rate = api.parse(data);
-                    if (rate) return rate;
+                    if (rate && rate > 0) {
+                        console.log(`환율 API 성공: ${rate}`);
+                        return rate;
+                    }
                 } catch (e) {
-                    console.log(`API 실패: ${api.url}`, e);
+                    console.log(`환율 API 실패: ${api.url}`, e.message);
                     continue;
                 }
             }
             
-            // 모든 API 실패 시 기본값
+            console.warn('모든 환율 API 실패, 기본값 사용');
             return 1300;
         }
 
         async function fetchData() {
+            const startTime = Date.now();
+            
             try {
-                // 환율 정보
-                const usdKrw = await getExchangeRate();
+                console.log('=== 데이터 로딩 시작 ===');
+                
+                // 환율과 업비트 데이터 동시 요청
+                const [usdKrw, upbitRes] = await Promise.all([
+                    getExchangeRate(),
+                    fetchWithTimeout('https://api.upbit.com/v1/ticker?markets=KRW-USDT,KRW-USDC', 5000)
+                ]);
 
-                // 업비트 USDT/KRW
-                const upbitRes = await fetch('https://api.upbit.com/v1/ticker?markets=KRW-USDT,KRW-USDC');
                 const upbitData = await upbitRes.json();
                 
                 const upbitUsdt = upbitData.find(item => item.market === 'KRW-USDT')?.trade_price || 0;
@@ -229,21 +253,28 @@
                 const usdtPremium = ((upbitUsdt / usdKrw - 1) * 100).toFixed(2);
                 const usdcPremium = ((upbitUsdc / usdKrw - 1) * 100).toFixed(2);
 
+                const loadTime = ((Date.now() - startTime) / 1000).toFixed(2);
+                console.log(`=== 데이터 로딩 완료 (${loadTime}초) ===`);
+
                 displayData({
                     usdKrw: usdKrw.toFixed(2),
                     upbitUsdt: upbitUsdt.toLocaleString('ko-KR'),
                     upbitUsdc: upbitUsdc.toLocaleString('ko-KR'),
                     usdtPremium,
-                    usdcPremium
+                    usdcPremium,
+                    loadTime
                 });
 
             } catch (error) {
-                console.error('오류 상세:', error);
+                console.error('=== 오류 발생 ===', error);
                 document.getElementById('content').innerHTML = `
                     <div style="color: white; text-align: center;">
                         <p>데이터를 불러오는데 실패했습니다.</p>
                         <p style="font-size: 14px; margin-top: 10px;">오류: ${error.message}</p>
-                        <p style="font-size: 12px; margin-top: 5px;">브라우저 콘솔(F12)을 확인해주세요</p>
+                        <p style="font-size: 12px; margin-top: 5px; opacity: 0.8;">
+                            네트워크가 불안정할 수 있습니다.<br>
+                            F12를 눌러 콘솔을 확인하거나 다시 시도해주세요.
+                        </p>
                         <button class="refresh-btn" onclick="fetchData()" style="margin-top: 15px;">🔄 다시 시도</button>
                     </div>
                 `;
@@ -259,7 +290,7 @@
                 minute: '2-digit'
             });
 
-            document.getElementById('updateTime').textContent = `마지막 업데이트: ${timeString}`;
+            document.getElementById('updateTime').textContent = `마지막 업데이트: ${timeString} (${data.loadTime}초)`;
 
             const content = `
                 <div class="card">
