@@ -1,6 +1,4 @@
 
-
-
 <!DOCTYPE html>
 
 <html lang="ko">
@@ -244,6 +242,7 @@
     <div class="container">
         <div class="header">
             <h1>💱 실시간 환율 & 김프</h1>
+            <div style="font-size: 13px; opacity: 0.85; margin-bottom: 8px;">자동 업데이트: 30초마다</div>
             <div class="update-time" id="updateTime">로딩 중...</div>
         </div>
 
@@ -607,7 +606,6 @@
                     '• 전문적인 김프 정보를 확인하시려면 ' +
                     '<a href="https://kimpga.com/" target="_blank" style="color: #667eea; font-weight: bold; text-decoration: none;">https://kimpga.com/</a>' +
                     '을 참조해 주세요.<br>' +
-                    '• 자동 업데이트: 90초마다 (API 부하 감소)<br>' +
                     '• 새로고침 버튼을 연속으로 누르지 마세요<br>' +
                     '<strong style="color: #e67e22;">📌 정확한 데이터는 직접 확인하시는 것을 추천드립니다.</strong><br>' +
                 '</div>' +
@@ -621,8 +619,8 @@
     // 초기 로드
     fetchData();
 
-    // 90초마다 자동 업데이트 
-    setInterval(fetchData, 90000);
+    // 30초마다 자동 업데이트 
+    setInterval(fetchData, 30000);
 </script>
 
 
