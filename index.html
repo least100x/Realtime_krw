@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -589,6 +588,139 @@
             flex: 1;
             min-width: 0;
         }
+        
+        .faq-section {
+            background: white;
+            border-radius: 15px;
+            margin-top: 20px;
+            border: 2px solid #e0e0e0;
+            overflow: hidden;
+        }
+        
+        .faq-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+            user-select: none;
+        }
+        
+        .faq-header:hover {
+            background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
+        }
+        
+        .faq-arrow {
+            font-size: 1.2em;
+            transition: transform 0.3s;
+        }
+        
+        .faq-arrow.open {
+            transform: rotate(180deg);
+        }
+        
+        .faq-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+        }
+        
+        .faq-content.open {
+            max-height: 2000px;
+            transition: max-height 0.5s ease-in;
+        }
+        
+        .faq-item {
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+        
+        .faq-question {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 12px;
+            word-break: keep-all;
+        }
+        
+        @media (min-width: 768px) {
+            .faq-question {
+                font-size: 1.15em;
+            }
+        }
+        
+        .faq-answer {
+            color: #555;
+            line-height: 1.7;
+            font-size: 0.95em;
+            word-break: keep-all;
+        }
+        
+        @media (min-width: 768px) {
+            .faq-answer {
+                font-size: 1em;
+            }
+        }
+        
+        .disclaimer-section {
+            background: #fff5f5;
+            border: 2px solid #ffcccc;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        @media (min-width: 768px) {
+            .disclaimer-section {
+                padding: 25px;
+            }
+        }
+        
+        .disclaimer-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #c92a2a;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        @media (min-width: 768px) {
+            .disclaimer-title {
+                font-size: 1.2em;
+            }
+        }
+        
+        .disclaimer-content {
+            color: #666;
+            line-height: 1.8;
+            font-size: 0.85em;
+            word-break: keep-all;
+        }
+        
+        @media (min-width: 768px) {
+            .disclaimer-content {
+                font-size: 0.9em;
+            }
+        }
+        
+        .disclaimer-content p {
+            margin-bottom: 12px;
+        }
+        
+        .disclaimer-content p:last-child {
+            margin-bottom: 0;
+        }
+        
+        .disclaimer-content strong {
+            color: #c92a2a;
+        }
     </style>
 </head>
 <body>
@@ -669,6 +801,65 @@
                 <p><strong>💡 이 데이터의 의미:</strong></p>
                 <p id="explanationText"></p>
                 <p style="margin-top: 10px; font-size: 0.85em;"><strong>📊 데이터:</strong> 물가(통계청 1.7%), 예금(한국은행 평균), 금/주식/암호화폐(실시간 API), 부동산(KB부동산 서울 평균)</p>
+            </div>
+            
+            <div class="faq-section">
+                <div class="faq-header" onclick="toggleFAQ()">
+                    <span style="font-size: 1.2em; font-weight: bold;">❓ 자주 묻는 질문</span>
+                    <span class="faq-arrow" id="faqArrow">▼</span>
+                </div>
+                <div class="faq-content" id="faqContent">
+                    <div class="faq-item">
+                        <div class="faq-question">💸 물가상승에 집값 상승이 반영되나요?</div>
+                        <div class="faq-answer">
+                            <strong>아니요, 별도로 계산됩니다!</strong><br><br>
+                            <strong style="color: #ff6b6b;">💸 물가상승 (1.7%)</strong> = 일상 소비재 가격 상승 (식료품, 의류, 교통비 등)<br>
+                            → 통계청 소비자물가지수(CPI) 기준, <strong>집값은 포함 안 됨</strong><br><br>
+                            <strong style="color: #a29bfe;">🏠 서울 아파트 (4%)</strong> = 부동산 자산 가치 상승<br>
+                            → KB부동산 서울 평균 매매가 기준<br><br>
+                            <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-top: 10px;">
+                                <strong>예시:</strong> 1년 전 1억원을<br>
+                                • 💸 현금 보관 → <strong style="color: #ff6b6b;">9,830만원</strong> 구매력 (물가상승 1.7%)<br>
+                                • 🏠 아파트 구매 → <strong style="color: #a29bfe;">1억 400만원</strong> 가치 (집값 상승 4%)<br>
+                                → 차이: <strong>약 770만원!</strong>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question">📊 데이터는 어디서 가져오나요?</div>
+                        <div class="faq-answer">
+                            • <strong>물가상승률:</strong> 통계청 소비자물가지수 (2025년 기준 1.7%)<br>
+                            • <strong>정기예금:</strong> 한국은행 평균 금리 (약 3.5%)<br>
+                            • <strong>금:</strong> 국제 금 시세 역사적 평균<br>
+                            • <strong>부동산:</strong> KB부동산 서울 아파트 평균 매매가<br>
+                            • <strong>주식:</strong> KOSPI, KOSDAQ, S&P 500, 나스닥 역사적 수익률<br>
+                            • <strong>암호화폐:</strong> 코인게코 API 실시간 데이터
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question">⏰ 실시간 카운터는 정확한가요?</div>
+                        <div class="faq-answer">초당 손실액은 <strong>물가상승률을 기준으로 계산</strong>한 이론적 값입니다.<br>
+                            실제 구매력 손실을 시각적으로 보여주기 위한 것으로, 페이지를 켠 순간부터 누적 계산됩니다.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="disclaimer-section">
+                <div class="disclaimer-title">⚠️ 면책 조항 (Disclaimer)</div>
+                <div class="disclaimer-content">
+                    <p><strong>데이터 정확성:</strong> 이 페이지에 표시된 모든 수익률, 손실률, 물가상승률 등의 값들은 <strong>참고용 추정치</strong>이며, 사용된 기준과 계산 방식에 따라 실제 값과 다를 수 있습니다. 암호화폐 데이터는 실시간 API를 사용하지만, 나머지 데이터는 역사적 평균값을 기반으로 계산됩니다.</p>
+                    
+                    <p><strong>투자 조언 아님:</strong> 본 페이지의 정보는 교육 및 정보 제공 목적으로만 제공되며, <strong>투자 권유, 매수/매도 추천, 또는 재무 상담이 아닙니다.</strong> 모든 투자 결정은 전적으로 귀하의 책임이며, 투자하기 전에 반드시 전문가와 상담하시기 바랍니다.</p>
+                    
+                    <p><strong>손실 책임:</strong> 주식, 암호화폐, 부동산 등 모든 투자에는 원금 손실의 위험이 있습니다. 과거의 수익률이 미래의 수익을 보장하지 않습니다. 본 페이지의 정보를 기반으로 한 투자 결정에 따른 어떠한 손실이나 손해에 대해서도 <strong>제작자는 법적 책임을 지지 않습니다.</strong></p>
+                    
+                    <p><strong>정보의 정확성:</strong> 본 페이지는 정보의 정확성, 완전성, 신뢰성을 보장하지 않으며, 언제든지 예고 없이 내용이 변경될 수 있습니다. 사용자는 본인의 판단과 책임 하에 정보를 활용해야 합니다.</p>
+                    
+                    <p style="margin-top: 15px; font-size: 0.9em; opacity: 0.8;"><strong>By using this website, you acknowledge that you have read and understood this disclaimer and agree to its terms.</strong></p>
+                </div>
             </div>
         </div>
     </div>
@@ -1023,6 +1214,19 @@
                 addStock();
             }
         });
+        
+        function toggleFAQ() {
+            const content = document.getElementById('faqContent');
+            const arrow = document.getElementById('faqArrow');
+            
+            if (content.classList.contains('open')) {
+                content.classList.remove('open');
+                arrow.classList.remove('open');
+            } else {
+                content.classList.add('open');
+                arrow.classList.add('open');
+            }
+        }
         
         updateCalculation();
     </script>
