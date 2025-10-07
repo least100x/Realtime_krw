@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>실시간 환율 & 김프 대시보드</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .update-time {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-title {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .card-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .card-sub {
+            font-size: 14px;
+            color: #999;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .small-card {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .small-card-title {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .small-card-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .premium {
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .premium.positive {
+            color: #e74c3c;
+        }
+
+        .premium.negative {
+            color: #3498db;
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            padding: 20px;
+        }
+
+        .refresh-btn {
+            background: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #667eea;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .refresh-btn:active {
+            transform: scale(0.98);
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .info-card strong {
+            color: #333;
+        }
+
+        .source-tag {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-top: 4px;
+        }
+
+        @media (max-width: 480px) {
+            .card-value {
+                font-size: 24px;
+            }
+            
+            .small-card-value {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💱 실시간 환율 & 김프</h1>
+            <div class="update-time" id="updateTime">로딩 중...</div>
+        </div>
+
+        <div id="content" class="loading">데이터를 불러오는 중...</div>
+    </div>
+
+    <script>
+        async function fetchData() {
+            try {
+                // 환율 정보
+                const usdkrwRes = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+                const usdkrwData = await usdkrwRes.json();
+                const usdKrw = usdkrwData.rates.KRW;
+
+                // 업비트 USDT/KRW
+                const upbitUsdtRes = await fetch('https://api.upbit.com/v1/ticker?markets=KRW-USDT');
+                const upbitUsdtData = await upbitUsdtRes.json();
+                const upbitUsdt = upbitUsdtData[0].trade_price;
+
+                // 업비트 USDC/KRW
+                const upbitUsdcRes = await fetch('https://api.upbit.com/v1/ticker?markets=KRW-USDC');
+                const upbitUsdcData = await upbitUsdcRes.json();
+                const upbitUsdc = upbitUsdcData[0].trade_price;
+
+                // 김프 계산
+                const usdtPremium = ((upbitUsdt / usdKrw - 1) * 100).toFixed(2);
+                const usdcPremium = ((upbitUsdc / usdKrw - 1) * 100).toFixed(2);
+
+                displayData({
+                    usdKrw: usdKrw.toFixed(2),
+                    upbitUsdt: upbitUsdt.toLocaleString('ko-KR'),
+                    upbitUsdc: upbitUsdc.toLocaleString('ko-KR'),
+                    usdtPremium,
+                    usdcPremium
+                });
+
+            } catch (error) {
+                document.getElementById('content').innerHTML = `
+                    <div style="color: white; text-align: center;">
+                        <p>데이터를 불러오는데 실패했습니다.</p>
+                        <p style="font-size: 14px; margin-top: 10px;">잠시 후 다시 시도해주세요.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayData(data) {
+            const now = new Date();
+            const timeString = now.toLocaleString('ko-KR', {
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            document.getElementById('updateTime').textContent = `마지막 업데이트: ${timeString}`;
+
+            const content = `
+                <div class="card">
+                    <div class="card-title">USD/KRW 환율</div>
+                    <div class="card-value">₩${data.usdKrw}</div>
+                    <div class="card-sub">1달러당</div>
+                    <div class="source-tag">ExchangeRate-API</div>
+                </div>
+
+                <div class="grid">
+                    <div class="small-card">
+                        <div class="small-card-title">USDT (테더)</div>
+                        <div class="small-card-value">₩${data.upbitUsdt}</div>
+                        <div class="premium ${data.usdtPremium >= 0 ? 'positive' : 'negative'}">
+                            ${data.usdtPremium >= 0 ? '+' : ''}${data.usdtPremium}%
+                        </div>
+                        <div class="source-tag">업비트</div>
+                    </div>
+
+                    <div class="small-card">
+                        <div class="small-card-title">USDC</div>
+                        <div class="small-card-value">₩${data.upbitUsdc}</div>
+                        <div class="premium ${data.usdcPremium >= 0 ? 'positive' : 'negative'}">
+                            ${data.usdcPremium >= 0 ? '+' : ''}${data.usdcPremium}%
+                        </div>
+                        <div class="source-tag">업비트</div>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <strong>📊 김프 계산 방식</strong><br>
+                    김프(%) = (업비트 가격 / 환율 - 1) × 100<br><br>
+                    
+                    예시: USDT가 업비트에서 ₩1,350, 환율이 ₩1,300일 때<br>
+                    → (1,350 / 1,300 - 1) × 100 = <strong>+3.85%</strong><br><br>
+                    
+                    <strong style="color: #e74c3c;">플러스(+)</strong>: 한국이 더 비쌈 (김치 프리미엄)<br>
+                    <strong style="color: #3498db;">마이너스(-)</strong>: 한국이 더 쌈 (김치 디스카운트)
+                </div>
+
+                <div class="card">
+                    <div class="card-title">💡 현재 김프</div>
+                    <div style="font-size: 14px; color: #666; line-height: 1.6; margin-top: 8px;">
+                        테더 (USDT): <strong class="${data.usdtPremium >= 0 ? 'positive' : 'negative'}">${data.usdtPremium >= 0 ? '+' : ''}${data.usdtPremium}%</strong><br>
+                        USDC: <strong class="${data.usdcPremium >= 0 ? 'positive' : 'negative'}">${data.usdcPremium >= 0 ? '+' : ''}${data.usdcPremium}%</strong>
+                    </div>
+                </div>
+
+                <button class="refresh-btn" onclick="fetchData()">🔄 새로고침</button>
+            `;
+
+            document.getElementById('content').innerHTML = content;
+        }
+
+        // 초기 로드
+        fetchData();
+
+        // 30초마다 자동 업데이트
+        setInterval(fetchData, 30000);
+    </script>
+</body>
+</html>
