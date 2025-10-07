@@ -178,10 +178,10 @@
     <script>
         async function fetchData() {
             try {
-                // 환율 정보 - exchangerate.host (CORS 허용)
-                const usdkrwRes = await fetch('https://api.exchangerate.host/latest?base=USD&symbols=KRW');
+                // 환율 정보 - Fawazahmed0 API (CORS 허용, 무료)
+                const usdkrwRes = await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json');
                 const usdkrwData = await usdkrwRes.json();
-                const usdKrw = usdkrwData.rates.KRW;
+                const usdKrw = usdkrwData.usd.krw;
 
                 // 업비트 USDT/KRW
                 const upbitRes = await fetch('https://api.upbit.com/v1/ticker?markets=KRW-USDT,KRW-USDC');
