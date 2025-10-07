@@ -178,8 +178,8 @@
     <script>
         async function fetchData() {
             try {
-                // 환율 정보
-                const usdkrwRes = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+                // 환율 정보 - CORS 프록시 사용
+                const usdkrwRes = await fetch('https://open.er-api.com/v6/latest/USD');
                 const usdkrwData = await usdkrwRes.json();
                 const usdKrw = usdkrwData.rates.KRW;
 
@@ -206,10 +206,13 @@
                 });
 
             } catch (error) {
+                console.error('오류 상세:', error);
                 document.getElementById('content').innerHTML = `
                     <div style="color: white; text-align: center;">
                         <p>데이터를 불러오는데 실패했습니다.</p>
-                        <p style="font-size: 14px; margin-top: 10px;">잠시 후 다시 시도해주세요.</p>
+                        <p style="font-size: 14px; margin-top: 10px;">CORS 오류일 수 있습니다.</p>
+                        <p style="font-size: 12px; margin-top: 5px;">로컬에서 열거나 서버를 통해 접속해주세요.</p>
+                        <button class="refresh-btn" onclick="fetchData()" style="margin-top: 15px;">🔄 다시 시도</button>
                     </div>
                 `;
             }
