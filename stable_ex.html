@@ -1,4 +1,4 @@
-테스트
+
 
 <!DOCTYPE html>
 
@@ -254,8 +254,13 @@
     let retryCount = 0;
     const MAX_RETRIES = 3;
     
-    // CORS 프록시 설정
-    const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+    // CORS 프록시 설정 - 여러 옵션 준비
+    const CORS_PROXIES = [
+        'https://corsproxy.io/?',
+        'https://api.allorigins.win/raw?url=',
+        ''  // 프록시 없이 직접 시도
+    ];
+    let currentProxyIndex = 0;
     
     function sleep(ms) { 
         return new Promise(resolve => setTimeout(resolve, ms)); 
@@ -282,27 +287,49 @@
     
     async function getExchangeRate() {
         try {
-            const url = encodeURIComponent('https://api.exchangerate-api.com/v4/latest/USD');
-            const response = await fetchWithTimeout(CORS_PROXY + url);
+            // ExchangeRate API는 CORS 허용하므로 직접 호출
+            const response = await fetchWithTimeout('https://open.er-api.com/v6/latest/USD', 8000);
             const data = await response.json();
-            return data.rates.KRW;
+            if (data && data.rates && data.rates.KRW) {
+                return data.rates.KRW;
+            }
+            throw new Error('환율 데이터 파싱 실패');
         } catch (error) {
             console.error('환율 API 오류:', error);
-            throw new Error('환율 정보를 가져올 수 없습니다');
+            // 대체 API 시도
+            try {
+                const response2 = await fetchWithTimeout('https://api.exchangerate-api.com/v4/latest/USD', 8000);
+                const data2 = await response2.json();
+                return data2.rates.KRW;
+            } catch (error2) {
+                console.error('대체 환율 API도 실패:', error2);
+                throw new Error('환율 정보를 가져올 수 없습니다');
+            }
         }
     }
     
     async function getUpbitPrices() {
         try {
-            const response = await fetchWithTimeout('https://api.upbit.com/v1/ticker?markets=KRW-USDT,KRW-USDC,KRW-BTC,KRW-ETH');
+            const response = await fetchWithTimeout('https://api.upbit.com/v1/ticker?markets=KRW-USDT,KRW-USDC,KRW-BTC,KRW-ETH', 8000);
             const data = await response.json();
             
-            return {
-                usdt: data.find(item => item.market === 'KRW-USDT')?.trade_price || 0,
-                usdc: data.find(item => item.market === 'KRW-USDC')?.trade_price || 0,
-                btc: data.find(item => item.market === 'KRW-BTC')?.trade_price || 0,
-                eth: data.find(item => item.market === 'KRW-ETH')?.trade_price || 0
+            console.log('업비트 데이터:', data); // 디버깅용
+            
+            const result = {
+                usdt: 0,
+                usdc: 0,
+                btc: 0,
+                eth: 0
             };
+            
+            data.forEach(function(item) {
+                if (item.market === 'KRW-USDT') result.usdt = item.trade_price;
+                if (item.market === 'KRW-USDC') result.usdc = item.trade_price;
+                if (item.market === 'KRW-BTC') result.btc = item.trade_price;
+                if (item.market === 'KRW-ETH') result.eth = item.trade_price;
+            });
+            
+            return result;
         } catch (error) {
             console.error('업비트 API 오류:', error);
             throw new Error('업비트 정보를 가져올 수 없습니다');
@@ -311,16 +338,17 @@
     
     async function getBinanceCoinPrices() {
         try {
-            // 바이낸스는 배열 형태 쿼리를 지원하지 않으므로 개별 호출
-            const btcResponse = await fetchWithTimeout('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT');
-            const ethResponse = await fetchWithTimeout('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT');
+            const btcResponse = await fetchWithTimeout('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT', 8000);
+            const ethResponse = await fetchWithTimeout('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT', 8000);
             
             const btcData = await btcResponse.json();
             const ethData = await ethResponse.json();
             
+            console.log('바이낸스 코인 데이터:', btcData, ethData); // 디버깅용
+            
             return {
-                btc: parseFloat(btcData.price || 0),
-                eth: parseFloat(ethData.price || 0)
+                btc: parseFloat(btcData.price) || 0,
+                eth: parseFloat(ethData.price) || 0
             };
         } catch (error) {
             console.error('바이낸스 코인 API 오류:', error);
@@ -330,15 +358,17 @@
     
     async function getBinanceStablePrice() {
         try {
-            const usdtResponse = await fetchWithTimeout('https://api.binance.com/api/v3/ticker/price?symbol=USDTUSD');
-            const usdcResponse = await fetchWithTimeout('https://api.binance.com/api/v3/ticker/price?symbol=USDCUSD');
+            const usdtResponse = await fetchWithTimeout('https://api.binance.com/api/v3/ticker/price?symbol=USDTUSD', 8000);
+            const usdcResponse = await fetchWithTimeout('https://api.binance.com/api/v3/ticker/price?symbol=USDCUSD', 8000);
             
             const usdtData = await usdtResponse.json();
             const usdcData = await usdcResponse.json();
             
+            console.log('바이낸스 스테이블 데이터:', usdtData, usdcData); // 디버깅용
+            
             return {
-                usdt: parseFloat(usdtData.price || 1),
-                usdc: parseFloat(usdcData.price || 1)
+                usdt: parseFloat(usdtData.price) || 1,
+                usdc: parseFloat(usdcData.price) || 1
             };
         } catch (error) {
             console.error('바이낸스 스테이블 API 오류:', error);
@@ -349,11 +379,13 @@
     
     async function fetchData() {
         if (isLoading) { 
+            console.log('이미 로딩 중입니다.');
             return; 
         }
         
         const now = Date.now();
         if (cache.data && (now - cache.timestamp) < cache.TTL) {
+            console.log('캐시 데이터 사용');
             displayData(cache.data, true);
             return;
         }
@@ -366,13 +398,24 @@
             refreshBtn.textContent = '🔄 로딩 중...';
         }
         
+        console.log('데이터 가져오기 시작...');
+        
         try {
-            const [usdKrw, upbitData, binanceCoinData, binanceStable] = await Promise.all([
-                getExchangeRate(),
-                getUpbitPrices(),
-                getBinanceCoinPrices(),
-                getBinanceStablePrice()
-            ]);
+            console.log('1. 환율 가져오기...');
+            var usdKrw = await getExchangeRate();
+            console.log('환율:', usdKrw);
+            
+            console.log('2. 업비트 가져오기...');
+            var upbitData = await getUpbitPrices();
+            console.log('업비트:', upbitData);
+            
+            console.log('3. 바이낸스 코인 가져오기...');
+            var binanceCoinData = await getBinanceCoinPrices();
+            console.log('바이낸스 코인:', binanceCoinData);
+            
+            console.log('4. 바이낸스 스테이블 가져오기...');
+            var binanceStable = await getBinanceStablePrice();
+            console.log('바이낸스 스테이블:', binanceStable);
 
             if (usdKrw < 100) { 
                 throw new Error('환율 데이터를 가져올 수 없습니다'); 
