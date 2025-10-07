@@ -178,20 +178,17 @@
     <script>
         async function fetchData() {
             try {
-                // 환율 정보 - CORS 프록시 사용
-                const usdkrwRes = await fetch('https://open.er-api.com/v6/latest/USD');
+                // 환율 정보 - exchangerate.host (CORS 허용)
+                const usdkrwRes = await fetch('https://api.exchangerate.host/latest?base=USD&symbols=KRW');
                 const usdkrwData = await usdkrwRes.json();
                 const usdKrw = usdkrwData.rates.KRW;
 
                 // 업비트 USDT/KRW
-                const upbitUsdtRes = await fetch('https://api.upbit.com/v1/ticker?markets=KRW-USDT');
-                const upbitUsdtData = await upbitUsdtRes.json();
-                const upbitUsdt = upbitUsdtData[0].trade_price;
-
-                // 업비트 USDC/KRW
-                const upbitUsdcRes = await fetch('https://api.upbit.com/v1/ticker?markets=KRW-USDC');
-                const upbitUsdcData = await upbitUsdcRes.json();
-                const upbitUsdc = upbitUsdcData[0].trade_price;
+                const upbitRes = await fetch('https://api.upbit.com/v1/ticker?markets=KRW-USDT,KRW-USDC');
+                const upbitData = await upbitRes.json();
+                
+                const upbitUsdt = upbitData.find(item => item.market === 'KRW-USDT')?.trade_price || 0;
+                const upbitUsdc = upbitData.find(item => item.market === 'KRW-USDC')?.trade_price || 0;
 
                 // 김프 계산
                 const usdtPremium = ((upbitUsdt / usdKrw - 1) * 100).toFixed(2);
@@ -210,8 +207,7 @@
                 document.getElementById('content').innerHTML = `
                     <div style="color: white; text-align: center;">
                         <p>데이터를 불러오는데 실패했습니다.</p>
-                        <p style="font-size: 14px; margin-top: 10px;">CORS 오류일 수 있습니다.</p>
-                        <p style="font-size: 12px; margin-top: 5px;">로컬에서 열거나 서버를 통해 접속해주세요.</p>
+                        <p style="font-size: 14px; margin-top: 10px;">오류: ${error.message}</p>
                         <button class="refresh-btn" onclick="fetchData()" style="margin-top: 15px;">🔄 다시 시도</button>
                     </div>
                 `;
