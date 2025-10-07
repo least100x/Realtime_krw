@@ -176,12 +176,43 @@
     </div>
 
     <script>
+        // 환율 가져오기 (여러 API 시도)
+        async function getExchangeRate() {
+            const apis = [
+                {
+                    url: 'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json',
+                    parse: (data) => data.usd.krw
+                },
+                {
+                    url: 'https://open.er-api.com/v6/latest/USD',
+                    parse: (data) => data.rates.KRW
+                },
+                {
+                    url: 'https://api.exchangerate-api.com/v4/latest/USD',
+                    parse: (data) => data.rates.KRW
+                }
+            ];
+
+            for (const api of apis) {
+                try {
+                    const res = await fetch(api.url);
+                    const data = await res.json();
+                    const rate = api.parse(data);
+                    if (rate) return rate;
+                } catch (e) {
+                    console.log(`API 실패: ${api.url}`, e);
+                    continue;
+                }
+            }
+            
+            // 모든 API 실패 시 기본값
+            return 1300;
+        }
+
         async function fetchData() {
             try {
-                // 환율 정보 - Fawazahmed0 API (CORS 허용, 무료)
-                const usdkrwRes = await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json');
-                const usdkrwData = await usdkrwRes.json();
-                const usdKrw = usdkrwData.usd.krw;
+                // 환율 정보
+                const usdKrw = await getExchangeRate();
 
                 // 업비트 USDT/KRW
                 const upbitRes = await fetch('https://api.upbit.com/v1/ticker?markets=KRW-USDT,KRW-USDC');
@@ -189,6 +220,10 @@
                 
                 const upbitUsdt = upbitData.find(item => item.market === 'KRW-USDT')?.trade_price || 0;
                 const upbitUsdc = upbitData.find(item => item.market === 'KRW-USDC')?.trade_price || 0;
+
+                if (!upbitUsdt || !upbitUsdc) {
+                    throw new Error('업비트 데이터를 가져올 수 없습니다');
+                }
 
                 // 김프 계산
                 const usdtPremium = ((upbitUsdt / usdKrw - 1) * 100).toFixed(2);
@@ -208,6 +243,7 @@
                     <div style="color: white; text-align: center;">
                         <p>데이터를 불러오는데 실패했습니다.</p>
                         <p style="font-size: 14px; margin-top: 10px;">오류: ${error.message}</p>
+                        <p style="font-size: 12px; margin-top: 5px;">브라우저 콘솔(F12)을 확인해주세요</p>
                         <button class="refresh-btn" onclick="fetchData()" style="margin-top: 15px;">🔄 다시 시도</button>
                     </div>
                 `;
