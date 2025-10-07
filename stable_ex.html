@@ -1,202 +1,222 @@
 <!DOCTYPE html>
+
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>실시간 환율 & 김프 대시보드 (확장)</title>
+    <title>실시간 환율 & 김프 대시보드</title>
     <style>
-        /* CSS 스타일은 이전과 동일합니다. */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
+```
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+    }
 
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
+    .container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
 
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 30px;
-        }
+    .header {
+        text-align: center;
+        color: white;
+        margin-bottom: 30px;
+    }
 
-        .header h1 {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
+    .header h1 {
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
 
-        .update-time {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-        
-        .section-title {
-            color: white;
-            font-size: 18px;
-            font-weight: bold;
-            text-align: center;
-            margin: 24px 0 16px 0;
-        }
-        .card-flex {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
+    .update-time {
+        font-size: 14px;
+        opacity: 0.9;
+    }
+    
+    .section-title {
+        color: white;
+        font-size: 18px;
+        font-weight: bold;
+        text-align: center;
+        margin: 24px 0 16px 0;
+    }
 
-        .card {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 16px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
+    .card-flex {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
 
-        .card-title {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 8px; 
-            font-weight: 600;
-        }
-        
-        .kimp-info {
-            font-size: 14px;
-            color: #555;
-            line-height: 1.8;
-            margin-top: 10px;
-        }
-        .kimp-info strong {
-            color: #333; 
-        }
+    .card {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 16px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
 
-        .card-value {
-            font-size: 28px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 4px;
-        }
+    .card-title {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 8px; 
+        font-weight: 600;
+    }
+    
+    .kimp-info {
+        font-size: 14px;
+        color: #555;
+        line-height: 1.8;
+        margin-top: 10px;
+    }
 
-        .card-sub {
-            font-size: 14px;
-            color: #999;
-        }
+    .kimp-info strong {
+        color: #333; 
+    }
 
+    .card-value {
+        font-size: 28px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 4px;
+    }
+
+    .card-sub {
+        font-size: 14px;
+        color: #999;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    @media (max-width: 600px) {
         .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 16px;
+            grid-template-columns: 1fr;
         }
+    }
 
-        @media (max-width: 600px) {
-            .grid {
-                grid-template-columns: 1fr;
-            }
+    .small-card {
+        background: white;
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .small-card-title {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+
+    .small-card-value {
+        font-size: 20px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .premium {
+        font-size: 14px;
+        margin-top: 4px;
+        font-weight: 600;
+    }
+
+    .premium.positive {
+        color: #e74c3c;
+    }
+
+    .premium.negative {
+        color: #3498db;
+    }
+
+    .loading {
+        text-align: center;
+        color: white;
+        padding: 20px;
+    }
+
+    .refresh-btn {
+        background: white;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #667eea;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 16px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.1s;
+    }
+
+    .refresh-btn:active {
+        transform: scale(0.98);
+    }
+
+    .refresh-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .info-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+        font-size: 13px;
+        line-height: 1.6;
+        color: #555;
+    }
+
+    .info-card strong {
+        color: #333;
+    }
+
+    .source-tag {
+        display: inline-block;
+        background: #667eea;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        margin-top: 4px;
+    }
+
+    .error-message {
+        background: rgba(231, 76, 60, 0.9);
+        color: white;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        font-size: 14px;
+    }
+
+    @media (max-width: 480px) {
+        .card-value {
+            font-size: 24px;
         }
-
-        .small-card {
-            background: white;
-            border-radius: 16px;
-            padding: 16px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-
-        .small-card-title {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
+        
         .small-card-value {
-            font-size: 20px;
-            font-weight: bold;
-            color: #333;
+            font-size: 18px;
         }
+    }
+</style>
+```
 
-        .premium {
-            font-size: 14px;
-            margin-top: 4px;
-            font-weight: 600;
-        }
-
-        .premium.positive {
-            color: #e74c3c;
-        }
-
-        .premium.negative {
-            color: #3498db;
-        }
-
-        .loading {
-            text-align: center;
-            color: white;
-            padding: 20px;
-        }
-
-        .refresh-btn {
-            background: white;
-            border: none;
-            border-radius: 12px;
-            padding: 12px 24px;
-            font-size: 14px;
-            font-weight: 600;
-            color: #667eea;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 16px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .refresh-btn:active {
-            transform: scale(0.98);
-        }
-
-        .info-card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 16px;
-            font-size: 13px;
-            line-height: 1.6;
-            color: #555;
-        }
-
-        .info-card strong {
-            color: #333;
-        }
-
-        .source-tag {
-            display: inline-block;
-            background: #667eea;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            margin-top: 4px;
-        }
-
-        @media (max-width: 480px) {
-            .card-value {
-                font-size: 24px;
-            }
-            
-            .small-card-value {
-                font-size: 18px;
-            }
-        }
-    </style>
 </head>
 <body>
     <div class="container">
@@ -205,173 +225,332 @@
             <div class="update-time" id="updateTime">로딩 중...</div>
         </div>
 
-        <div id="content" class="loading">데이터를 불러오는 중...</div>
-    </div>
+```
+    <div id="content" class="loading">데이터를 불러오는 중...</div>
+</div>
 
-    <script>
-        // JS 함수들은 이전과 동일합니다.
-        const cache = { data: null, timestamp: 0, TTL: 30000 };
-        let isLoading = false;
-        let retryCount = 0;
-        const MAX_RETRIES = 3;
+<script>
+    const cache = { data: null, timestamp: 0, TTL: 30000 };
+    let isLoading = false;
+    let retryCount = 0;
+    const MAX_RETRIES = 3;
+    
+    // CORS 프록시 설정
+    const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+    
+    function sleep(ms) { 
+        return new Promise(resolve => setTimeout(resolve, ms)); 
+    }
+    
+    async function fetchWithTimeout(url, timeout = 10000) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
         
-        function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
-        
-        async function fetchWithTimeout(url, timeout = 8000, retries = 2) {
-             // 실제 API 호출 로직은 이전 최종 코드를 사용하세요.
-            return await fetch(url);
+        try {
+            const response = await fetch(url, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            return response;
+        } catch (error) {
+            clearTimeout(timeoutId);
+            throw error;
+        }
+    }
+    
+    async function getExchangeRate() {
+        try {
+            const url = encodeURIComponent('https://api.exchangerate-api.com/v4/latest/USD');
+            const response = await fetchWithTimeout(CORS_PROXY + url);
+            const data = await response.json();
+            return data.rates.KRW;
+        } catch (error) {
+            console.error('환율 API 오류:', error);
+            throw new Error('환율 정보를 가져올 수 없습니다');
+        }
+    }
+    
+    async function getUpbitPrices() {
+        try {
+            const response = await fetchWithTimeout('https://api.upbit.com/v1/ticker?markets=KRW-USDT,KRW-USDC,KRW-BTC,KRW-ETH');
+            const data = await response.json();
+            
+            return {
+                usdt: data.find(item => item.market === 'KRW-USDT')?.trade_price || 0,
+                usdc: data.find(item => item.market === 'KRW-USDC')?.trade_price || 0,
+                btc: data.find(item => item.market === 'KRW-BTC')?.trade_price || 0,
+                eth: data.find(item => item.market === 'KRW-ETH')?.trade_price || 0
+            };
+        } catch (error) {
+            console.error('업비트 API 오류:', error);
+            throw new Error('업비트 정보를 가져올 수 없습니다');
+        }
+    }
+    
+    async function getBinanceCoinPrices() {
+        try {
+            const response = await fetchWithTimeout('https://api.binance.com/api/v3/ticker/price?symbols=["BTCUSDT","ETHUSDT"]');
+            const data = await response.json();
+            
+            return {
+                btc: parseFloat(data.find(item => item.symbol === 'BTCUSDT')?.price || 0),
+                eth: parseFloat(data.find(item => item.symbol === 'ETHUSDT')?.price || 0)
+            };
+        } catch (error) {
+            console.error('바이낸스 코인 API 오류:', error);
+            throw new Error('바이낸스 코인 정보를 가져올 수 없습니다');
+        }
+    }
+    
+    async function getBinanceStablePrice() {
+        try {
+            const response = await fetchWithTimeout('https://api.binance.com/api/v3/ticker/price?symbols=["USDTUSD","USDCUSD"]');
+            const data = await response.json();
+            
+            return {
+                usdt: parseFloat(data.find(item => item.symbol === 'USDTUSD')?.price || 1),
+                usdc: parseFloat(data.find(item => item.symbol === 'USDCUSD')?.price || 1)
+            };
+        } catch (error) {
+            console.error('바이낸스 스테이블 API 오류:', error);
+            // 스테이블코인은 실패시 기본값 사용
+            return { usdt: 1.0000, usdc: 1.0000 };
+        }
+    }
+    
+    async function fetchData() {
+        if (isLoading) { 
+            return; 
         }
         
-        async function getExchangeRate() { return 1410.72; } 
-        async function getBinanceStablePrice() { return { usdt: 1.0000, usdc: 1.0000 }; }
-        async function getUpbitPrices() { return { usdt: 1427, usdc: 1427, btc: 176671000, eth: 6667000 }; }
-        async function getBinanceCoinPrices() { return { btc: 123787.59, eth: 4674.86 }; }
+        const now = Date.now();
+        if (cache.data && (now - cache.timestamp) < cache.TTL) {
+            displayData(cache.data, true);
+            return;
+        }
+
+        isLoading = true;
+        const startTime = Date.now();
+        const refreshBtn = document.querySelector('.refresh-btn');
+        if (refreshBtn) {
+            refreshBtn.disabled = true;
+            refreshBtn.textContent = '🔄 로딩 중...';
+        }
         
-        async function fetchData() {
-             if (isLoading) { return; }
-            const now = Date.now();
-            if (cache.data && (now - cache.timestamp) < cache.TTL) {
-                displayData(cache.data);
-                return;
+        try {
+            const [usdKrw, upbitData, binanceCoinData, binanceStable] = await Promise.all([
+                getExchangeRate(),
+                getUpbitPrices(),
+                getBinanceCoinPrices(),
+                getBinanceStablePrice()
+            ]);
+
+            if (usdKrw < 100) { 
+                throw new Error('환율 데이터를 가져올 수 없습니다'); 
             }
 
-            isLoading = true;
-            const startTime = Date.now();
+            // 김프 계산
+            const usdtPremium = upbitData.usdt ? ((upbitData.usdt / usdKrw - 1) * 100).toFixed(2) : 'N/A';
+            const usdcPremium = upbitData.usdc ? ((upbitData.usdc / usdKrw - 1) * 100).toFixed(2) : 'N/A';
+            const binanceUsdtDiff = ((binanceStable.usdt - 1) * 100).toFixed(4);
+            const binanceUsdcDiff = ((binanceStable.usdc - 1) * 100).toFixed(4);
+            const btcKimp = (upbitData.btc && binanceCoinData.btc) ? ((upbitData.btc / (binanceCoinData.btc * usdKrw) - 1) * 100).toFixed(2) : 'N/A';
+            const ethKimp = (upbitData.eth && binanceCoinData.eth) ? ((upbitData.eth / (binanceCoinData.eth * usdKrw) - 1) * 100).toFixed(2) : 'N/A';
+            const loadTime = ((Date.now() - startTime) / 1000).toFixed(2);
+
+            const resultData = {
+                usdKrw: usdKrw.toFixed(2), 
+                upbitUsdt: upbitData.usdt.toLocaleString('ko-KR'), 
+                upbitUsdc: upbitData.usdc.toLocaleString('ko-KR'),
+                usdtPremium, 
+                usdcPremium, 
+                binanceUsdt: binanceStable.usdt.toFixed(4), 
+                binanceUsdc: binanceStable.usdc.toFixed(4),
+                binanceUsdtDiff, 
+                binanceUsdcDiff,
+                upbitBtc: upbitData.btc.toLocaleString('ko-KR', { maximumFractionDigits: 0 }), 
+                upbitEth: upbitData.eth.toLocaleString('ko-KR', { maximumFractionDigits: 0 }),
+                binanceBtc: binanceCoinData.btc.toLocaleString('en-US', { maximumFractionDigits: 2 }), 
+                binanceEth: binanceCoinData.eth.toLocaleString('en-US', { maximumFractionDigits: 2 }),
+                btcKimp, 
+                ethKimp, 
+                loadTime
+            };
             
-            try {
-                // 실제 API 호출 로직은 이전 최종 코드를 사용해야 합니다.
-                const [usdKrw, upbitData, binanceCoinData, binanceStable] = await Promise.all([
-                    getExchangeRate(),
-                    getUpbitPrices(),
-                    getBinanceCoinPrices(),
-                    getBinanceStablePrice()
-                ]);
-
-                if (usdKrw < 100) { throw new Error('환율 데이터를 가져올 수 없습니다'); }
-
-                // 김프 계산
-                const usdtPremium = upbitData.usdt ? ((upbitData.usdt / usdKrw - 1) * 100).toFixed(2) : 'N/A';
-                const usdcPremium = upbitData.usdc ? ((upbitData.usdc / usdKrw - 1) * 100).toFixed(2) : 'N/A';
-                const binanceUsdtDiff = ((binanceStable.usdt - 1) * 100).toFixed(4);
-                const binanceUsdcDiff = ((binanceStable.usdc - 1) * 100).toFixed(4);
-                const btcKimp = (upbitData.btc && binanceCoinData.btc) ? ((upbitData.btc / (binanceCoinData.btc * usdKrw) - 1) * 100).toFixed(2) : 'N/A';
-                const ethKimp = (upbitData.eth && binanceCoinData.eth) ? ((upbitData.eth / (binanceCoinData.eth * usdKrw) - 1) * 100).toFixed(2) : 'N/A';
-                const loadTime = ((Date.now() - startTime) / 1000).toFixed(2);
-
-                const resultData = {
-                    usdKrw: usdKrw.toFixed(2), upbitUsdt: upbitData.usdt.toLocaleString('ko-KR'), upbitUsdc: upbitData.usdc.toLocaleString('ko-KR'),
-                    usdtPremium, usdcPremium, binanceUsdt: binanceStable.usdt.toFixed(4), binanceUsdc: binanceStable.usdc.toFixed(4),
-                    binanceUsdtDiff, binanceUsdcDiff,
-                    upbitBtc: upbitData.btc.toLocaleString('ko-KR', { maximumFractionDigits: 0 }), upbitEth: upbitData.eth.toLocaleString('ko-KR', { maximumFractionDigits: 0 }),
-                    binanceBtc: binanceCoinData.btc.toLocaleString('en-US', { maximumFractionDigits: 2 }), binanceEth: binanceCoinData.eth.toLocaleString('en-US', { maximumFractionDigits: 2 }),
-                    btcKimp, ethKimp, loadTime
-                };
-                cache.data = resultData; cache.timestamp = Date.now(); retryCount = 0; displayData(resultData);
-            } catch (error) {
-                 // ... (오류 처리 로직)
-            } finally { isLoading = false; }
+            cache.data = resultData; 
+            cache.timestamp = Date.now(); 
+            retryCount = 0; 
+            displayData(resultData);
+        } catch (error) {
+            console.error('데이터 가져오기 오류:', error);
+            
+            if (retryCount < MAX_RETRIES) {
+                retryCount++;
+                document.getElementById('content').innerHTML = `
+                    <div class="error-message">
+                        ⚠️ 데이터를 가져오는 중 오류가 발생했습니다. 
+                        재시도 중... (${retryCount}/${MAX_RETRIES})
+                    </div>
+                `;
+                await sleep(2000);
+                isLoading = false;
+                if (refreshBtn) refreshBtn.disabled = false;
+                fetchData();
+            } else {
+                document.getElementById('content').innerHTML = `
+                    <div class="error-message">
+                        ❌ 데이터를 불러올 수 없습니다.<br>
+                        ${error.message}<br>
+                        잠시 후 다시 시도해주세요.
+                    </div>
+                    <button class="refresh-btn" onclick="location.reload()">🔄 페이지 새로고침</button>
+                `;
+            }
+        } finally { 
+            isLoading = false;
+            if (refreshBtn) {
+                refreshBtn.disabled = false;
+                refreshBtn.textContent = '🔄 새로고침';
+            }
         }
-        
-        function manualRefresh() { cache.timestamp = 0; fetchData(); }
-        function renderPremium(premium, showSign = true) {
-            if (premium === 'N/A') { return '<div class="premium" style="color:#999; font-weight: normal;">N/A</div>'; }
-            const sign = premium >= 0 ? '+' : ''; const className = premium >= 0 ? 'positive' : 'negative';
-            const sizeStyle = (String(premium).includes('.')) && String(premium).length > 5 ? 'font-size: 12px;' : ''; 
-            return `<div class="premium ${className}" style="${sizeStyle}">${showSign ? sign : ''}${premium}%</div>`;
+    }
+    
+    function manualRefresh() { 
+        cache.timestamp = 0; 
+        fetchData(); 
+    }
+    
+    function renderPremium(premium, showSign = true) {
+        if (premium === 'N/A') { 
+            return '<div class="premium" style="color:#999; font-weight: normal;">N/A</div>'; 
         }
-        function renderKimpCard(coin, upbitPrice, binancePrice, kimp) {
-            return `<div class="card" style="margin-bottom: 16px;"><div class="card-flex"><div class="card-title">${coin} 시세 및 김프</div>${renderPremium(kimp, true)}</div><div class="kimp-info"><strong>업비트 (KRW):</strong> <span style="font-size: 16px; color: #333; font-weight: bold;">₩${upbitPrice}</span><br><strong>바이낸스 (USDT):</strong> <span style="font-size: 16px; color: #333; font-weight: bold;">$${binancePrice}</span></div><div style="margin-top: 8px;"><span class="source-tag">업비트 / 바이낸스</span></div></div>`;
-        }
-        function renderStableKimpCard(coin, upbitPrice, usdKrw, kimp) {
-            const fxKrw = parseFloat(usdKrw).toLocaleString('ko-KR', { maximumFractionDigits: 2 });
-            return `<div class="card" style="margin-bottom: 16px;"><div class="card-flex"><div class="card-title">${coin} (업비트) 시세 및 환율 대비 김프</div>${renderPremium(kimp, true)}</div><div class="kimp-info"><strong>업비트 (KRW):</strong> <span style="font-size: 16px; color: #333; font-weight: bold;">₩${upbitPrice}</span><br><strong>환율 기준 (1 USD):</strong> <span style="font-size: 16px; color: #333; font-weight: bold;">₩${fxKrw}</span></div><div style="margin-top: 8px;"><span class="source-tag">업비트 / ExchangeRate-API</span></div></div>`;
-        }
+        const sign = premium >= 0 ? '+' : ''; 
+        const className = premium >= 0 ? 'positive' : 'negative';
+        const sizeStyle = (String(premium).includes('.')) && String(premium).length > 5 ? 'font-size: 12px;' : ''; 
+        return `<div class="premium ${className}" style="${sizeStyle}">${showSign ? sign : ''}${premium}%</div>`;
+    }
+    
+    function renderKimpCard(coin, upbitPrice, binancePrice, kimp) {
+        return `<div class="card" style="margin-bottom: 16px;">
+            <div class="card-flex">
+                <div class="card-title">${coin} 시세 및 김프</div>
+                ${renderPremium(kimp, true)}
+            </div>
+            <div class="kimp-info">
+                <strong>업비트 (KRW):</strong> <span style="font-size: 16px; color: #333; font-weight: bold;">₩${upbitPrice}</span><br>
+                <strong>바이낸스 (USDT):</strong> <span style="font-size: 16px; color: #333; font-weight: bold;">$${binancePrice}</span>
+            </div>
+            <div style="margin-top: 8px;">
+                <span class="source-tag">업비트 / 바이낸스</span>
+            </div>
+        </div>`;
+    }
+    
+    function renderStableKimpCard(coin, upbitPrice, usdKrw, kimp) {
+        const fxKrw = parseFloat(usdKrw).toLocaleString('ko-KR', { maximumFractionDigits: 2 });
+        return `<div class="card" style="margin-bottom: 16px;">
+            <div class="card-flex">
+                <div class="card-title">${coin} (업비트) 시세 및 환율 대비 김프</div>
+                ${renderPremium(kimp, true)}
+            </div>
+            <div class="kimp-info">
+                <strong>업비트 (KRW):</strong> <span style="font-size: 16px; color: #333; font-weight: bold;">₩${upbitPrice}</span><br>
+                <strong>환율 기준 (1 USD):</strong> <span style="font-size: 16px; color: #333; font-weight: bold;">₩${fxKrw}</span>
+            </div>
+            <div style="margin-top: 8px;">
+                <span class="source-tag">업비트 / ExchangeRate-API</span>
+            </div>
+        </div>`;
+    }
 
+    function displayData(data, isFromCache = false) {
+        const now = new Date();
+        const timeString = now.toLocaleString('ko-KR', {
+            month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+        });
 
-        function displayData(data, isFromCache = false) {
-            const now = new Date();
-            const timeString = now.toLocaleString('ko-KR', {
-                month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
-            });
+        const cacheWarning = isFromCache ? ' <span style="color: #f39c12;">(캐시)</span>' : '';
+        document.getElementById('updateTime').innerHTML = `마지막 업데이트: ${timeString} (${data.loadTime}초)${cacheWarning}`;
 
-            const cacheWarning = isFromCache ? ' <span style="color: #f39c12;">(캐시)</span>' : '';
-            document.getElementById('updateTime').innerHTML = `마지막 업데이트: ${timeString} (${data.loadTime}초)${cacheWarning}`;
+        const content = `
+            <div class="card">
+                <div class="card-title">USD/KRW 환율</div>
+                <div class="card-value">₩${data.usdKrw}</div>
+                <div class="card-sub">1달러당</div>
+                <div class="source-tag">ExchangeRate-API</div>
+            </div>
+            
+            <div class="section-title">💲 스테이블코인 김프 현황 (환율 대비)</div>
+            ${renderStableKimpCard('USDT (테더)', data.upbitUsdt, data.usdKrw, data.usdtPremium)}
+            ${renderStableKimpCard('USDC', data.upbitUsdc, data.usdKrw, data.usdcPremium)}
 
-            const content = `
-                <div class="card">
-                    <div class="card-title">USD/KRW 환율</div>
-                    <div class="card-value">₩${data.usdKrw}</div>
-                    <div class="card-sub">1달러당</div>
-                    <div class="source-tag">ExchangeRate-API</div>
+            <div class="section-title" style="margin-top: 40px;">⚓ 해외 스테이블코인 페그(Peg) 현황 (1 USD 대비)</div>
+            <div class="grid">
+                <div class="small-card">
+                    <div class="small-card-title">바이낸스 USDT</div>
+                    <div class="small-card-value">$${data.binanceUsdt}</div>
+                    ${renderPremium(data.binanceUsdtDiff, true)}
+                    <div class="source-tag">바이낸스</div>
                 </div>
+
+                <div class="small-card">
+                    <div class="small-card-title">바이낸스 USDC</div>
+                    <div class="small-card-value">$${data.binanceUsdc}</div>
+                    ${renderPremium(data.binanceUsdcDiff, true)}
+                    <div class="source-tag">바이낸스</div>
+                </div>
+            </div>
+            
+            <div class="section-title">📈 주요 코인 김프 현황 (업비트 vs 바이낸스)</div>
+            ${renderKimpCard('비트코인 (BTC)', data.upbitBtc, data.binanceBtc, data.btcKimp)}
+            ${renderKimpCard('이더리움 (ETH)', data.upbitEth, data.binanceEth, data.ethKimp)}
+
+            <div class="info-card">
+                <strong>💡 페깅(Pegging)이 중요한 이유</strong><br>
+                스테이블코인(USDT/USDC)은 <b>1달러 가치 유지</b>가 핵심입니다.<br>
+                이 페깅 상태는 김프 계산의 <b>'해외 기준값'</b>이 믿을만한지 확인하는 잣대가 됩니다.<br>
+                만약 페그가 깨지면(예: $0.98), 김프가 높아 보여도 실제로는 <b>해외 기준 통화에 문제</b>가 생긴 것일 수 있습니다.<br><br>
                 
-                <div class="section-title">💲 스테이블코인 김프 현황 (환율 대비)</div>
-                ${renderStableKimpCard('USDT (테더)', data.upbitUsdt, data.usdKrw, data.usdtPremium)}
-                ${renderStableKimpCard('USDC', data.upbitUsdc, data.usdKrw, data.usdcPremium)}
-
-                <div class="section-title" style="margin-top: 40px;">⚓ 해외 스테이블코인 페그(Peg) 현황 (1 USD 대비)</div>
-                <div class="grid">
-                    <div class="small-card">
-                        <div class="small-card-title">바이낸스 USDT</div>
-                        <div class="small-card-value">$${data.binanceUsdt}</div>
-                        ${renderPremium(data.binanceUsdtDiff, true)}
-                        <div class="source-tag">바이낸스</div>
-                    </div>
-
-                    <div class="small-card">
-                        <div class="small-card-title">바이낸스 USDC</div>
-                        <div class="small-card-value">$${data.binanceUsdc}</div>
-                        ${renderPremium(data.binanceUsdcDiff, true)}
-                        <div class="source-tag">바이낸스</div>
-                    </div>
-                </div>
+                <strong>📊 김프 계산 방식</strong><br>
+                <strong>1. 스테이블코인 (USDT/USDC - 업비트):</strong><br>
+                &nbsp;&nbsp;&nbsp;김프(%) = (업비트 가격 / 환율 - 1) × 100<br>
+                <strong>2. 코인 (BTC/ETH - 업비트 vs 바이낸스):</strong><br>
+                &nbsp;&nbsp;&nbsp;김프(%) = (업비트 KRW 가격 / (바이낸스 USDT 가격 × 환율) - 1) × 100<br>
+                <strong>3. 페그(Peg) 현황 (USDT/USDC - 바이낸스):</strong><br>
+                &nbsp;&nbsp;&nbsp;차이(%) = (바이낸스 가격 / 1 - 1) × 100<br><br>
                 
-                <div class="section-title">📈 주요 코인 김프 현황 (업비트 vs 바이낸스)</div>
-                ${renderKimpCard('비트코인 (BTC)', data.upbitBtc, data.binanceBtc, data.btcKimp)}
-                ${renderKimpCard('이더리움 (ETH)', data.upbitEth, data.binanceEth, data.ethKimp)}
+                <strong style="color: #e74c3c;">플러스(+)</strong>: 한국이 더 비쌈 (김치 프리미엄) 또는 1달러보다 비쌈<br>
+                <strong style="color: #3498db;">마이너스(-)</strong>: 한국이 더 쌈 (역프/디스카운트) 또는 1달러보다 쌈<br><br>
 
-
-                <div class="info-card">
-                    <strong>💡 페깅(Pegging)이 중요한 이유</strong><br>
-                    스테이블코인(USDT/USDC)은 <b>1달러 가치 유지</b>가 핵심입니다.<br>
-                    이 페깅 상태는 김프 계산의 <b>'해외 기준값'</b>이 믿을만한지 확인하는 잣대가 됩니다.<br>
-                    만약 페그가 깨지면(예: $0.98), 김프가 높아 보여도 실제로는 <b>해외 기준 통화에 문제</b>가 생긴 것일 수 있습니다.<br><br>
-                    
-                    <strong>📊 김프 계산 방식</strong><br>
-                    <strong>1. 스테이블코인 (USDT/USDC - 업비트):</strong><br>
-                    &nbsp;&nbsp;&nbsp;김프(%) = (업비트 가격 / 환율 - 1) × 100<br>
-                    <strong>2. 코인 (BTC/ETH - 업비트 vs 바이낸스):</strong><br>
-                    &nbsp;&nbsp;&nbsp;김프(%) = (업비트 KRW 가격 / (바이낸스 USDT 가격 × 환율) - 1) × 100<br>
-                    <strong>3. 페그(Peg) 현황 (USDT/USDC - 바이낸스):</strong><br>
-                    &nbsp;&nbsp;&nbsp;차이(%) = (바이낸스 가격 / 1 - 1) × 100<br><br>
-                    
-                    <strong style="color: #e74c3c;">플러스(+)</strong>: 한국이 더 비쌈 (김치 프리미엄) 또는 1달러보다 비쌈<br>
-                    <strong style="color: #3498db;">마이너스(-)</strong>: 한국이 더 쌈 (역프/디스카운트) 또는 1달러보다 쌈<br><br>
-
-                    <div style="border-top: 1px solid #eee; margin-top: 12px; padding-top: 12px; font-size: 12px;">
-                        ⚠️ <strong>안내사항</strong><br>
-                        • 현재 페이지에서는 <b>주요 코인(BTC/ETH)</b>에 대한 <b>원래 의미의 김프</b> 정보를 제공하고 있습니다.<br>
-                        • 전문적인 김프 정보를 확인하시려면
-                        <a href="https://kimpga.com/" target="_blank" style="color: #667eea; font-weight: bold; text-decoration: none;">https://kimpga.com/</a>
-                        을 참조해 주세요.
-                        <br>
-                        • 자동 업데이트: 90초마다 (API 부하 감소)<br>
-                        • 새로고침 버튼을 연속으로 누르지 마세요<br>
-                        <strong style="color: #e67e22;">📌 정확한 데이터는 직접 확인하시는 것을 추천드립니다.</strong><br>
-                    </div>
+                <div style="border-top: 1px solid #eee; margin-top: 12px; padding-top: 12px; font-size: 12px;">
+                    ⚠️ <strong>안내사항</strong><br>
+                    • 현재 페이지에서는 <b>주요 코인(BTC/ETH)</b>에 대한 <b>원래 의미의 김프</b> 정보를 제공하고 있습니다.<br>
+                    • 전문적인 김프 정보를 확인하시려면
+                    <a href="https://kimpga.com/" target="_blank" style="color: #667eea; font-weight: bold; text-decoration: none;">https://kimpga.com/</a>
+                    을 참조해 주세요.
+                    <br>
+                    • 자동 업데이트: 90초마다 (API 부하 감소)<br>
+                    • 새로고침 버튼을 연속으로 누르지 마세요<br>
+                    <strong style="color: #e67e22;">📌 정확한 데이터는 직접 확인하시는 것을 추천드립니다.</strong><br>
                 </div>
+            </div>
 
-                <button class="refresh-btn" onclick="manualRefresh()">🔄 새로고침</button>
-            `;
+            <button class="refresh-btn" onclick="manualRefresh()">🔄 새로고침</button>
+        `;
 
-            document.getElementById('content').innerHTML = content;
-        }
+        document.getElementById('content').innerHTML = content;
+    }
 
-        // 초기 로드
-        fetchData();
+    // 초기 로드
+    fetchData();
 
-        // 90초마다 자동 업데이트 
-        setInterval(fetchData, 90000);
-    </script>
+    // 90초마다 자동 업데이트 
+    setInterval(fetchData, 90000);
+</script>
+```
+
 </body>
 </html>
