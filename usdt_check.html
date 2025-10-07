@@ -177,13 +177,19 @@
 
     <script>
         // 타임아웃 설정
-        async function fetchWithTimeout(url, timeout = 5000) {
+        async function fetchWithTimeout(url, timeout = 8000) {
             const controller = new AbortController();
             const id = setTimeout(() => controller.abort(), timeout);
             
             try {
                 const response = await fetch(url, { signal: controller.signal });
                 clearTimeout(id);
+                
+                // 429 에러 처리
+                if (response.status === 429) {
+                    throw new Error('API 요청 제한 초과 (1분 후 다시 시도)');
+                }
+                
                 return response;
             } catch (error) {
                 clearTimeout(id);
@@ -237,7 +243,7 @@
                 // 환율과 업비트 데이터 동시 요청
                 const [usdKrw, upbitRes] = await Promise.all([
                     getExchangeRate(),
-                    fetchWithTimeout('https://api.upbit.com/v1/ticker?markets=KRW-USDT,KRW-USDC', 5000)
+                    fetchWithTimeout('https://api.upbit.com/v1/ticker?markets=KRW-USDT,KRW-USDC', 10000)
                 ]);
 
                 const upbitData = await upbitRes.json();
@@ -328,7 +334,14 @@
                     → (1,350 / 1,300 - 1) × 100 = <strong>+3.85%</strong><br><br>
                     
                     <strong style="color: #e74c3c;">플러스(+)</strong>: 한국이 더 비쌈 (김치 프리미엄)<br>
-                    <strong style="color: #3498db;">마이너스(-)</strong>: 한국이 더 쌈 (김치 디스카운트)
+                    <strong style="color: #3498db;">마이너스(-)</strong>: 한국이 더 쌈 (김치 디스카운트)<br><br>
+                    
+                    <div style="border-top: 1px solid #eee; margin-top: 12px; padding-top: 12px; font-size: 12px;">
+                        ⚠️ <strong>안내사항</strong><br>
+                        • 자동 업데이트: 60초마다<br>
+                        • 새로고침 버튼을 너무 자주 누르지 마세요<br>
+                        • 오류 발생 시 1분 정도 기다렸다가 다시 시도하세요
+                    </div>
                 </div>
 
                 <div class="card">
@@ -348,8 +361,8 @@
         // 초기 로드
         fetchData();
 
-        // 30초마다 자동 업데이트
-        setInterval(fetchData, 30000);
+        // 60초마다 자동 업데이트 (30초에서 60초로 변경)
+        setInterval(fetchData, 60000);
     </script>
 </body>
 </html>
