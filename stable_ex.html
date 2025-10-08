@@ -1,519 +1,202 @@
-
 <!DOCTYPE html>
-
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>USDT 환율 계산 비교 테스트</title>
+    <title>실시간 김프 대시보드 (TwelveData 기반)</title>
+    <meta name="description" content="비트코인, 이더리움 김치프리미엄 실시간 확인. Twelve Data 실시간 환율 기반.">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --bg-gradient-start: #667eea;
+            --bg-gradient-end: #764ba2;
+            --card-bg: white;
+            --text-primary: #333;
+            --text-secondary: #666;
+            --text-light: #999;
+            --premium-positive: #e74c3c;
+            --premium-negative: #3498db;
+            --shadow: rgba(0, 0, 0, 0.1);
         }
+        .dark-mode {
+            --bg-gradient-start: #1a1a2e;
+            --bg-gradient-end: #16213e;
+            --card-bg: #2d2d44;
+            --text-primary: #f0f0f0;
+            --text-secondary: #b0b0b0;
+            --text-light: #808080;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            min-height: 100vh; padding: 20px; color: var(--text-primary);
         }
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
+        .container { max-width: 600px; margin: 0 auto; }
+        .header { text-align: center; color: white; margin-bottom: 20px; }
+        .card { background: var(--card-bg); border-radius: 16px; padding: 24px 20px; margin-bottom: 16px;
+                box-shadow: 0 4px 6px var(--shadow); text-align: center; transition: all 0.3s ease; }
+        .card-title { font-size: 16px; color: var(--text-secondary); margin-bottom: 10px; font-weight: bold; }
+        .card-value { font-size: 32px; font-weight: bold; color: var(--text-primary); }
+        .card-sub { font-size: 14px; color: var(--text-light); margin-bottom: 6px; }
+        .source-tag { display: inline-block; background: #667eea; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-top: 4px; }
+        .premium { font-weight: 600; font-size: 15px; }
+        .premium.positive { color: var(--premium-positive); }
+        .premium.negative { color: var(--premium-negative); }
+        .section-title { color: white; font-size: 18px; font-weight: bold; text-align: center; margin: 24px 0 16px 0; }
+        .refresh-btn {
+            background: white; border: none; border-radius: 12px; padding: 12px 24px;
+            font-size: 14px; font-weight: 600; color: #667eea; cursor: pointer; width: 100%; margin-top: 16px;
+            box-shadow: 0 4px 6px var(--shadow);
         }
-        h1 {
-            color: white;
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 28px;
-        }
-        .input-section {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        .input-section h2 {
-            margin: 0 0 16px 0;
-            font-size: 18px;
-            color: #333;
-        }
-        .input-group {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-        .input-group label {
-            min-width: 120px;
-            color: #666;
-            font-size: 14px;
-        }
-        .input-group input {
-            flex: 1;
-            padding: 10px 14px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-        }
-        .input-group input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        button {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 14px 28px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            width: 100%;
-            margin-top: 12px;
-            transition: all 0.2s;
-        }
-        button:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-        }
-        button:active {
-            transform: translateY(0);
-        }
-        .results {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 16px;
-            margin-bottom: 20px;
-        }
-        .card {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        .card h3 {
-            margin: 0 0 16px 0;
-            font-size: 16px;
-            color: #667eea;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .rate-display {
-            font-size: 36px;
-            font-weight: bold;
-            color: #333;
-            text-align: center;
-            margin: 20px 0;
-        }
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #f0f0f0;
-            font-size: 14px;
-        }
-        .detail-row:last-child {
-            border-bottom: none;
-        }
-        .detail-label {
-            color: #666;
-        }
-        .detail-value {
-            font-weight: 600;
-            color: #333;
-        }
-        .comparison-card {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        .comparison-card h3 {
-            margin: 0 0 20px 0;
-            font-size: 18px;
-            color: #333;
-        }
-        .comparison-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-        }
-        .comparison-item {
-            background: #f8f9fa;
-            padding: 16px;
-            border-radius: 12px;
-            text-align: center;
-        }
-        .comparison-item small {
-            display: block;
-            color: #666;
-            margin-bottom: 8px;
-            font-size: 13px;
-        }
-        .comparison-item strong {
-            display: block;
-            font-size: 24px;
-            color: #333;
-        }
-        .comparison-item .sub {
-            font-size: 12px;
-            color: #999;
-            margin-top: 4px;
-        }
-        .diff-positive {
-            color: #e74c3c;
-        }
-        .diff-negative {
-            color: #3498db;
-        }
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .badge-realtime {
-            background: #d4edda;
-            color: #155724;
-        }
-        .badge-static {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #999;
-        }
-        .highlight {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin-top: 20px;
-        }
-        .highlight h3 {
-            margin: 0 0 12px 0;
-            font-size: 18px;
-        }
-        .highlight-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 12px;
-            margin-top: 16px;
-        }
-        .highlight-item {
-            background: rgba(255,255,255,0.2);
-            padding: 12px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        .highlight-item small {
-            display: block;
-            opacity: 0.9;
-            margin-bottom: 4px;
-        }
-        .highlight-item strong {
-            font-size: 20px;
-        }
-        .timestamp {
-            text-align: center;
-            color: white;
-            margin-top: 20px;
-            font-size: 14px;
-            opacity: 0.9;
-        }
-        @media (max-width: 768px) {
-            .results {
-                grid-template-columns: 1fr;
-            }
-            .comparison-grid {
-                grid-template-columns: 1fr;
-            }
-        }
+        .refresh-btn:active { transform: scale(0.98); }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>💱 USDT 환율 계산 방법 검증</h1>
-
-
-    <div class="input-section">
-        <h2>📝 실제 환율 입력 (비교용)</h2>
-        <div class="input-group">
-            <label>현재 실제 환율:</label>
-            <input type="number" id="actualRate" placeholder="예: 1428.83" step="0.01">
+        <div class="header">
+            <h1>💱 실시간 환율 & 김치 프리미엄</h1>
+            <div id="updateTime" style="font-size:13px; opacity:0.85;">데이터 로딩 중...</div>
         </div>
-        <div style="font-size: 13px; color: #999; margin-top: 8px;">
-            💡 네이버, 구글 등에서 확인한 실제 USD/KRW 환율을 입력하세요
-        </div>
+        <div id="content" class="loading">데이터를 불러오는 중...</div>
     </div>
 
-    <button onclick="runTest()">🔄 테스트 실행</button>
+    <script>
+        // ======================
+        // ⚙️ CONFIG
+        // ======================
+        const WORKER_BASE_URL = "https://kimchi-worker.yourname.workers.dev"; // ← 본인 주소로 교체
+        const CONFIG = { UPDATE_INTERVAL: 30000, MIN_VALID_EXCHANGE_RATE: 100 };
 
-    <div id="results"></div>
-    <div class="timestamp" id="timestamp"></div>
-</div>
-
-<script>
-    async function runTest() {
-        const actualRateInput = document.getElementById('actualRate').value;
-        const actualRate = actualRateInput ? parseFloat(actualRateInput) : null;
-        
-        const resultsDiv = document.getElementById('results');
-        resultsDiv.innerHTML = '<div class="loading">⏳ 데이터 수집 중...</div>';
-        
-        document.getElementById('timestamp').textContent = `테스트 시작: ${new Date().toLocaleString('ko-KR')}`;
-
-        try {
-            // 1. USDT 방법으로 환율 계산
-            const upbitRes = await fetch('https://api.upbit.com/v1/ticker?markets=KRW-USDT');
-            const [upbitData] = await upbitRes.json();
-            const upbitUsdt = upbitData.trade_price;
-            
-            // 바이낸스 USDT는 거의 항상 $1.0000에 페깅되어 있음
-            // CORS 에러 대신 $1.0000으로 가정
-            const binanceUsdt = 1.0000;
-            
-            const calculatedRate = upbitUsdt / binanceUsdt;
-            
-            console.log('⚠️ 바이낸스 API CORS 에러로 $1.0000 가정');
-
-            // 2. 정적 API들
-            const staticAPIs = await Promise.allSettled([
-                fetch('https://api.frankfurter.app/latest?from=USD&to=KRW')
-                    .then(r => r.json()).then(d => ({ name: 'Frankfurter', rate: d.rates.KRW })),
-                
-                fetch('https://open.er-api.com/v6/latest/USD')
-                    .then(r => r.json()).then(d => ({ name: 'Open.ER-API', rate: d.rates.KRW }))
-            ]);
-
-            const staticResults = staticAPIs
-                .filter(r => r.status === 'fulfilled')
-                .map(r => r.value);
-
-            const avgStaticRate = staticResults.reduce((sum, r) => sum + r.rate, 0) / staticResults.length;
-
-            // 3. BTC로 검증
-            const btcRes = await fetch('https://api.upbit.com/v1/ticker?markets=KRW-BTC,USDT-BTC');
-            const btcData = await btcRes.json();
-            
-            const krwBtc = btcData.find(d => d.market === 'KRW-BTC').trade_price;
-            const usdtBtc = btcData.find(d => d.market === 'USDT-BTC').trade_price;
-            const btcRawRate = krwBtc / usdtBtc;
-
-            // HTML 생성
-            let html = '<div class="results">';
-
-            // USDT 방법 카드
-            html += `
-                <div class="card">
-                    <h3>
-                        <span>⚡</span>
-                        USDT 계산 방법
-                        <span class="badge badge-realtime">실시간</span>
-                    </h3>
-                    <div class="rate-display">₩${calculatedRate.toFixed(2)}</div>
-                    <div class="detail-row">
-                        <span class="detail-label">업비트 USDT</span>
-                        <span class="detail-value">₩${upbitUsdt.toLocaleString('ko-KR', {maximumFractionDigits: 2})}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">바이낸스 USDT</span>
-                        <span class="detail-value">$${binanceUsdt.toFixed(4)}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">계산식</span>
-                        <span class="detail-value">${upbitUsdt.toFixed(2)} ÷ ${binanceUsdt}</span>
-                    </div>
-                </div>
-            `;
-
-            // 실제 환율 카드 (입력한 경우)
-            if (actualRate) {
-                const diff = calculatedRate - actualRate;
-                const diffPercent = (diff / actualRate * 100).toFixed(2);
-                
-                html += `
-                    <div class="card">
-                        <h3>
-                            <span>✅</span>
-                            실제 환율 (입력값)
-                        </h3>
-                        <div class="rate-display">₩${actualRate.toFixed(2)}</div>
-                        <div class="detail-row">
-                            <span class="detail-label">차이</span>
-                            <span class="detail-value ${diff >= 0 ? 'diff-positive' : 'diff-negative'}">
-                                ${diff >= 0 ? '+' : ''}${diff.toFixed(2)}원
-                            </span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">오차율</span>
-                            <span class="detail-value ${Math.abs(parseFloat(diffPercent)) < 0.5 ? '' : 'diff-positive'}">
-                                ${diff >= 0 ? '+' : ''}${diffPercent}%
-                            </span>
-                        </div>
-                    </div>
-                `;
-            }
-
-            // 정적 API 카드
-            html += `
-                <div class="card">
-                    <h3>
-                        <span>📅</span>
-                        정적 API 평균
-                        <span class="badge badge-static">하루 1회</span>
-                    </h3>
-                    <div class="rate-display">₩${avgStaticRate.toFixed(2)}</div>
-            `;
-            
-            staticResults.forEach(api => {
-                html += `
-                    <div class="detail-row">
-                        <span class="detail-label">${api.name}</span>
-                        <span class="detail-value">₩${api.rate.toFixed(2)}</span>
-                    </div>
-                `;
+        // ======================
+        // 🧩 유틸리티
+        // ======================
+        const fetchWithTimeout = (url, timeout = 10000) => {
+            return Promise.race([
+                fetch(url),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('요청 시간 초과')), timeout))
+            ]).then(response => {
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return response;
             });
-            
-            html += '</div>';
+        };
 
-            html += '</div>'; // results 닫기
+        const showNotification = (msg) => console.log("✅", msg);
 
-            // 비교 분석
-            html += '<div class="comparison-card"><h3>📊 상세 비교 분석</h3><div class="comparison-grid">';
+        // ======================
+        // 💱 API 호출
+        // ======================
+        const getExchangeRate = async () => {
+            const response = await fetchWithTimeout(`${WORKER_BASE_URL}/usdkrw`);
+            const data = await response.json();
+            if (!data?.rate) throw new Error("환율 데이터 형식 오류");
+            localStorage.setItem("twelveDataTimestamp", data.timestamp || new Date().toISOString());
+            return data.rate;
+        };
 
-            // USDT 방법
-            html += `
-                <div class="comparison-item">
-                    <small>USDT 계산 방법</small>
-                    <strong>₩${calculatedRate.toFixed(2)}</strong>
-            `;
-            if (actualRate) {
-                const diff = calculatedRate - actualRate;
-                html += `<div class="sub ${diff >= 0 ? 'diff-positive' : 'diff-negative'}">${diff >= 0 ? '+' : ''}${diff.toFixed(2)}원</div>`;
-            }
-            html += '</div>';
+        const getUpbitPrices = async () => {
+            const response = await fetchWithTimeout('https://api.upbit.com/v1/ticker?markets=KRW-USDT,KRW-BTC,USDT-BTC');
+            const data = await response.json();
+            const result = { usdt: 0, btcKrw: 0, btcUsdt: 0 };
+            data.forEach(item => {
+                if (item.market === 'KRW-USDT') result.usdt = item.trade_price;
+                if (item.market === 'KRW-BTC') result.btcKrw = item.trade_price;
+                if (item.market === 'USDT-BTC') result.btcUsdt = item.trade_price;
+            });
+            return result;
+        };
 
-            // 정적 API
-            html += `
-                <div class="comparison-item">
-                    <small>정적 API 평균</small>
-                    <strong>₩${avgStaticRate.toFixed(2)}</strong>
-            `;
-            if (actualRate) {
-                const diff = avgStaticRate - actualRate;
-                html += `<div class="sub ${diff >= 0 ? 'diff-positive' : 'diff-negative'}">${diff >= 0 ? '+' : ''}${diff.toFixed(2)}원</div>`;
-            }
-            html += '</div>';
+        const getBinanceStablePrice = async () => {
+            const response = await fetchWithTimeout(`${WORKER_BASE_URL}/usdtusd`);
+            const data = await response.json();
+            if (!data?.rate) throw new Error("USDT 데이터 오류");
+            return { usdt: data.rate, usdc: 1.0000 };
+        };
 
-            // BTC 역산 (참고)
-            html += `
-                <div class="comparison-item">
-                    <small>BTC 역산 (김프 포함)</small>
-                    <strong>₩${btcRawRate.toFixed(2)}</strong>
-                    <div class="sub" style="color: #999;">참고용</div>
-                </div>
-            `;
+        // ======================
+        // 🧠 렌더링
+        // ======================
+        const renderPremium = (value) => {
+            if (value === "N/A") return `<div class="premium" style="color:#999">N/A</div>`;
+            const num = parseFloat(value);
+            const cls = num >= 0 ? "positive" : "negative";
+            const sign = num >= 0 ? "+" : "";
+            return `<div class="premium ${cls}">${sign}${num}%</div>`;
+        };
 
-            // 실제 환율
-            if (actualRate) {
-                html += `
-                    <div class="comparison-item" style="background: #e8f5e9;">
-                        <small>실제 환율 (기준)</small>
-                        <strong style="color: #2e7d32;">₩${actualRate.toFixed(2)}</strong>
-                        <div class="sub" style="color: #2e7d32;">0.00원</div>
-                    </div>
-                `;
-            }
+        const displayData = (data) => {
+            const twelveDataTime = localStorage.getItem("twelveDataTimestamp");
+            const twelveDisplay = twelveDataTime
+                ? new Date(twelveDataTime).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+                : "N/A";
 
-            html += '</div></div>';
+            document.getElementById("updateTime").innerHTML =
+                `마지막 업데이트: ${new Date().toLocaleTimeString("ko-KR")} · Twelve Data 기준 ${twelveDisplay}`;
 
-            // 결론
-            if (actualRate) {
-                const usdtDiff = Math.abs(calculatedRate - actualRate);
-                const staticDiff = Math.abs(avgStaticRate - actualRate);
-                const usdtDiffPercent = (usdtDiff / actualRate * 100).toFixed(2);
-                const staticDiffPercent = (staticDiff / actualRate * 100).toFixed(2);
-
-                html += '<div class="highlight">';
-                html += '<h3>💡 결론</h3>';
-                
-                if (usdtDiff < staticDiff) {
-                    html += `
-                        <div style="line-height: 1.8;">
-                            <strong style="font-size: 18px;">✅ USDT 계산 방법이 더 정확합니다!</strong><br><br>
-                            USDT 방법: <strong>${usdtDiff.toFixed(2)}원 (${usdtDiffPercent}%)</strong> 오차<br>
-                            정적 API: <strong>${staticDiff.toFixed(2)}원 (${staticDiffPercent}%)</strong> 오차<br><br>
-                            ${usdtDiff < 5 ? '오차가 5원 미만으로 매우 정확합니다!' : usdtDiff < 10 ? '오차가 10원 미만으로 충분히 정확합니다.' : '참고용으로 사용 가능합니다.'}
-                        </div>
-                    `;
-                } else {
-                    html += `
-                        <div style="line-height: 1.8;">
-                            <strong style="font-size: 18px;">⚠️ 정적 API가 더 정확합니다</strong><br><br>
-                            USDT 방법: <strong>${usdtDiff.toFixed(2)}원 (${usdtDiffPercent}%)</strong> 오차<br>
-                            정적 API: <strong>${staticDiff.toFixed(2)}원 (${staticDiffPercent}%)</strong> 오차<br><br>
-                            USDT 페깅 이슈가 있을 수 있습니다.
-                        </div>
-                    `;
-                }
-
-                html += '<div class="highlight-grid">';
-                html += `
-                    <div class="highlight-item">
-                        <small>USDT 오차</small>
-                        <strong>${usdtDiffPercent}%</strong>
-                    </div>
-                    <div class="highlight-item">
-                        <small>정적 API 오차</small>
-                        <strong>${staticDiffPercent}%</strong>
-                    </div>
-                    <div class="highlight-item">
-                        <small>차이</small>
-                        <strong>${Math.abs(usdtDiff - staticDiff).toFixed(2)}원</strong>
-                    </div>
-                `;
-                html += '</div></div>';
-            } else {
-                html += `
-                    <div class="highlight">
-                        <h3>💡 안내</h3>
-                        <div style="line-height: 1.8;">
-                            실제 환율을 입력하시면 정확도 비교를 확인할 수 있습니다.<br>
-                            네이버, 구글 등에서 현재 USD/KRW 환율을 확인한 후<br>
-                            위의 입력란에 입력하고 다시 테스트해보세요.
-                        </div>
-                    </div>
-                `;
-            }
-
-            resultsDiv.innerHTML = html;
-            document.getElementById('timestamp').textContent = `테스트 완료: ${new Date().toLocaleString('ko-KR')}`;
-
-        } catch (error) {
-            resultsDiv.innerHTML = `
+            const content = `
                 <div class="card">
-                    <h3 style="color: #e74c3c;">❌ 테스트 실패</h3>
-                    <p style="color: #666; margin-top: 12px;">${error.message}</p>
+                    <div class="card-title">USD/KRW 환율</div>
+                    <div class="card-value">₩${data.usdKrw}</div>
+                    <div class="card-sub">1달러당</div>
+                    <span class="source-tag">출처: Twelve Data</span><br>
+                    <span style="font-size:12px; color:var(--text-secondary)">갱신: ${twelveDisplay}</span>
                 </div>
+
+                <div class="section-title">💲 스테이블코인 김프</div>
+                <div class="card">
+                    <div class="card-title">USDT (테더)</div>
+                    <div class="card-value">₩${data.upbitUsdt.toLocaleString('ko-KR')}</div>
+                    ${renderPremium(data.usdtPremium)}
+                    <div class="card-sub">환율 기준: ₩${data.usdKrw}</div>
+                    <span class="source-tag">업비트 / Twelve Data</span>
+                </div>
+
+                <div class="section-title">📈 비트코인 김프</div>
+                <div class="card">
+                    <div class="card-title">BTC</div>
+                    <div class="card-value">${data.btcKimp}%</div>
+                    <div class="card-sub">업비트 vs 바이낸스</div>
+                    <span class="source-tag">Twelve Data + Upbit</span>
+                </div>
+
+                <button class="refresh-btn" onclick="fetchData()">🔄 새로고침</button>
             `;
-        }
-    }
+            document.getElementById("content").innerHTML = content;
+        };
 
-    // 페이지 로드 시 자동 실행
-    window.addEventListener('load', () => {
-        setTimeout(runTest, 500);
-    });
-</script>
+        // ======================
+        // 🔄 데이터 수집
+        // ======================
+        const fetchData = async () => {
+            try {
+                const [usdKrw, upbit, stable] = await Promise.all([
+                    getExchangeRate(),
+                    getUpbitPrices(),
+                    getBinanceStablePrice()
+                ]);
+                if (usdKrw < CONFIG.MIN_VALID_EXCHANGE_RATE) throw new Error("환율 데이터 오류");
 
+                const usdtPremium = ((upbit.usdt / usdKrw - 1) * 100).toFixed(2);
+                const btcKimp = ((upbit.btcKrw / (upbit.btcUsdt * usdKrw) - 1) * 100).toFixed(2);
 
+                const data = {
+                    usdKrw: usdKrw.toFixed(2),
+                    upbitUsdt: upbit.usdt,
+                    usdtPremium,
+                    btcKimp
+                };
+                displayData(data);
+            } catch (e) {
+                document.getElementById("content").innerHTML =
+                    `<div class="card" style="color:red;">❌ 데이터 오류: ${e.message}</div>`;
+            }
+        };
+
+        // ======================
+        // 🚀 초기화
+        // ======================
+        fetchData();
+        setInterval(fetchData, CONFIG.UPDATE_INTERVAL);
+    </script>
 </body>
 </html>
