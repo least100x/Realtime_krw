@@ -30,6 +30,11 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 10px;
+            transition: background 0.3s ease;
+        }
+
+        body.dark-mode {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
         }
         
         .container {
@@ -39,6 +44,12 @@
             border-radius: 20px;
             padding: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        body.dark-mode .container {
+            background: #2d2d44;
+            color: #f0f0f0;
         }
         
         @media (min-width: 768px) {
@@ -56,6 +67,11 @@
             margin-bottom: 10px;
             font-size: 1.5em;
             word-break: keep-all;
+            transition: color 0.3s ease;
+        }
+
+        body.dark-mode h1 {
+            color: #f0f0f0;
         }
         
         @media (min-width: 768px) {
@@ -71,6 +87,11 @@
             font-size: 0.9em;
             word-break: keep-all;
             padding: 0 10px;
+            transition: color 0.3s ease;
+        }
+
+        body.dark-mode .subtitle {
+            color: #b0b0b0;
         }
         
         @media (min-width: 768px) {
@@ -284,10 +305,16 @@
             top: 5px;
             right: 5px;
             background: rgba(0,0,0,0.1);
-            padding: 3px 8px;
+            padding: 4px 10px;
             border-radius: 12px;
-            font-size: 0.7em;
+            font-size: 0.85em;
             color: #666;
+            font-weight: 600;
+        }
+
+        body.dark-mode .data-source-badge {
+            background: rgba(255,255,255,0.2);
+            color: #ddd;
         }
         
         .money-card.inflation { border-color: #ff6b6b; background: linear-gradient(135deg, #ffe3e3 0%, #fff 100%); }
@@ -308,6 +335,11 @@
             margin-bottom: 10px;
             color: #333;
             word-break: keep-all;
+            transition: color 0.3s ease;
+        }
+
+        body.dark-mode .card-title {
+            color: #f0f0f0;
         }
         
         @media (min-width: 768px) {
@@ -773,7 +805,7 @@
             color: white;
             border: none;
             border-radius: 50%;
-            font-size: 28px;
+            font-size: 32px;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(201, 42, 42, 0.4);
             transition: all 0.3s ease;
@@ -781,6 +813,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            line-height: 1;
+            padding: 0;
+        }
+
+        .floating-help::before {
+            content: "⚠️";
+            display: block;
         }
         
         .floating-help:hover {
@@ -789,6 +828,36 @@
         }
         
         .floating-help:active {
+            transform: scale(0.95);
+        }
+
+        /* 다크모드 토글 버튼 */
+        .dark-mode-toggle {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dark-mode-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .dark-mode-toggle:active {
             transform: scale(0.95);
         }
         
@@ -802,8 +871,16 @@
             .floating-help {
                 width: 50px;
                 height: 50px;
-                font-size: 24px;
+                font-size: 28px;
                 bottom: 20px;
+                right: 20px;
+            }
+
+            .dark-mode-toggle {
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+                bottom: 80px;
                 right: 20px;
             }
             
@@ -984,8 +1061,9 @@
         </div>
     </div>
 
-    <!-- 플로팅 도움말 버튼 -->
-    <button class="floating-help" id="floatingHelp" title="면책조항">⚠️</button>
+    <!-- 플로팅 버튼들 -->
+    <button class="floating-help" id="floatingHelp" title="면책조항"></button>
+    <button class="dark-mode-toggle" id="darkModeToggle" title="다크모드">🌙</button>
 
     <script>
         // ============ 설정 ============
@@ -1278,11 +1356,21 @@
             }
         };
         
+        // ============ 다크모드 토글 함수 ============
+        const toggleDarkMode = () => {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            document.getElementById('darkModeToggle').textContent = isDark ? '☀️' : '🌙';
+            localStorage.setItem('darkMode', isDark);
+            showNotification(isDark ? '🌙 다크모드 활성화' : '☀️ 라이트모드 활성화');
+        };
+
         // ============ 이벤트 리스너 ============
         document.getElementById('amount').addEventListener('input', updateCalculation);
         document.getElementById('months').addEventListener('input', updateCalculation);
         document.getElementById('amount').addEventListener('input', updateAmountDisplay);
         document.getElementById('floatingHelp').addEventListener('click', showDisclaimerModal);
+        document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
         
         document.getElementById('stockTicker').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -1292,6 +1380,13 @@
         
         // ============ 초기화 ============
         const init = () => {
+            // 다크모드 설정 불러오기
+            const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+            if (savedDarkMode) {
+                document.body.classList.add('dark-mode');
+                document.getElementById('darkModeToggle').textContent = '☀️';
+            }
+
             // 첫 방문 시 면책 조항 표시
             const dontShow = localStorage.getItem('dontShowDisclaimer');
             if (!dontShow) {
