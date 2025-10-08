@@ -1,628 +1,1043 @@
-
 <!DOCTYPE html>
-
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="비트코인, 이더리움 김치프리미엄 실시간 확인. USDT, USDC 환율 대비 프리미엄 체크">
+    <meta name="keywords" content="김프, 김치프리미엄, 비트코인, 이더리움, 환율, USDT, USDC">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="실시간 김프 대시보드">
+    <meta property="og:description" content="비트코인, 이더리움 김치프리미엄 실시간 확인">
+    <meta property="og:image" content="https://via.placeholder.com/1200x630.png?text=Kimchi+Premium+Dashboard">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="실시간 김프 대시보드">
+    <meta name="twitter:description" content="비트코인, 이더리움 김치프리미엄 실시간 확인">
+    
     <title>실시간 환율 & 김프 대시보드</title>
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIuq5gO2UhCDrjIDsi5zrs7Trk5wiLAogICJzaG9ydF9uYW1lIjogIuq5gO2UhCIsCiAgInN0YXJ0X3VybCI6ICIvIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjNjY3ZWVhIiwKICAidGhlbWVfY29sb3IiOiAiIzY2N2VlYSIsCiAgImljb25zIjogW10KfQ==">
+    
     <style>
+        :root {
+            --bg-gradient-start: #667eea;
+            --bg-gradient-end: #764ba2;
+            --card-bg: white;
+            --text-primary: #333;
+            --text-secondary: #666;
+            --text-light: #999;
+            --premium-positive: #e74c3c;
+            --premium-negative: #3498db;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        .dark-mode {
+            --bg-gradient-start: #1a1a2e;
+            --bg-gradient-end: #16213e;
+            --card-bg: #2d2d44;
+            --text-primary: #f0f0f0;
+            --text-secondary: #b0b0b0;
+            --text-light: #808080;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        padding: 20px;
-    }
-
-    .container {
-        max-width: 600px;
-        margin: 0 auto;
-    }
-
-    .header {
-        text-align: center;
-        color: white;
-        margin-bottom: 30px;
-    }
-
-    .header h1 {
-        font-size: 24px;
-        margin-bottom: 10px;
-    }
-
-    .update-time {
-        font-size: 14px;
-        opacity: 0.9;
-    }
-    
-    .section-title {
-        color: white;
-        font-size: 18px;
-        font-weight: bold;
-        text-align: center;
-        margin: 24px 0 16px 0;
-    }
-
-    .card-flex {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 8px;
-        gap: 12px;
-    }
-
-    .card {
-        background: white;
-        border-radius: 16px;
-        padding: 20px;
-        margin-bottom: 16px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .card-title {
-        font-size: 14px;
-        color: #666;
-        margin-bottom: 8px; 
-        font-weight: 600;
-        flex: 1;
-        line-height: 1.4;
-    }
-    
-    .kimp-info {
-        font-size: 14px;
-        color: #555;
-        line-height: 1.8;
-        margin-top: 10px;
-    }
-
-    .kimp-info strong {
-        color: #333; 
-    }
-
-    .card-value {
-        font-size: 28px;
-        font-weight: bold;
-        color: #333;
-        margin-bottom: 4px;
-    }
-
-    .card-sub {
-        font-size: 14px;
-        color: #999;
-    }
-
-    .grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-        margin-bottom: 16px;
-    }
-
-    @media (max-width: 600px) {
-        .grid {
-            grid-template-columns: 1fr;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            min-height: 100vh;
+            padding: 20px;
+            transition: background 0.3s ease;
         }
-    }
 
-    .small-card {
-        background: white;
-        border-radius: 16px;
-        padding: 16px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        text-align: center;
-    }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
 
-    .small-card-title {
-        font-size: 12px;
-        color: #666;
-        margin-bottom: 8px;
-        font-weight: 600;
-    }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+        }
 
-    .small-card-value {
-        font-size: 20px;
-        font-weight: bold;
-        color: #333;
-    }
-
-    .premium {
-        font-size: 14px;
-        margin-top: 4px;
-        font-weight: 600;
-        white-space: nowrap;
-        flex-shrink: 0;
-    }
-
-    .premium.positive {
-        color: #e74c3c;
-    }
-
-    .premium.negative {
-        color: #3498db;
-    }
-
-    .loading {
-        text-align: center;
-        color: white;
-        padding: 20px;
-    }
-
-    .refresh-btn {
-        background: white;
-        border: none;
-        border-radius: 12px;
-        padding: 12px 24px;
-        font-size: 14px;
-        font-weight: 600;
-        color: #667eea;
-        cursor: pointer;
-        width: 100%;
-        margin-top: 16px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        transition: transform 0.1s;
-    }
-
-    .refresh-btn:active {
-        transform: scale(0.98);
-    }
-
-    .refresh-btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    .info-card {
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 12px;
-        padding: 16px;
-        margin-bottom: 16px;
-        font-size: 13px;
-        line-height: 1.6;
-        color: #555;
-    }
-
-    .info-card strong {
-        color: #333;
-    }
-
-    .source-tag {
-        display: inline-block;
-        background: #667eea;
-        color: white;
-        padding: 2px 8px;
-        border-radius: 4px;
-        font-size: 11px;
-        margin-top: 4px;
-    }
-
-    .error-message {
-        background: rgba(231, 76, 60, 0.9);
-        color: white;
-        padding: 12px;
-        border-radius: 8px;
-        margin-bottom: 16px;
-        font-size: 14px;
-    }
-
-
-
-    @media (max-width: 480px) {
-        .card-value {
+        .header h1 {
             font-size: 24px;
+            margin-bottom: 10px;
         }
-        
-        .small-card-value {
+
+        .header-controls {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .control-btn.active {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .update-time {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .section-title {
+            color: white;
             font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin: 24px 0 16px 0;
         }
-        
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px var(--shadow);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
         .card-title {
-            font-size: 13px;
+            font-size: 15px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            line-height: 1.4;
+            margin-bottom: 12px;
         }
-        
-        .premium {
-            font-size: 13px;
+
+        .card-kimp-value {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 16px 0;
+            transition: all 0.3s ease;
         }
-        
+
+        .card-kimp-value.positive {
+            color: var(--premium-positive);
+        }
+
+        .card-kimp-value.negative {
+            color: var(--premium-negative);
+        }
+
+        .card-kimp-value.neutral {
+            color: var(--text-light);
+        }
+
+        .card-kimp-value.updated {
+            animation: pulse 0.5s ease;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
         .kimp-info {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-top: 16px;
+            text-align: center;
+        }
+
+        .kimp-info strong {
+            color: var(--text-primary);
+        }
+
+        .card-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .card-value.updated {
+            animation: pulse 0.5s ease;
+        }
+
+        .card-sub {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .small-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 4px 6px var(--shadow);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .small-card-title {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .small-card-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+
+        .premium {
+            font-size: 14px;
+            margin-top: 4px;
+            font-weight: 600;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .premium.positive {
+            color: var(--premium-positive);
+        }
+
+        .premium.negative {
+            color: var(--premium-negative);
+        }
+
+        .chart-container {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px var(--shadow);
+            height: 300px;
+            position: relative;
+        }
+
+        .chart-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            padding: 20px;
+        }
+
+        .refresh-btn {
+            background: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #667eea;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 16px;
+            box-shadow: 0 4px 6px var(--shadow);
+            transition: transform 0.1s;
+        }
+
+        .dark-mode .refresh-btn {
+            background: var(--card-bg);
+            color: white;
+        }
+
+        .refresh-btn:active {
+            transform: scale(0.98);
+        }
+
+        .refresh-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .dark-mode .info-card {
+            background: var(--card-bg);
+            color: var(--text-secondary);
+        }
+
+        .info-card strong {
+            color: #333;
+        }
+
+        .dark-mode .info-card strong {
+            color: var(--text-primary);
+        }
+
+        .source-tag {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-top: 4px;
+        }
+
+        .error-message {
+            background: rgba(231, 76, 60, 0.9);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .notification-badge {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #2ecc71;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .card-value {
+                font-size: 24px;
+            }
+
+            .card-kimp-value {
+                font-size: 32px;
+            }
+            
+            .small-card-value {
+                font-size: 18px;
+            }
+            
+            .card-title {
+                font-size: 13px;
+            }
+            
+            .premium {
+                font-size: 13px;
+            }
+            
+            .kimp-info {
+                font-size: 13px;
+            }
+
+            .chart-container {
+                height: 250px;
+            }
+        }
+
+        .stats-summary {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 16px;
+            text-align: center;
+            color: white;
             font-size: 13px;
         }
-    }
-</style>
 
-
+        .stats-summary strong {
+            font-size: 16px;
+            display: block;
+            margin-top: 4px;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>💱 실시간 환율 & 김프</h1>
-            <div style="font-size: 13px; opacity: 0.85; margin-bottom: 8px;">자동 업데이트: 30초마다</div>
+            <div class="header-controls">
+                <button class="control-btn" id="darkModeToggle">🌙 다크모드</button>
+                <button class="control-btn" id="notificationToggle">🔔 알림 설정</button>
+                <button class="control-btn" id="chartToggle">📊 차트 보기</button>
+            </div>
+            <div style="font-size: 13px; opacity: 0.85; margin: 8px 0;">자동 업데이트: 30초마다</div>
             <div class="update-time" id="updateTime">로딩 중...</div>
         </div>
 
+        <div id="statsContainer"></div>
+        <div id="chartSection" style="display: none;"></div>
+        <div id="content" class="loading">데이터를 불러오는 중...</div>
+    </div>
 
-    <div id="content" class="loading">데이터를 불러오는 중...</div>
-</div>
+    <script>
+        // ============ 설정 및 상태 관리 ============
+        const CONFIG = {
+            CACHE_TTL: 30000,
+            MAX_RETRIES: 3,
+            FETCH_TIMEOUT: 10000,
+            MIN_VALID_EXCHANGE_RATE: 100,
+            UPDATE_INTERVAL: 30000,
+            NOTIFICATION_THRESHOLD: 3.0,
+            MAX_HISTORY_LENGTH: 50
+        };
 
-<script>
-    var cache = { data: null, timestamp: 0, TTL: 30000 };
-    var isLoading = false;
-    var retryCount = 0;
-    var MAX_RETRIES = 3;
-    
-    function sleep(ms) { 
-        return new Promise(function(resolve) {
-            setTimeout(resolve, ms);
-        });
-    }
-    
-    function fetchWithTimeout(url, timeout) {
-        timeout = timeout || 10000;
-        
-        return new Promise(function(resolve, reject) {
-            var timeoutId = setTimeout(function() {
-                reject(new Error('요청 시간 초과'));
-            }, timeout);
+        const state = {
+            cache: JSON.parse(localStorage.getItem('kimpCache')) || { data: null, timestamp: 0 },
+            history: JSON.parse(localStorage.getItem('kimpHistory')) || [],
+            isLoading: false,
+            retryCount: 0,
+            settings: JSON.parse(localStorage.getItem('settings')) || {
+                darkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
+                notifications: false,
+                showChart: false
+            }
+        };
+
+        // ============ 유틸리티 함수 ============
+        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        const fetchWithTimeout = (url, timeout = CONFIG.FETCH_TIMEOUT) => {
+            return Promise.race([
+                fetch(url),
+                new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('요청 시간 초과')), timeout)
+                )
+            ]).then(response => {
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return response;
+            });
+        };
+
+        const saveToLocalStorage = (key, data) => {
+            try {
+                localStorage.setItem(key, JSON.stringify(data));
+            } catch (e) {
+                console.error('localStorage 저장 실패:', e);
+            }
+        };
+
+        const showNotification = (message, duration = 3000) => {
+            const notification = document.createElement('div');
+            notification.className = 'notification-badge';
+            notification.textContent = message;
+            document.body.appendChild(notification);
             
-            fetch(url)
-                .then(function(response) {
-                    clearTimeout(timeoutId);
-                    if (!response.ok) {
-                        throw new Error('HTTP error! status: ' + response.status);
-                    }
-                    resolve(response);
-                })
-                .catch(function(error) {
-                    clearTimeout(timeoutId);
-                    reject(error);
-                });
-        });
-    }
-    
-    function getExchangeRate() {
-        return fetchWithTimeout('https://open.er-api.com/v6/latest/USD', 10000)
-            .then(function(response) {
-                return response.json();
-            })
-            .then(function(data) {
-                if (data && data.rates && data.rates.KRW) {
-                    return data.rates.KRW;
-                }
-                throw new Error('환율 데이터 형식 오류');
-            })
-            .catch(function(error) {
-                console.error('환율 API 오류:', error);
-                throw error;
+            setTimeout(() => {
+                notification.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => notification.remove(), 300);
+            }, duration);
+        };
+
+        const requestNotificationPermission = async () => {
+            if ('Notification' in window && Notification.permission === 'default') {
+                const permission = await Notification.requestPermission();
+                return permission === 'granted';
+            }
+            return Notification.permission === 'granted';
+        };
+
+        const sendBrowserNotification = (title, body) => {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(title, { body, icon: '💱' });
+            }
+        };
+
+        // ============ API 호출 함수 ============
+        const getExchangeRate = async () => {
+            const response = await fetchWithTimeout('https://open.er-api.com/v6/latest/USD');
+            const data = await response.json();
+            if (!data?.rates?.KRW) throw new Error('환율 데이터 형식 오류');
+            return data.rates.KRW;
+        };
+
+        const getUpbitPrices = async () => {
+            const response = await fetchWithTimeout('https://api.upbit.com/v1/ticker?markets=KRW-USDT,KRW-USDC,KRW-BTC,KRW-ETH,USDT-BTC,USDT-ETH');
+            const data = await response.json();
+            
+            const result = { usdt: 0, usdc: 0, btc: 0, eth: 0, btcUsdt: 0, ethUsdt: 0 };
+            data.forEach(item => {
+                if (item.market === 'KRW-USDT') result.usdt = item.trade_price;
+                if (item.market === 'KRW-USDC') result.usdc = item.trade_price;
+                if (item.market === 'KRW-BTC') result.btc = item.trade_price;
+                if (item.market === 'KRW-ETH') result.eth = item.trade_price;
+                if (item.market === 'USDT-BTC') result.btcUsdt = item.trade_price;
+                if (item.market === 'USDT-ETH') result.ethUsdt = item.trade_price;
             });
-    }
-    
-    function getUpbitPrices() {
-        return fetchWithTimeout('https://api.upbit.com/v1/ticker?markets=KRW-USDT,KRW-USDC,KRW-BTC,KRW-ETH,USDT-BTC,USDT-ETH', 10000)
-            .then(function(response) {
-                return response.json();
-            })
-            .then(function(data) {
-                var result = {
-                    usdt: 0,
-                    usdc: 0,
-                    btc: 0,
-                    eth: 0,
-                    btcUsdt: 0,
-                    ethUsdt: 0
+            
+            return result;
+        };
+
+        const getBinanceCoinPrices = async () => {
+            const [btcRes, ethRes] = await Promise.all([
+                fetchWithTimeout('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT'),
+                fetchWithTimeout('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT')
+            ]);
+            
+            const [btcData, ethData] = await Promise.all([btcRes.json(), ethRes.json()]);
+            
+            return {
+                btc: parseFloat(btcData.price) || 0,
+                eth: parseFloat(ethData.price) || 0
+            };
+        };
+
+        const getBinanceStablePrice = async () => {
+            try {
+                const [usdtRes, usdcRes] = await Promise.all([
+                    fetchWithTimeout('https://api.binance.com/api/v3/ticker/price?symbol=USDTUSD'),
+                    fetchWithTimeout('https://api.binance.com/api/v3/ticker/price?symbol=USDCUSD')
+                ]);
+                
+                const [usdtData, usdcData] = await Promise.all([usdtRes.json(), usdcRes.json()]);
+                
+                return {
+                    usdt: parseFloat(usdtData.price) || 1,
+                    usdc: parseFloat(usdcData.price) || 1
                 };
-                
-                for (var i = 0; i < data.length; i++) {
-                    var item = data[i];
-                    if (item.market === 'KRW-USDT') result.usdt = item.trade_price;
-                    if (item.market === 'KRW-USDC') result.usdc = item.trade_price;
-                    if (item.market === 'KRW-BTC') result.btc = item.trade_price;
-                    if (item.market === 'KRW-ETH') result.eth = item.trade_price;
-                    if (item.market === 'USDT-BTC') result.btcUsdt = item.trade_price;
-                    if (item.market === 'USDT-ETH') result.ethUsdt = item.trade_price;
-                }
-                
-                return result;
-            })
-            .catch(function(error) {
-                console.error('업비트 API 오류:', error);
-                throw error;
-            });
-    }
-    
-    function getBinanceCoinPrices() {
-        return Promise.all([
-            fetchWithTimeout('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT', 10000),
-            fetchWithTimeout('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT', 10000)
-        ])
-        .then(function(responses) {
-            return Promise.all([responses[0].json(), responses[1].json()]);
-        })
-        .then(function(dataArray) {
-            return {
-                btc: parseFloat(dataArray[0].price) || 0,
-                eth: parseFloat(dataArray[1].price) || 0
-            };
-        })
-        .catch(function(error) {
-            console.error('바이낸스 코인 API 오류:', error);
-            throw error;
-        });
-    }
-    
-    function getBinanceStablePrice() {
-        return Promise.all([
-            fetchWithTimeout('https://api.binance.com/api/v3/ticker/price?symbol=USDTUSD', 10000),
-            fetchWithTimeout('https://api.binance.com/api/v3/ticker/price?symbol=USDCUSD', 10000)
-        ])
-        .then(function(responses) {
-            return Promise.all([responses[0].json(), responses[1].json()]);
-        })
-        .then(function(dataArray) {
-            return {
-                usdt: parseFloat(dataArray[0].price) || 1,
-                usdc: parseFloat(dataArray[1].price) || 1
-            };
-        })
-        .catch(function(error) {
-            console.error('바이낸스 스테이블 API 오류 (기본값 사용):', error);
-            return { usdt: 1.0000, usdc: 1.0000 };
-        });
-    }
-    
-    function fetchData() {
-        if (isLoading) { 
-            return; 
-        }
-        
-        var now = Date.now();
-        if (cache.data && (now - cache.timestamp) < cache.TTL) {
-            displayData(cache.data, true);
-            return;
-        }
+            } catch (error) {
+                console.error('바이낸스 스테이블 API 오류 (기본값 사용):', error);
+                return { usdt: 1.0000, usdc: 1.0000 };
+            }
+        };
 
-        isLoading = true;
+        // ============ 데이터 가져오기 ============
+        const fetchData = async () => {
+            if (state.isLoading) return;
+            
+            const now = Date.now();
+            if (state.cache.data && (now - state.cache.timestamp) < CONFIG.CACHE_TTL) {
+                displayData(state.cache.data, true);
+                return;
+            }
 
-        isLoading = true;
-        var startTime = Date.now();
-        var refreshBtn = document.querySelector('.refresh-btn');
-        if (refreshBtn) {
-            refreshBtn.disabled = true;
-            refreshBtn.textContent = '🔄 로딩 중...';
-        }
-        
-        var usdKrw, upbitData, binanceCoinData, binanceStable;
-        
-        getExchangeRate()
-            .then(function(rate) {
-                usdKrw = rate;
-                return getUpbitPrices();
-            })
-            .then(function(upbit) {
-                upbitData = upbit;
-                return getBinanceCoinPrices();
-            })
-            .then(function(binanceCoin) {
-                binanceCoinData = binanceCoin;
-                return getBinanceStablePrice();
-            })
-            .then(function(binanceStab) {
-                binanceStable = binanceStab;
-                
-                if (usdKrw < 100) { 
-                    throw new Error('환율 데이터를 가져올 수 없습니다'); 
+            state.isLoading = true;
+            const startTime = Date.now();
+            const refreshBtn = document.querySelector('.refresh-btn');
+            if (refreshBtn) {
+                refreshBtn.disabled = true;
+                refreshBtn.textContent = '🔄 로딩 중...';
+            }
+
+            try {
+                const [usdKrw, upbitData, binanceCoinData, binanceStable] = await Promise.all([
+                    getExchangeRate(),
+                    getUpbitPrices(),
+                    getBinanceCoinPrices(),
+                    getBinanceStablePrice()
+                ]);
+
+                if (usdKrw < CONFIG.MIN_VALID_EXCHANGE_RATE) {
+                    throw new Error('환율 데이터를 가져올 수 없습니다');
                 }
 
-                var usdtPremium = upbitData.usdt ? ((upbitData.usdt / usdKrw - 1) * 100).toFixed(2) : 'N/A';
-                var usdcPremium = upbitData.usdc ? ((upbitData.usdc / usdKrw - 1) * 100).toFixed(2) : 'N/A';
-                var binanceUsdtDiff = ((binanceStable.usdt - 1) * 100).toFixed(4);
-                var binanceUsdcDiff = ((binanceStable.usdc - 1) * 100).toFixed(4);
+                const usdtPremium = upbitData.usdt ? ((upbitData.usdt / usdKrw - 1) * 100).toFixed(2) : 'N/A';
+                const usdcPremium = upbitData.usdc ? ((upbitData.usdc / usdKrw - 1) * 100).toFixed(2) : 'N/A';
+                const binanceUsdtDiff = ((binanceStable.usdt - 1) * 100).toFixed(4);
+                const binanceUsdcDiff = ((binanceStable.usdc - 1) * 100).toFixed(4);
                 
-                // 업비트 USDT 마켓 vs 바이낸스 USDT 가격으로 김프 계산
-                var btcKimp = (upbitData.btcUsdt && binanceCoinData.btc) ? 
+                const btcKimp = (upbitData.btcUsdt && binanceCoinData.btc) ? 
                     ((upbitData.btcUsdt / binanceCoinData.btc - 1) * 100).toFixed(2) : 'N/A';
-                var ethKimp = (upbitData.ethUsdt && binanceCoinData.eth) ? 
+                const ethKimp = (upbitData.ethUsdt && binanceCoinData.eth) ? 
                     ((upbitData.ethUsdt / binanceCoinData.eth - 1) * 100).toFixed(2) : 'N/A';
                 
-                var loadTime = ((Date.now() - startTime) / 1000).toFixed(2);
+                const loadTime = ((Date.now() - startTime) / 1000).toFixed(2);
 
-                var resultData = {
-                    usdKrw: usdKrw.toFixed(2), 
-                    upbitUsdt: upbitData.usdt.toLocaleString('ko-KR'), 
+                const resultData = {
+                    timestamp: Date.now(),
+                    usdKrw: usdKrw.toFixed(2),
+                    upbitUsdt: upbitData.usdt.toLocaleString('ko-KR'),
                     upbitUsdc: upbitData.usdc.toLocaleString('ko-KR'),
-                    usdtPremium: usdtPremium, 
-                    usdcPremium: usdcPremium, 
-                    binanceUsdt: binanceStable.usdt.toFixed(4), 
+                    usdtPremium: usdtPremium,
+                    usdcPremium: usdcPremium,
+                    binanceUsdt: binanceStable.usdt.toFixed(4),
                     binanceUsdc: binanceStable.usdc.toFixed(4),
-                    binanceUsdtDiff: binanceUsdtDiff, 
+                    binanceUsdtDiff: binanceUsdtDiff,
                     binanceUsdcDiff: binanceUsdcDiff,
                     upbitBtcUsdt: upbitData.btcUsdt ? upbitData.btcUsdt.toLocaleString('en-US', { maximumFractionDigits: 2 }) : 'N/A',
                     upbitEthUsdt: upbitData.ethUsdt ? upbitData.ethUsdt.toLocaleString('en-US', { maximumFractionDigits: 2 }) : 'N/A',
-                    binanceBtc: binanceCoinData.btc.toLocaleString('en-US', { maximumFractionDigits: 2 }), 
+                    binanceBtc: binanceCoinData.btc.toLocaleString('en-US', { maximumFractionDigits: 2 }),
                     binanceEth: binanceCoinData.eth.toLocaleString('en-US', { maximumFractionDigits: 2 }),
-                    btcKimp: btcKimp, 
-                    ethKimp: ethKimp, 
+                    btcKimp: btcKimp,
+                    ethKimp: ethKimp,
                     loadTime: loadTime
                 };
+
+                // 히스토리 저장
+                state.history.push({
+                    timestamp: resultData.timestamp,
+                    btcKimp: parseFloat(btcKimp) || 0,
+                    ethKimp: parseFloat(ethKimp) || 0,
+                    usdtPremium: parseFloat(usdtPremium) || 0
+                });
+
+                if (state.history.length > CONFIG.MAX_HISTORY_LENGTH) {
+                    state.history = state.history.slice(-CONFIG.MAX_HISTORY_LENGTH);
+                }
+
+                saveToLocalStorage('kimpHistory', state.history);
+
+                // 알림 확인
+                if (state.settings.notifications) {
+                    const btcKimpNum = parseFloat(btcKimp);
+                    if (Math.abs(btcKimpNum) >= CONFIG.NOTIFICATION_THRESHOLD) {
+                        sendBrowserNotification(
+                            '김프 알림',
+                            `BTC 김프: ${btcKimp}% (임계값: ±${CONFIG.NOTIFICATION_THRESHOLD}%)`
+                        );
+                    }
+                }
+
+                state.cache = { data: resultData, timestamp: Date.now() };
+                saveToLocalStorage('kimpCache', state.cache);
+                saveToLocalStorage('lastValidData', resultData);
                 
-                cache.data = resultData; 
-                cache.timestamp = Date.now(); 
-                retryCount = 0; 
+                state.retryCount = 0;
                 displayData(resultData);
-            })
-            .catch(function(error) {
+
+            } catch (error) {
                 console.error('데이터 가져오기 오류:', error);
                 
-                if (retryCount < MAX_RETRIES) {
-                    retryCount++;
+                if (state.retryCount < CONFIG.MAX_RETRIES) {
+                    state.retryCount++;
                     document.getElementById('content').innerHTML = 
-                        '<div class="error-message">' +
-                            '⚠️ 데이터를 가져오는 중 오류가 발생했습니다. ' +
-                            '재시도 중... (' + retryCount + '/' + MAX_RETRIES + ')' +
-                        '</div>';
+                        `<div class="error-message">
+                            ⚠️ 데이터를 가져오는 중 오류가 발생했습니다. 
+                            재시도 중... (${state.retryCount}/${CONFIG.MAX_RETRIES})
+                        </div>`;
                     
-                    sleep(2000).then(function() {
-                        isLoading = false;
-                        if (refreshBtn) refreshBtn.disabled = false;
-                        fetchData();
-                    });
+                    await sleep(2000);
+                    state.isLoading = false;
+                    if (refreshBtn) refreshBtn.disabled = false;
+                    fetchData();
                 } else {
-                    document.getElementById('content').innerHTML = 
-                        '<div class="error-message">' +
-                            '❌ 데이터를 불러올 수 없습니다.<br>' +
-                            error.message + '<br>' +
-                            '잠시 후 다시 시도해주세요.' +
-                        '</div>' +
-                        '<button class="refresh-btn" onclick="location.reload()">🔄 페이지 새로고침</button>';
+                    // Fallback: 마지막 유효 데이터 표시
+                    const lastValidData = JSON.parse(localStorage.getItem('lastValidData'));
+                    if (lastValidData) {
+                        displayData(lastValidData, true);
+                        document.getElementById('content').insertAdjacentHTML('afterbegin',
+                            `<div class="error-message">
+                                ⚠️ 실시간 데이터를 불러올 수 없어 마지막 저장된 데이터를 표시합니다.
+                            </div>`
+                        );
+                    } else {
+                        document.getElementById('content').innerHTML = 
+                            `<div class="error-message">
+                                ❌ 데이터를 불러올 수 없습니다.<br>
+                                ${error.message}<br>
+                                잠시 후 다시 시도해주세요.
+                            </div>
+                            <button class="refresh-btn" onclick="location.reload()">🔄 페이지 새로고침</button>`;
+                    }
                 }
-            })
-            .finally(function() {
-                isLoading = false;
+            } finally {
+                state.isLoading = false;
                 if (refreshBtn) {
                     refreshBtn.disabled = false;
                     refreshBtn.textContent = '🔄 새로고침';
                 }
+            }
+        };
+
+        // ============ UI 렌더링 함수 ============
+        const renderPremium = (premium, showSign = true) => {
+            if (premium === 'N/A') {
+                return '<div class="premium" style="color:#999; font-weight: normal;">N/A</div>';
+            }
+            const premiumNum = parseFloat(premium);
+            const sign = premiumNum >= 0 ? '+' : '';
+            const className = premiumNum >= 0 ? 'positive' : 'negative';
+            const sizeStyle = String(premium).length > 5 ? 'font-size: 12px;' : '';
+            return `<div class="premium ${className}" style="${sizeStyle}">${showSign ? sign : ''}${premium}%</div>`;
+        };
+
+        const renderKimpCard = (coin, upbitPrice, binancePrice, kimp) => {
+            const kimpNum = parseFloat(kimp);
+            const kimpClass = isNaN(kimpNum) ? 'neutral' : (kimpNum >= 0 ? 'positive' : 'negative');
+            const kimpSign = isNaN(kimpNum) ? '' : (kimpNum >= 0 ? '+' : '');
+            
+            return `<div class="card">
+                <div class="card-title">${coin}</div>
+                <div class="card-kimp-value ${kimpClass}">
+                    ${kimp === 'N/A' ? 'N/A' : `${kimpSign}${kimp}%`}
+                </div>
+                <div class="kimp-info">
+                    <strong>업비트 (USDT)</strong><br>
+                    <span style="font-size: 18px; color: var(--text-primary); font-weight: bold;">${upbitPrice}</span>
+                </div>
+                <div class="kimp-info" style="margin-top: 8px;">
+                    <strong>바이낸스 (USDT)</strong><br>
+                    <span style="font-size: 18px; color: var(--text-primary); font-weight: bold;">${binancePrice}</span>
+                </div>
+                <div style="margin-top: 12px;">
+                    <span class="source-tag">업비트 USDT 마켓 / 바이낸스</span>
+                </div>
+            </div>`;
+        };
+
+        const renderStableKimpCard = (coin, upbitPrice, usdKrw, kimp) => {
+            const fxKrw = parseFloat(usdKrw).toLocaleString('ko-KR', { maximumFractionDigits: 2 });
+            const kimpNum = parseFloat(kimp);
+            const kimpClass = isNaN(kimpNum) ? 'neutral' : (kimpNum >= 0 ? 'positive' : 'negative');
+            const kimpSign = isNaN(kimpNum) ? '' : (kimpNum >= 0 ? '+' : '');
+            
+            return `<div class="card">
+                <div class="card-title">${coin}</div>
+                <div class="card-kimp-value ${kimpClass}">
+                    ${kimp === 'N/A' ? 'N/A' : `${kimpSign}${kimp}%`}
+                </div>
+                <div class="kimp-info">
+                    <strong>업비트 (KRW)</strong><br>
+                    <span style="font-size: 18px; color: var(--text-primary); font-weight: bold;">₩${upbitPrice}</span>
+                </div>
+                <div class="kimp-info" style="margin-top: 8px;">
+                    <strong>환율 기준 (1 USD)</strong><br>
+                    <span style="font-size: 18px; color: var(--text-primary); font-weight: bold;">₩${fxKrw}</span>
+                </div>
+                <div style="margin-top: 12px;">
+                    <span class="source-tag">업비트 / ExchangeRate-API</span>
+                </div>
+            </div>`;
+        };
+
+        const renderChart = () => {
+            if (!state.settings.showChart || state.history.length < 2) return '';
+
+            const maxDataPoints = 20;
+            const recentHistory = state.history.slice(-maxDataPoints);
+            
+            const timestamps = recentHistory.map(h => {
+                const date = new Date(h.timestamp);
+                return `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
             });
-    }
-    
-    function manualRefresh() { 
-        cache.timestamp = 0; 
-        fetchData(); 
-    }
-    
-    function renderPremium(premium, showSign) {
-        if (premium === 'N/A') { 
-            return '<div class="premium" style="color:#999; font-weight: normal;">N/A</div>'; 
+            
+            const btcData = recentHistory.map(h => h.btcKimp);
+            const ethData = recentHistory.map(h => h.ethKimp);
+            const usdtData = recentHistory.map(h => h.usdtPremium);
+
+            const maxValue = Math.max(...btcData, ...ethData, ...usdtData, 5);
+            const minValue = Math.min(...btcData, ...ethData, ...usdtData, -5);
+            const range = maxValue - minValue;
+            const padding = 40;
+
+            const chartWidth = 560;
+            const chartHeight = 260;
+            const pointDistance = chartWidth / (timestamps.length - 1 || 1);
+
+            const getY = (value) => {
+                return chartHeight - padding - ((value - minValue) / range) * (chartHeight - 2 * padding);
+            };
+
+            const createPath = (data, color) => {
+                const points = data.map((value, index) => {
+                    const x = index * pointDistance;
+                    const y = getY(value);
+                    return `${x},${y}`;
+                }).join(' ');
+                
+                return `<polyline points="${points}" fill="none" stroke="${color}" stroke-width="2.5" />`;
+            };
+
+            const zeroY = getY(0);
+
+            return `
+                <div class="section-title">📈 김프 변화 추이 (최근 ${recentHistory.length}개 데이터)</div>
+                <div class="chart-container">
+                    <svg viewBox="0 0 ${chartWidth} ${chartHeight}" class="chart-canvas">
+                        <!-- 배경 그리드 -->
+                        <line x1="0" y1="${zeroY}" x2="${chartWidth}" y2="${zeroY}" stroke="var(--text-light)" stroke-width="1" stroke-dasharray="5,5" opacity="0.5"/>
+                        
+                        <!-- 데이터 라인 -->
+                        ${createPath(btcData, '#f39c12')}
+                        ${createPath(ethData, '#3498db')}
+                        ${createPath(usdtData, '#9b59b6')}
+                        
+                        <!-- X축 레이블 -->
+                        ${timestamps.map((time, i) => {
+                            if (i % Math.ceil(timestamps.length / 5) === 0 || i === timestamps.length - 1) {
+                                return `<text x="${i * pointDistance}" y="${chartHeight - 10}" fill="var(--text-secondary)" font-size="11" text-anchor="middle">${time}</text>`;
+                            }
+                            return '';
+                        }).join('')}
+                        
+                        <!-- Y축 레이블 -->
+                        <text x="5" y="20" fill="var(--text-secondary)" font-size="11">${maxValue.toFixed(1)}%</text>
+                        <text x="5" y="${chartHeight - padding + 15}" fill="var(--text-secondary)" font-size="11">${minValue.toFixed(1)}%</text>
+                        
+                        <!-- 범례 -->
+                        <g transform="translate(${chartWidth - 160}, 20)">
+                            <circle cx="0" cy="0" r="4" fill="#f39c12"/>
+                            <text x="10" y="4" fill="var(--text-secondary)" font-size="12">BTC</text>
+                            
+                            <circle cx="0" cy="20" r="4" fill="#3498db"/>
+                            <text x="10" y="24" fill="var(--text-secondary)" font-size="12">ETH</text>
+                            
+                            <circle cx="0" cy="40" r="4" fill="#9b59b6"/>
+                            <text x="10" y="44" fill="var(--text-secondary)" font-size="12">USDT</text>
+                        </g>
+                    </svg>
+                </div>
+            `;
+        };
+
+        const renderStats = (data) => {
+            const btcKimp = parseFloat(data.btcKimp) || 0;
+            const avgKimp = state.history.length > 0 
+                ? (state.history.reduce((sum, h) => sum + h.btcKimp, 0) / state.history.length).toFixed(2)
+                : '0.00';
+
+            return `
+                <div class="stats-summary">
+                    <div>📊 BTC 현재 김프: <strong style="color: ${btcKimp >= 0 ? '#e74c3c' : '#3498db'}">${data.btcKimp}%</strong></div>
+                    <div style="margin-top: 4px; font-size: 12px;">평균 김프 (최근 ${state.history.length}회): ${avgKimp}%</div>
+                </div>
+            `;
+        };
+
+        const displayData = (data, isFromCache = false) => {
+            const now = new Date();
+            const timeString = now.toLocaleString('ko-KR', {
+                month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'
+            });
+
+            const cacheWarning = isFromCache ? ' <span style="color: #f39c12;">(캐시)</span>' : '';
+            document.getElementById('updateTime').innerHTML = 
+                `마지막 업데이트: ${timeString} (${data.loadTime}초)${cacheWarning}`;
+
+            // 통계 표시
+            document.getElementById('statsContainer').innerHTML = renderStats(data);
+
+            // 차트 표시
+            if (state.settings.showChart) {
+                document.getElementById('chartSection').style.display = 'block';
+                document.getElementById('chartSection').innerHTML = renderChart();
+            } else {
+                document.getElementById('chartSection').style.display = 'none';
+            }
+
+            const content = `
+                <div class="card">
+                    <div class="card-title">USD/KRW 환율</div>
+                    <div class="card-value">₩${data.usdKrw}</div>
+                    <div class="card-sub">1달러당</div>
+                    <div class="source-tag">ExchangeRate-API</div>
+                </div>
+                
+                <div class="section-title">💲 스테이블코인 김프</div>
+                ${renderStableKimpCard('USDT (테더)', data.upbitUsdt, data.usdKrw, data.usdtPremium)}
+                ${renderStableKimpCard('USDC', data.upbitUsdc, data.usdKrw, data.usdcPremium)}
+
+                <div class="section-title" style="margin-top: 40px;">⚓ 해외 페그 현황</div>
+                <div class="grid">
+                    <div class="small-card">
+                        <div class="small-card-title">바이낸스 USDT</div>
+                        <div class="small-card-value">${data.binanceUsdt}</div>
+                        ${renderPremium(data.binanceUsdtDiff, true)}
+                        <div class="source-tag">바이낸스</div>
+                    </div>
+                    <div class="small-card">
+                        <div class="small-card-title">바이낸스 USDC</div>
+                        <div class="small-card-value">${data.binanceUsdc}</div>
+                        ${renderPremium(data.binanceUsdcDiff, true)}
+                        <div class="source-tag">바이낸스</div>
+                    </div>
+                </div>
+                
+                <div class="section-title">📈 주요 코인 김프</div>
+                ${renderKimpCard('비트코인 (BTC)', data.upbitBtcUsdt, data.binanceBtc, data.btcKimp)}
+                ${renderKimpCard('이더리움 (ETH)', data.upbitEthUsdt, data.binanceEth, data.ethKimp)}
+
+                <div class="info-card">
+                    <strong>💡 페깅(Pegging)이 중요한 이유</strong><br>
+                    스테이블코인(USDT/USDC)은 <b>1달러 가치 유지</b>가 핵심입니다.<br>
+                    이 페깅 상태는 김프 계산의 <b>'해외 기준값'</b>이 믿을만한지 확인하는 잣대가 됩니다.<br>
+                    만약 페그가 깨지면(예: $0.98), 김프가 높아 보여도 실제로는 <b>해외 기준 통화에 문제</b>가 생긴 것일 수 있습니다.<br><br>
+                    
+                    <strong>📊 김프 계산 방식</strong><br>
+                    <strong>1. 스테이블코인 (USDT/USDC - 업비트):</strong><br>
+                    &nbsp;&nbsp;&nbsp;김프(%) = (업비트 가격 / 환율 - 1) × 100<br>
+                    <strong>2. 코인 (BTC/ETH - 업비트 USDT 마켓 vs 바이낸스):</strong><br>
+                    &nbsp;&nbsp;&nbsp;김프(%) = (업비트 USDT 가격 / 바이낸스 USDT 가격 - 1) × 100<br>
+                    <strong>3. 페그(Peg) 현황 (USDT/USDC - 바이낸스):</strong><br>
+                    &nbsp;&nbsp;&nbsp;차이(%) = (바이낸스 가격 / 1 - 1) × 100<br><br>
+                    
+                    <strong style="color: #e74c3c;">플러스(+)</strong>: 한국이 더 비쌈 (김치 프리미엄) 또는 1달러보다 비쌈<br>
+                    <strong style="color: #3498db;">마이너스(-)</strong>: 한국이 더 쌈 (역프/디스카운트) 또는 1달러보다 쌈<br><br>
+
+                    <div style="border-top: 1px solid #eee; margin-top: 12px; padding-top: 12px; font-size: 12px;">
+                        ⚠️ <strong>안내사항</strong><br>
+                        • 현재 페이지에서는 <b>주요 코인(BTC/ETH)</b>에 대한 <b>원래 의미의 김프</b> 정보를 제공하고 있습니다.<br>
+                        • 전문적인 김프 정보를 확인하시려면 
+                        <a href="https://kimpga.com/" target="_blank" style="color: #667eea; font-weight: bold; text-decoration: none;">https://kimpga.com/</a>
+                        을 참조해 주세요.<br>
+                        • 새로고침 버튼을 연속으로 누르지 마세요<br>
+                        • 차트 기능은 데이터가 쌓일수록 유용합니다 (최대 ${CONFIG.MAX_HISTORY_LENGTH}개 저장)<br>
+                        <strong style="color: #e67e22;">📌 정확한 데이터는 직접 확인하시는 것을 추천드립니다.</strong><br>
+                    </div>
+                </div>
+
+                <button class="refresh-btn" onclick="manualRefresh()">🔄 새로고침</button>
+            `;
+
+            document.getElementById('content').innerHTML = content;
+        };
+
+        // ============ 설정 관련 함수 ============
+        const toggleDarkMode = () => {
+            state.settings.darkMode = !state.settings.darkMode;
+            document.body.classList.toggle('dark-mode', state.settings.darkMode);
+            document.getElementById('darkModeToggle').classList.toggle('active', state.settings.darkMode);
+            saveToLocalStorage('settings', state.settings);
+            showNotification(state.settings.darkMode ? '🌙 다크모드 활성화' : '☀️ 라이트모드 활성화');
+        };
+
+        const toggleNotifications = async () => {
+            if (!state.settings.notifications) {
+                const granted = await requestNotificationPermission();
+                if (!granted) {
+                    showNotification('❌ 알림 권한이 거부되었습니다');
+                    return;
+                }
+                state.settings.notifications = true;
+                showNotification('🔔 알림이 활성화되었습니다');
+            } else {
+                state.settings.notifications = false;
+                showNotification('🔕 알림이 비활성화되었습니다');
+            }
+            
+            document.getElementById('notificationToggle').classList.toggle('active', state.settings.notifications);
+            saveToLocalStorage('settings', state.settings);
+        };
+
+        const toggleChart = () => {
+            state.settings.showChart = !state.settings.showChart;
+            document.getElementById('chartToggle').classList.toggle('active', state.settings.showChart);
+            saveToLocalStorage('settings', state.settings);
+            
+            if (state.cache.data) {
+                displayData(state.cache.data, true);
+            }
+            
+            showNotification(state.settings.showChart ? '📊 차트 표시' : '📊 차트 숨김');
+        };
+
+        const manualRefresh = () => {
+            state.cache.timestamp = 0;
+            fetchData();
+        };
+
+        // ============ 초기화 ============
+        const init = () => {
+            // 다크모드 적용
+            if (state.settings.darkMode) {
+                document.body.classList.add('dark-mode');
+                document.getElementById('darkModeToggle').classList.add('active');
+            }
+
+            // 알림 설정 반영
+            if (state.settings.notifications) {
+                document.getElementById('notificationToggle').classList.add('active');
+            }
+
+            // 차트 설정 반영
+            if (state.settings.showChart) {
+                document.getElementById('chartToggle').classList.add('active');
+            }
+
+            // 이벤트 리스너
+            document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+            document.getElementById('notificationToggle').addEventListener('click', toggleNotifications);
+            document.getElementById('chartToggle').addEventListener('click', toggleChart);
+
+            // 초기 데이터 로드
+            fetchData();
+
+            // 자동 업데이트
+            setInterval(fetchData, CONFIG.UPDATE_INTERVAL);
+
+            // PWA 설치 프롬프트
+            let deferredPrompt;
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                showNotification('💾 홈 화면에 추가할 수 있습니다!');
+            });
+
+            // 온라인/오프라인 감지
+            window.addEventListener('online', () => {
+                showNotification('🌐 인터넷 연결됨');
+                fetchData();
+            });
+
+            window.addEventListener('offline', () => {
+                showNotification('📡 오프라인 모드');
+            });
+
+            // 서비스 워커 등록 (PWA)
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('data:text/javascript;base64,Y29uc3QgQ0FDSEVfTkFNRSA9ICdraW1wLWRhc2hib2FyZC12MSc7CmNvbnN0IHVybHNUb0NhY2hlID0gWycvJ107CgpzZWxmLmFkZEV2ZW50TGlzdGVuZXIoJ2luc3RhbGwnLCAoZXZlbnQpID0+IHsKICBldmVudC53YWl0VW50aWwoY2FjaGVzLm9wZW4oQ0FDSEVfTkFNRSkudGhlbigoY2FjaGUpID0+IGNhY2hlLmFkZEFsbCh1cmxzVG9DYWNoZSkpKTsKfSk7CgpzZWxmLmFkZEV2ZW50TGlzdGVuZXIoJ2ZldGNoJywgKGV2ZW50KSA9PiB7CiAgZXZlbnQucmVzcG9uZFdpdGgoY2FjaGVzLm1hdGNoKGV2ZW50LnJlcXVlc3QpLnRoZW4oKHJlc3BvbnNlKSA9PiByZXNwb25zZSB8fCBmZXRjaChldmVudC5yZXF1ZXN0KSkpOwp9KTs=')
+                    .then(() => console.log('Service Worker 등록 성공'))
+                    .catch((error) => console.log('Service Worker 등록 실패:', error));
+            }
+        };
+
+        // 페이지 로드 시 초기화
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
         }
-        var sign = premium >= 0 ? '+' : ''; 
-        var className = premium >= 0 ? 'positive' : 'negative';
-        var sizeStyle = (String(premium).indexOf('.') > -1) && String(premium).length > 5 ? 'font-size: 12px;' : ''; 
-        return '<div class="premium ' + className + '" style="' + sizeStyle + '">' + (showSign ? sign : '') + premium + '%</div>';
-    }
-    
-    function renderKimpCard(coin, upbitPrice, binancePrice, kimp) {
-        return '<div class="card" style="margin-bottom: 16px;">' +
-            '<div class="card-flex">' +
-                '<div class="card-title">' + coin + ' 시세 및 김프</div>' +
-                renderPremium(kimp, true) +
-            '</div>' +
-            '<div class="kimp-info">' +
-                '<strong>업비트 (USDT):</strong> <span style="font-size: 16px; color: #333; font-weight: bold;">$' + upbitPrice + '</span><br>' +
-                '<strong>바이낸스 (USDT):</strong> <span style="font-size: 16px; color: #333; font-weight: bold;">$' + binancePrice + '</span>' +
-            '</div>' +
-            '<div style="margin-top: 8px;">' +
-                '<span class="source-tag">업비트 USDT 마켓 / 바이낸스</span>' +
-            '</div>' +
-        '</div>';
-    }
-    
-    function manualRefresh() { 
-        cache.timestamp = 0; 
-        fetchData(); 
-    }
-    
-    function renderStableKimpCard(coin, upbitPrice, usdKrw, kimp) {
-        var fxKrw = parseFloat(usdKrw).toLocaleString('ko-KR', { maximumFractionDigits: 2 });
-        return '<div class="card" style="margin-bottom: 16px;">' +
-            '<div class="card-flex">' +
-                '<div class="card-title">' + coin + ' (업비트) 시세 및 환율 대비 김프</div>' +
-                renderPremium(kimp, true) +
-            '</div>' +
-            '<div class="kimp-info">' +
-                '<strong>업비트 (KRW):</strong> <span style="font-size: 16px; color: #333; font-weight: bold;">₩' + upbitPrice + '</span><br>' +
-                '<strong>환율 기준 (1 USD):</strong> <span style="font-size: 16px; color: #333; font-weight: bold;">₩' + fxKrw + '</span>' +
-            '</div>' +
-            '<div style="margin-top: 8px;">' +
-                '<span class="source-tag">업비트 / ExchangeRate-API</span>' +
-            '</div>' +
-        '</div>';
-    }
-
-    function displayData(data, isFromCache) {
-        var now = new Date();
-        var timeString = now.toLocaleString('ko-KR', {
-            month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
-        });
-
-        var cacheWarning = isFromCache ? ' <span style="color: #f39c12;">(캐시)</span>' : '';
-        document.getElementById('updateTime').innerHTML = '마지막 업데이트: ' + timeString + ' (' + data.loadTime + '초)' + cacheWarning;
-
-        var content = '<div class="card">' +
-                '<div class="card-title">USD/KRW 환율</div>' +
-                '<div class="card-value">₩' + data.usdKrw + '</div>' +
-                '<div class="card-sub">1달러당</div>' +
-                '<div class="source-tag">ExchangeRate-API</div>' +
-            '</div>' +
-            
-            '<div class="section-title">💲 스테이블코인 김프 현황 (환율 대비)</div>' +
-            renderStableKimpCard('USDT (테더)', data.upbitUsdt, data.usdKrw, data.usdtPremium) +
-            renderStableKimpCard('USDC', data.upbitUsdc, data.usdKrw, data.usdcPremium) +
-
-            '<div class="section-title" style="margin-top: 40px;">⚓ 해외 스테이블코인 페그(Peg) 현황 (1 USD 대비)</div>' +
-            '<div class="grid">' +
-                '<div class="small-card">' +
-                    '<div class="small-card-title">바이낸스 USDT</div>' +
-                    '<div class="small-card-value">$' + data.binanceUsdt + '</div>' +
-                    renderPremium(data.binanceUsdtDiff, true) +
-                    '<div class="source-tag">바이낸스</div>' +
-                '</div>' +
-                '<div class="small-card">' +
-                    '<div class="small-card-title">바이낸스 USDC</div>' +
-                    '<div class="small-card-value">$' + data.binanceUsdc + '</div>' +
-                    renderPremium(data.binanceUsdcDiff, true) +
-                    '<div class="source-tag">바이낸스</div>' +
-                '</div>' +
-            '</div>' +
-            
-            '<div class="section-title">📈 주요 코인 김프 현황 (업비트 USDT 마켓 vs 바이낸스)</div>' +
-            renderKimpCard('비트코인 (BTC)', data.upbitBtcUsdt, data.binanceBtc, data.btcKimp) +
-            renderKimpCard('이더리움 (ETH)', data.upbitEthUsdt, data.binanceEth, data.ethKimp) +
-
-            '<div class="info-card">' +
-                '<strong>💡 페깅(Pegging)이 중요한 이유</strong><br>' +
-                '스테이블코인(USDT/USDC)은 <b>1달러 가치 유지</b>가 핵심입니다.<br>' +
-                '이 페깅 상태는 김프 계산의 <b>\'해외 기준값\'</b>이 믿을만한지 확인하는 잣대가 됩니다.<br>' +
-                '만약 페그가 깨지면(예: $0.98), 김프가 높아 보여도 실제로는 <b>해외 기준 통화에 문제</b>가 생긴 것일 수 있습니다.<br><br>' +
-                
-                '<strong>📊 김프 계산 방식</strong><br>' +
-                '<strong>1. 스테이블코인 (USDT/USDC - 업비트):</strong><br>' +
-                '&nbsp;&nbsp;&nbsp;김프(%) = (업비트 가격 / 환율 - 1) × 100<br>' +
-                '<strong>2. 코인 (BTC/ETH - 업비트 USDT 마켓 vs 바이낸스):</strong><br>' +
-                '&nbsp;&nbsp;&nbsp;김프(%) = (업비트 USDT 가격 / 바이낸스 USDT 가격 - 1) × 100<br>' +
-                '<strong>3. 페그(Peg) 현황 (USDT/USDC - 바이낸스):</strong><br>' +
-                '&nbsp;&nbsp;&nbsp;차이(%) = (바이낸스 가격 / 1 - 1) × 100<br><br>' +
-                
-                '<strong style="color: #e74c3c;">플러스(+)</strong>: 한국이 더 비쌈 (김치 프리미엄) 또는 1달러보다 비쌈<br>' +
-                '<strong style="color: #3498db;">마이너스(-)</strong>: 한국이 더 쌈 (역프/디스카운트) 또는 1달러보다 쌈<br><br>' +
-
-                '<div style="border-top: 1px solid #eee; margin-top: 12px; padding-top: 12px; font-size: 12px;">' +
-                    '⚠️ <strong>안내사항</strong><br>' +
-                    '• 현재 페이지에서는 <b>주요 코인(BTC/ETH)</b>에 대한 <b>원래 의미의 김프</b> 정보를 제공하고 있습니다.<br>' +
-                    '• 전문적인 김프 정보를 확인하시려면 ' +
-                    '<a href="https://kimpga.com/" target="_blank" style="color: #667eea; font-weight: bold; text-decoration: none;">https://kimpga.com/</a>' +
-                    '을 참조해 주세요.<br>' +
-                    '• 새로고침 버튼을 연속으로 누르지 마세요<br>' +
-                    '<strong style="color: #e67e22;">📌 정확한 데이터는 직접 확인하시는 것을 추천드립니다.</strong><br>' +
-                '</div>' +
-            '</div>' +
-
-            '<button class="refresh-btn" onclick="manualRefresh()">🔄 새로고침</button>';
-
-        document.getElementById('content').innerHTML = content;
-    }
-
-    // 초기 로드
-    fetchData();
-
-    // 30초마다 자동 업데이트 
-    setInterval(fetchData, 30000);
-</script>
-
-
+    </script>
 </body>
 </html>
