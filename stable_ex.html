@@ -1,333 +1,172 @@
 
 
-<!DOCTYPE html>
+// ============ 바이낸스 P2P 시장으로 실시간 환율 구하기 ============
 
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>개선된 환율 데이터</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        .card {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            margin: 16px 0;
-            color: #333;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        .rate-source {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            margin: 8px 0;
-            background: #f5f5f5;
-            border-radius: 8px;
-        }
-        .rate-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #667eea;
-        }
-        .status {
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .status.success { background: #d4edda; color: #155724; }
-        .status.error { background: #f8d7da; color: #721c24; }
-        .recommended {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 16px;
-            border-radius: 8px;
-            margin-top: 16px;
-            font-weight: bold;
-        }
-        button {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            margin: 8px 4px;
-        }
-        button:hover { background: #5568d3; }
-        .info {
-            background: rgba(255,255,255,0.1);
-            padding: 12px;
-            border-radius: 8px;
-            margin: 16px 0;
-            font-size: 14px;
-        }
-        .comparison {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 12px;
-            margin-top: 16px;
-        }
-        .comparison-item {
-            background: #f8f9fa;
-            padding: 12px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        .comparison-item strong {
-            display: block;
-            font-size: 18px;
-            color: #667eea;
-            margin-top: 4px;
-        }
-    </style>
-</head>
-<body>
-    <h1>💱 환율 데이터 비교 (주말 포함)</h1>
+// 원리: 바이낸스 P2P에서 한국인들이 USDT를 KRW로 거래하는 가격
+// = 실제 시장에서 형성되는 실시간 USD/KRW 환율!
+
+const getBinanceP2PRate = async () => {
+try {
+// 바이낸스 P2P API (공식 API, 키 불필요)
+const response = await fetch(‘https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search’, {
+method: ‘POST’,
+headers: {
+‘Content-Type’: ‘application/json’,
+},
+body: JSON.stringify({
+“asset”: “USDT”,
+“fiat”: “KRW”,
+“merchantCheck”: true,
+“page”: 1,
+“payTypes”: [],
+“publisherType”: null,
+“rows”: 10,
+“tradeType”: “BUY”
+})
+});
 
 
-<div class="info">
-    ⏰ <strong>주말에도 작동하는 방법들</strong><br>
-    • 정적 환율 API: 마지막 거래일 데이터 사용<br>
-    • 실시간 방법: 업비트-바이낸스 USDT 역산 (24/7 실시간!)
-</div>
-
-<button onclick="testAllSources()">🔄 모든 소스 테스트</button>
-<button onclick="testRealtime()">⚡ 실시간 방법 테스트</button>
-
-<div id="results"></div>
-<div id="comparison"></div>
-
-<script>
-    // 1. exchangerate.host (추천)
-    async function getExchangeRateHost() {
-        const response = await fetch('https://api.exchangerate.host/latest?base=USD&symbols=KRW');
-        const data = await response.json();
-        return {
-            rate: data.rates.KRW,
-            date: data.date,
-            source: 'exchangerate.host'
-        };
+    const data = await response.json();
+    
+    if (!data.data || data.data.length === 0) {
+        throw new Error('P2P 데이터 없음');
     }
 
-    // 2. frankfurter.app (ECB 기반)
-    async function getFrankfurter() {
-        const response = await fetch('https://api.frankfurter.app/latest?from=USD&to=KRW');
-        const data = await response.json();
-        return {
-            rate: data.rates.KRW,
-            date: data.date,
-            source: 'frankfurter.app'
-        };
-    }
+    // 상위 10개 매물의 평균 가격
+    const prices = data.data
+        .slice(0, 10)
+        .map(item => parseFloat(item.adv.price));
 
-    // 3. open.er-api.com (현재 사용중)
-    async function getOpenER() {
-        const response = await fetch('https://open.er-api.com/v6/latest/USD');
-        const data = await response.json();
-        return {
-            rate: data.rates.KRW,
-            date: new Date(data.time_last_update_unix * 1000).toISOString().split('T')[0],
-            source: 'open.er-api.com'
-        };
-    }
+    const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
 
-    // 4. 실시간 방법: 업비트-바이낸스 USDT 역산
-    async function getRealTimeRate() {
-        // 업비트 USDT/KRW
-        const upbitRes = await fetch('https://api.upbit.com/v1/ticker?markets=KRW-USDT');
-        const [upbitData] = await upbitRes.json();
-        const upbitUsdtKrw = upbitData.trade_price;
-
-        // 바이낸스 USDT/USD
-        const binanceRes = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTUSD');
-        const binanceData = await binanceRes.json();
-        const binanceUsdtUsd = parseFloat(binanceData.price);
-
-        // 실시간 환율 계산
-        const realTimeRate = upbitUsdtKrw / binanceUsdtUsd;
-
-        return {
-            rate: realTimeRate,
-            date: new Date().toISOString().split('T')[0],
-            source: '실시간 (USDT 역산)',
-            details: {
-                upbitUsdt: upbitUsdtKrw,
-                binanceUsdt: binanceUsdtUsd
-            }
-        };
-    }
-
-    // 모든 소스 테스트
-    async function testAllSources() {
-        const resultsDiv = document.getElementById('results');
-        const comparisonDiv = document.getElementById('comparison');
-        resultsDiv.innerHTML = '<div class="card"><h2>데이터 수집 중...</h2></div>';
-        comparisonDiv.innerHTML = '';
-
-        const sources = [
-            { name: 'exchangerate.host', fn: getExchangeRateHost },
-            { name: 'frankfurter.app', fn: getFrankfurter },
-            { name: 'open.er-api.com', fn: getOpenER },
-            { name: '실시간 (USDT)', fn: getRealTimeRate }
-        ];
-
-        const results = [];
-        let html = '<div class="card"><h2>📊 환율 데이터 비교</h2>';
-
-        for (const source of sources) {
-            try {
-                const start = Date.now();
-                const result = await source.fn();
-                const loadTime = Date.now() - start;
-                
-                results.push(result);
-                
-                html += `
-                    <div class="rate-source">
-                        <div>
-                            <strong>${result.source}</strong><br>
-                            <small>업데이트: ${result.date} (${loadTime}ms)</small>
-                            ${result.details ? `<br><small>업비트 USDT: ₩${result.details.upbitUsdt.toLocaleString()}</small>` : ''}
-                        </div>
-                        <div>
-                            <div class="rate-value">₩${result.rate.toFixed(2)}</div>
-                            <span class="status success">✓ 성공</span>
-                        </div>
-                    </div>
-                `;
-            } catch (error) {
-                html += `
-                    <div class="rate-source">
-                        <div><strong>${source.name}</strong></div>
-                        <div>
-                            <span class="status error">✗ 실패</span><br>
-                            <small>${error.message}</small>
-                        </div>
-                    </div>
-                `;
-            }
+    return {
+        rate: avgPrice,
+        source: 'Binance P2P',
+        realtime: true,
+        samples: prices.length,
+        range: {
+            min: Math.min(...prices),
+            max: Math.max(...prices)
         }
+    };
 
-        // 통계 계산
-        if (results.length > 0) {
-            const rates = results.map(r => r.rate);
-            const avg = rates.reduce((a, b) => a + b, 0) / rates.length;
-            const max = Math.max(...rates);
-            const min = Math.min(...rates);
-            const spread = max - min;
+} catch (error) {
+    console.error('바이낸스 P2P 조회 실패:', error);
+    throw error;
+}
 
-            html += `
-                <div class="recommended">
-                    💡 권장 환율: ₩${avg.toFixed(2)} (${results.length}개 소스 평균)
-                </div>
-            `;
 
-            comparisonDiv.innerHTML = `
-                <div class="card">
-                    <h3>📈 통계 분석</h3>
-                    <div class="comparison">
-                        <div class="comparison-item">
-                            <div>평균 환율</div>
-                            <strong>₩${avg.toFixed(2)}</strong>
-                        </div>
-                        <div class="comparison-item">
-                            <div>최고가</div>
-                            <strong>₩${max.toFixed(2)}</strong>
-                        </div>
-                        <div class="comparison-item">
-                            <div>최저가</div>
-                            <strong>₩${min.toFixed(2)}</strong>
-                        </div>
-                        <div class="comparison-item">
-                            <div>스프레드</div>
-                            <strong>₩${spread.toFixed(2)}</strong>
-                            <small>(${((spread/avg)*100).toFixed(2)}%)</small>
-                        </div>
-                    </div>
-                    <div class="info" style="margin-top: 16px; background: #fff3cd; color: #856404;">
-                        ⚠️ <strong>스프레드가 ${spread.toFixed(2)}원 (${((spread/avg)*100).toFixed(2)}%)</strong><br>
-                        ${spread > 10 ? '차이가 큽니다. 실시간 방법을 추천합니다.' : '차이가 작습니다. 모든 소스가 신뢰할 만합니다.'}
-                    </div>
-                </div>
-            `;
-        }
+};
 
-        html += '</div>';
-        resultsDiv.innerHTML = html;
+// ============ 대안: FTX/Kraken OTC 가격 ============
+
+// 업비트 외부 송금 시세로 역산
+const getUpbitWithdrawalRate = async () => {
+try {
+// 업비트 외부 송금 시세 조회
+const response = await fetch(‘https://api.upbit.com/v1/ticker?markets=KRW-BTC,BTC-USDT’);
+const data = await response.json();
+
+
+    // KRW-BTC와 BTC-USDT를 조합해서 KRW-USDT 계산
+    // 이건 업비트 내부 시세가 아니라 외부 송금 기준
+
+    // ... 복잡함, 추천 안함
+    
+} catch (error) {
+    throw error;
+}
+
+
+};
+
+// ============ 최종 혼합 전략 ============
+
+const getRealTimeExchangeRate = async () => {
+try {
+// 1순위: 바이낸스 P2P (실시간, 무료, 정확)
+console.log(‘🔄 바이낸스 P2P 시장 조회 중…’);
+const p2pResult = await getBinanceP2PRate();
+
+
+    console.log(`✅ P2P 환율: ₩${p2pResult.rate.toFixed(2)}`);
+    console.log(`   범위: ₩${p2pResult.range.min.toFixed(2)} ~ ₩${p2pResult.range.max.toFixed(2)}`);
+    
+    return p2pResult.rate;
+    
+} catch (error) {
+    console.error('⚠️ P2P 실패, 정적 API로 폴백:', error);
+    
+    // 2순위: 기존 정적 API
+    const sources = await Promise.allSettled([
+        fetch('https://api.frankfurter.app/latest?from=USD&to=KRW')
+            .then(r => r.json()).then(d => d.rates.KRW),
+        
+        fetch('https://open.er-api.com/v6/latest/USD')
+            .then(r => r.json()).then(d => d.rates.KRW)
+    ]);
+
+    const validRates = sources
+        .filter(r => r.status === 'fulfilled' && r.value > 1000)
+        .map(r => r.value);
+
+    if (validRates.length === 0) {
+        throw new Error('모든 환율 소스 실패');
     }
 
-    // 실시간 방법만 테스트
-    async function testRealtime() {
-        const resultsDiv = document.getElementById('results');
-        resultsDiv.innerHTML = '<div class="card"><h2>⚡ 실시간 데이터 수집 중...</h2></div>';
-
-        try {
-            const result = await getRealTimeRate();
-            
-            resultsDiv.innerHTML = `
-                <div class="card">
-                    <h2>⚡ 실시간 환율 (USDT 역산)</h2>
-                    <div class="rate-source">
-                        <div>
-                            <strong>USD/KRW 실시간</strong><br>
-                            <small>계산 시각: ${new Date().toLocaleString('ko-KR')}</small>
-                        </div>
-                        <div class="rate-value">₩${result.rate.toFixed(2)}</div>
-                    </div>
-                    
-                    <h3 style="margin-top: 24px;">🔍 계산 과정</h3>
-                    <div class="info" style="background: #e3f2fd; color: #0d47a1;">
-                        <strong>1단계:</strong> 업비트 USDT 가격<br>
-                        → ₩${result.details.upbitUsdt.toLocaleString()} KRW<br><br>
-                        
-                        <strong>2단계:</strong> 바이낸스 USDT 가격<br>
-                        → $${result.details.binanceUsdt} USD<br><br>
-                        
-                        <strong>3단계:</strong> 환율 계산<br>
-                        → ${result.details.upbitUsdt.toLocaleString()} ÷ ${result.details.binanceUsdt}<br>
-                        → <strong>₩${result.rate.toFixed(2)}</strong>
-                    </div>
-
-                    <div class="info" style="background: #d4edda; color: #155724; margin-top: 16px;">
-                        ✅ <strong>장점</strong><br>
-                        • 24/7 실시간 (주말 포함!)<br>
-                        • 실제 거래 가격 반영<br>
-                        • 무료, 빠른 응답<br><br>
-                        
-                        ⚠️ <strong>주의사항</strong><br>
-                        • USDT 페깅 이슈 시 부정확<br>
-                        • 업비트 김프가 환율에 반영됨
-                    </div>
-
-                    <div class="recommended">
-                        💡 실제 은행 환율과 ±0.5~1% 차이 예상
-                    </div>
-                </div>
-            `;
-        } catch (error) {
-            resultsDiv.innerHTML = `
-                <div class="card">
-                    <div class="status error">실패: ${error.message}</div>
-                </div>
-            `;
-        }
-    }
-
-    // 페이지 로드 시 자동 테스트
-    testAllSources();
-</script>
+    const avg = validRates.reduce((a, b) => a + b, 0) / validRates.length;
+    console.log(`✅ 정적 API: ₩${avg.toFixed(2)} (실시간 아님)`);
+    
+    return avg;
+}
 
 
-</body>
-</html>
+};
+
+// ============ 테스트 ============
+
+async function testP2PvsStatic() {
+console.log(’=’.repeat(60));
+console.log(‘💱 P2P vs 정적 API 비교’);
+console.log(’=’.repeat(60));
+
+
+// P2P
+try {
+    const p2p = await getBinanceP2PRate();
+    console.log(`\n✅ 바이낸스 P2P (실시간)`);
+    console.log(`   평균: ₩${p2p.rate.toFixed(2)}`);
+    console.log(`   최저: ₩${p2p.range.min.toFixed(2)}`);
+    console.log(`   최고: ₩${p2p.range.max.toFixed(2)}`);
+    console.log(`   샘플: ${p2p.samples}개 매물`);
+} catch (e) {
+    console.log(`\n❌ P2P 실패: ${e.message}`);
+}
+
+// 정적 API
+try {
+    const frank = await fetch('https://api.frankfurter.app/latest?from=USD&to=KRW')
+        .then(r => r.json());
+    console.log(`\n📅 Frankfurter (정적)`);
+    console.log(`   환율: ₩${frank.rates.KRW.toFixed(2)}`);
+    console.log(`   날짜: ${frank.date}`);
+} catch (e) {
+    console.log(`\n❌ Frankfurter 실패`);
+}
+
+try {
+    const erapi = await fetch('https://open.er-api.com/v6/latest/USD')
+        .then(r => r.json());
+    console.log(`\n📅 Open.ER-API (정적)`);
+    console.log(`   환율: ₩${erapi.rates.KRW.toFixed(2)}`);
+} catch (e) {
+    console.log(`\n❌ Open.ER-API 실패`);
+}
+
+console.log('\n' + '='.repeat(60));
+
+
+}
+
+// 실행
+testP2PvsStatic();
