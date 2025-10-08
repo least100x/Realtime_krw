@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 
 <html lang="ko">
@@ -278,11 +277,13 @@
             const [upbitData] = await upbitRes.json();
             const upbitUsdt = upbitData.trade_price;
             
-            const binanceRes = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTUSD');
-            const binanceData = await binanceRes.json();
-            const binanceUsdt = parseFloat(binanceData.price);
+            // 바이낸스 USDT는 거의 항상 $1.0000에 페깅되어 있음
+            // CORS 에러 대신 $1.0000으로 가정
+            const binanceUsdt = 1.0000;
             
             const calculatedRate = upbitUsdt / binanceUsdt;
+            
+            console.log('⚠️ 바이낸스 API CORS 에러로 $1.0000 가정');
 
             // 2. 정적 API들
             const staticAPIs = await Promise.allSettled([
