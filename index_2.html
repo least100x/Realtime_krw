@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="물가상승으로 줄어드는 돈의 가치 계산기. 비트코인, 주식, 부동산 투자 수익 실시간 비교">
+    <meta name="keywords" content="물가상승, 인플레이션, 투자수익, 비트코인, 주식, 부동산, 계산기">
+    
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="내 돈의 실제 가치 계산기">
+    <meta property="og:description" content="물가상승으로 줄어드는 돈의 가치와 투자 수익 실시간 비교">
+    <meta property="og:image" content="https://via.placeholder.com/1200x630.png?text=Money+Value+Calculator">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="내 돈의 실제 가치 계산기">
+    <meta name="twitter:description" content="물가상승으로 줄어드는 돈의 가치와 투자 수익 실시간 비교">
+    
+    <title>내 돈의 실제 가치 vs 투자 수익</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+            }
+            .container {
+                padding: 30px;
+            }
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 1.5em;
+            word-break: keep-all;
+        }
+        
+        @media (min-width: 768px) {
+            h1 {
+                font-size: 2.2em;
+            }
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            word-break: keep-all;
+            padding: 0 10px;
+        }
+        
+        @media (min-width: 768px) {
+            .subtitle {
+                margin-bottom: 30px;
+                font-size: 1.1em;
+            }
+        }
+        
+        .live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #e8f5e9;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+        
+        @media (min-width: 768px) {
+            .live-badge {
+                padding: 8px 20px;
+                font-size: 1em;
+            }
+        }
+        
+        .live-dot {
+            width: 10px;
+            height: 10px;
+            background: #4caf50;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+            flex-shrink: 0;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+        
+        .input-section {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        
+        @media (min-width: 768px) {
+            .input-section {
+                padding: 25px;
+                margin-bottom: 30px;
+            }
+        }
+        
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        @media (min-width: 768px) {
+            .input-grid {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 20px;
+            }
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+            width: 100%;
+        }
+        
+        @media (min-width: 768px) {
+            .input-group {
+                margin-bottom: 20px;
+            }
+        }
+        
+        label {
+            display: block;
+            font-size: 1em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+            word-break: keep-all;
+        }
+        
+        @media (min-width: 768px) {
+            label {
+                font-size: 1.1em;
+                margin-bottom: 10px;
+            }
+        }
+        
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            max-width: 100%;
+            padding: 12px;
+            font-size: 1.1em;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            box-sizing: border-box;
+        }
+        
+        @media (min-width: 768px) {
+            input[type="number"], input[type="text"] {
+                padding: 15px;
+                font-size: 1.3em;
+            }
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            max-width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+            box-sizing: border-box;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+        
+        @media (min-width: 768px) {
+            input[type="range"]::-webkit-slider-thumb {
+                width: 25px;
+                height: 25px;
+            }
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+        }
+        
+        @media (min-width: 768px) {
+            input[type="range"]::-moz-range-thumb {
+                width: 25px;
+                height: 25px;
+            }
+        }
+        
+        .time-display {
+            text-align: center;
+            font-size: 1.1em;
+            color: #667eea;
+            font-weight: bold;
+            margin-top: 8px;
+            word-break: keep-all;
+        }
+        
+        @media (min-width: 768px) {
+            .time-display {
+                font-size: 1.3em;
+                margin-top: 10px;
+            }
+        }
+        
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        @media (min-width: 480px) {
+            .comparison-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (min-width: 900px) {
+            .comparison-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media (min-width: 1200px) {
+            .comparison-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 20px;
+            }
+        }
+        
+        .money-card {
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s;
+            border: 3px solid;
+            min-width: 0;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        @media (min-width: 768px) {
+            .money-card {
+                padding: 20px;
+            }
+        }
+        
+        .money-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .data-source-badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(0,0,0,0.1);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.7em;
+            color: #666;
+        }
+        
+        .money-card.inflation { border-color: #ff6b6b; background: linear-gradient(135deg, #ffe3e3 0%, #fff 100%); }
+        .money-card.deposit { border-color: #74b9ff; background: linear-gradient(135deg, #e3f2ff 0%, #fff 100%); }
+        .money-card.gold { border-color: #ffd700; background: linear-gradient(135deg, #fff9e6 0%, #fff 100%); }
+        .money-card.realestate { border-color: #a29bfe; background: linear-gradient(135deg, #f0eeff 0%, #fff 100%); }
+        .money-card.kospi { border-color: #fd79a8; background: linear-gradient(135deg, #ffe8f0 0%, #fff 100%); }
+        .money-card.kosdaq { border-color: #fdcb6e; background: linear-gradient(135deg, #fff8e6 0%, #fff 100%); }
+        .money-card.sp500 { border-color: #4ecdc4; background: linear-gradient(135deg, #e3f9f7 0%, #fff 100%); }
+        .money-card.qqq { border-color: #95e1d3; background: linear-gradient(135deg, #e8f8f5 0%, #fff 100%); }
+        .money-card.stock { border-color: #00b894; background: linear-gradient(135deg, #e6fff9 0%, #fff 100%); }
+        .money-card.btc { border-color: #f7931a; background: linear-gradient(135deg, #fff4e6 0%, #fff 100%); }
+        .money-card.eth { border-color: #627eea; background: linear-gradient(135deg, #e8ebfa 0%, #fff 100%); }
+        
+        .card-title {
+            font-size: 1em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+            word-break: keep-all;
+        }
+        
+        @media (min-width: 768px) {
+            .card-title {
+                font-size: 1.1em;
+                margin-bottom: 12px;
+            }
+        }
+        
+        .card-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin: 10px 0;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        @media (min-width: 768px) {
+            .card-value {
+                font-size: 2.2em;
+                margin: 12px 0;
+            }
+        }
+        
+        .card-change {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+        
+        @media (min-width: 768px) {
+            .card-change {
+                font-size: 1.2em;
+            }
+        }
+        
+        .card-detail {
+            margin-top: 8px;
+            font-size: 0.85em;
+            color: #666;
+            word-break: keep-all;
+        }
+        
+        @media (min-width: 768px) {
+            .card-detail {
+                margin-top: 10px;
+                font-size: 0.9em;
+            }
+        }
+        
+        .positive { color: #4caf50; }
+        .negative { color: #f44336; }
+        
+        .loading {
+            text-align: center;
+            padding: 30px 15px;
+            font-size: 1.1em;
+            color: #667eea;
+        }
+        
+        @media (min-width: 768px) {
+            .loading {
+                padding: 50px;
+                font-size: 1.3em;
+            }
+        }
+        
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @media (min-width: 768px) {
+            .loading-spinner {
+                width: 50px;
+                height: 50px;
+            }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .info-box {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 5px solid #ffc107;
+        }
+        
+        @media (min-width: 768px) {
+            .info-box {
+                padding: 20px;
+            }
+        }
+        
+        .info-box p {
+            color: #856404;
+            line-height: 1.6;
+            font-size: 0.9em;
+            word-break: keep-all;
+        }
+        
+        @media (min-width: 768px) {
+            .info-box p {
+                font-size: 1em;
+            }
+        }
+        
+        .realtime-counter {
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px 15px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            border-radius: 15px;
+            color: white;
+            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.4);
+        }
+        
+        @media (min-width: 768px) {
+            .realtime-counter {
+                padding: 25px;
+            }
+        }
+        
+        .counter-header {
+            font-size: 1.1em;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            word-break: keep-all;
+            flex-wrap: wrap;
+        }
+        
+        @media (min-width: 768px) {
+            .counter-header {
+                font-size: 1.3em;
+                margin-bottom: 15px;
+                gap: 10px;
+            }
+        }
+        
+        .countdown-animation {
+            display: inline-block;
+            animation: countdownPulse 1s infinite;
+            flex-shrink: 0;
+        }
+        
+        @keyframes countdownPulse {
+            0%, 100% { 
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% { 
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+        }
+        
+        .counter-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 12px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: valueGlow 2s infinite;
+            word-break: break-word;
+        }
+        
+        @media (min-width: 768px) {
+            .counter-value {
+                font-size: 2.5em;
+                margin: 15px 0;
+            }
+        }
+        
+        @keyframes valueGlow {
+            0%, 100% {
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            }
+            50% {
+                text-shadow: 0 0 20px rgba(255,255,255,0.8), 2px 2px 4px rgba(0,0,0,0.3);
+            }
+        }
+        
+        .counter-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        @media (min-width: 768px) {
+            .counter-details {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 15px;
+                margin-top: 20px;
+            }
+        }
+        
+        .counter-detail-item {
+            background: rgba(255,255,255,0.2);
+            padding: 10px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            min-width: 0;
+        }
+        
+        @media (min-width: 768px) {
+            .counter-detail-item {
+                padding: 12px;
+            }
+        }
+        
+        .counter-detail-label {
+            font-size: 0.85em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+            word-break: keep-all;
+        }
+        
+        @media (min-width: 768px) {
+            .counter-detail-label {
+                font-size: 0.9em;
+            }
+        }
+        
+        .counter-detail-value {
+            font-size: 1.1em;
+            font-weight: bold;
+            word-break: break-word;
+        }
+        
+        @media (min-width: 768px) {
+            .counter-detail-value {
+                font-size: 1.3em;
+            }
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        
+        @media (min-width: 768px) {
+            button {
+                padding: 10px 20px;
+                font-size: 1em;
+            }
+        }
+        
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .stock-input-group {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+            width: 100%;
+        }
+        
+        @media (min-width: 768px) {
+            .stock-input-group {
+                gap: 10px;
+            }
+        }
+        
+        .stock-input-group input {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .faq-section {
+            background: white;
+            border-radius: 15px;
+            margin-top: 20px;
+            border: 2px solid #e0e0e0;
+            overflow: hidden;
+        }
+        
+        .faq-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+            user-select: none;
+        }
+        
+        .faq-header:hover {
+            background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
+        }
+        
+        .faq-arrow {
+            font-size: 1.2em;
+            transition: transform 0.3s;
+        }
+        
+        .faq-arrow.open {
+            transform: rotate(180deg);
+        }
+        
+        .faq-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+        }
+        
+        .faq-content.open {
+            max-height: 2000px;
+            transition: max-height 0.5s ease-in;
+        }
+        
+        .faq-item {
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+        
+        .faq-question {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 12px;
+            word-break: keep-all;
+        }
+        
+        @media (min-width: 768px) {
+            .faq-question {
+                font-size: 1.15em;
+            }
+        }
+        
+        .faq-answer {
+            color: #555;
+            line-height: 1.7;
+            font-size: 0.95em;
+            word-break: keep-all;
+        }
+        
+        @media (min-width: 768px) {
+            .faq-answer {
+                font-size: 1em;
+            }
+        }
+        
+        /* 모달 스타일 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            animation: fadeIn 0.3s ease;
+            padding: 20px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .modal-header {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #c92a2a;
+        }
+        
+        .modal-body {
+            font-size: 14px;
+            line-height: 1.8;
+            color: #555;
+            margin-bottom: 20px;
+        }
+        
+        .modal-body strong {
+            color: #c92a2a;
+        }
+        
+        .modal-body p {
+            margin-bottom: 15px;
+        }
+        
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .modal-btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .modal-btn-primary:hover {
+            background: #5568d3;
+        }
+        
+        .modal-btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+        
+        .modal-btn-secondary:hover {
+            background: #d0d0d0;
+        }
+        
+        /* 플로팅 도움말 버튼 */
+        .floating-help {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .floating-help:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        
+        .floating-help:active {
+            transform: scale(0.95);
+        }
+        
+        @media (min-width: 768px) {
+            .modal-content {
+                padding: 30px;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .floating-help {
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+                bottom: 20px;
+                right: 20px;
+            }
+            
+            .modal-content {
+                padding: 20px;
+            }
+            
+            .modal-header {
+                font-size: 18px;
+            }
+            
+            .modal-body {
+                font-size: 13px;
+            }
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4caf50;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            animation: slideIn 0.3s ease;
+            z-index: 3000;
+            max-width: 300px;
+        }
+        
+        .notification.error {
+            background: #f44336;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 내 돈의 실제 가치 vs 투자 수익</h1>
+        <p class="subtitle">물가상승으로 줄어드는 돈의 가치와 투자했다면의 수익을 실시간 비교</p>
+        
+        <div style="text-align: center; margin-bottom: 20px;">
+            <div class="live-badge">
+                <div class="live-dot"></div>
+                <span style="color: #4caf50; font-weight: bold;">실시간 데이터</span>
+            </div>
+        </div>
+        
+        <div class="input-section">
+            <div class="input-grid">
+                <div class="input-group">
+                    <label>💵 금액 입력</label>
+                    <input type="number" id="amount" value="10000" min="1" max="1000000000" step="1000" 
+                           aria-label="금액 입력" aria-describedby="amountDisplay">
+                    <div style="text-align: center; margin-top: 8px; color: #666; font-size: 0.9em;" id="amountDisplay">1억원</div>
+                </div>
+                
+                <div class="input-group">
+                    <label>⏰ 언제와 비교할까요?</label>
+                    <input type="range" id="months" min="1" max="60" value="12" step="1"
+                           aria-label="기간 선택" aria-valuetext="12개월">
+                    <div class="time-display" id="timeDisplay">12개월 전 (1년)</div>
+                </div>
+                
+                <div class="input-group">
+                    <label>📈 미국 주식 티커 (선택)</label>
+                    <div class="stock-input-group">
+                        <input type="text" id="stockTicker" placeholder="AAPL, TSLA 등" 
+                               style="text-transform: uppercase;" aria-label="주식 티커 입력">
+                        <button onclick="addStock()">추가</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="loadingDiv" class="loading">
+            <div class="loading-spinner"></div>
+            <p>실시간 투자 데이터를 불러오는 중...</p>
+        </div>
+        
+        <div id="resultDiv" style="display: none;">
+            <div class="comparison-
