@@ -3,6 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="물가상승으로 줄어드는 돈의 가치 계산기. 비트코인, 주식, 부동산 투자 수익 실시간 비교">
+    <meta name="keywords" content="물가상승, 인플레이션, 투자수익, 비트코인, 주식, 부동산, 계산기">
+    
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="내 돈의 실제 가치 계산기">
+    <meta property="og:description" content="물가상승으로 줄어드는 돈의 가치와 투자 수익 실시간 비교">
+    <meta property="og:image" content="https://via.placeholder.com/1200x630.png?text=Money+Value+Calculator">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="내 돈의 실제 가치 계산기">
+    <meta name="twitter:description" content="물가상승으로 줄어드는 돈의 가치와 투자 수익 실시간 비교">
+    
     <title>내 돈의 실제 가치 vs 투자 수익</title>
     <style>
         * {
@@ -16,6 +30,11 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 10px;
+            transition: background 0.3s ease;
+        }
+
+        body.dark-mode {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
         }
         
         .container {
@@ -25,6 +44,12 @@
             border-radius: 20px;
             padding: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        body.dark-mode .container {
+            background: #2d2d44;
+            color: #f0f0f0;
         }
         
         @media (min-width: 768px) {
@@ -42,6 +67,11 @@
             margin-bottom: 10px;
             font-size: 1.5em;
             word-break: keep-all;
+            transition: color 0.3s ease;
+        }
+
+        body.dark-mode h1 {
+            color: #f0f0f0;
         }
         
         @media (min-width: 768px) {
@@ -57,6 +87,11 @@
             font-size: 0.9em;
             word-break: keep-all;
             padding: 0 10px;
+            transition: color 0.3s ease;
+        }
+
+        body.dark-mode .subtitle {
+            color: #b0b0b0;
         }
         
         @media (min-width: 768px) {
@@ -70,10 +105,11 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: #e8f5e9;
+            background: #fff3cd;
             padding: 6px 15px;
             border-radius: 20px;
             font-size: 0.9em;
+            border: 2px solid #ffc107;
         }
         
         @media (min-width: 768px) {
@@ -83,25 +119,16 @@
             }
         }
         
-        .live-dot {
-            width: 10px;
-            height: 10px;
-            background: #4caf50;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-            flex-shrink: 0;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.2); }
-        }
-        
         .input-section {
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             padding: 15px;
             border-radius: 15px;
             margin-bottom: 20px;
+            transition: background 0.3s ease;
+        }
+
+        body.dark-mode .input-section {
+            background: linear-gradient(135deg, #3a3a52 0%, #2d2d44 100%);
         }
         
         @media (min-width: 768px) {
@@ -142,6 +169,11 @@
             color: #333;
             margin-bottom: 8px;
             word-break: keep-all;
+            transition: color 0.3s ease;
+        }
+
+        body.dark-mode label {
+            color: #f0f0f0;
         }
         
         @media (min-width: 768px) {
@@ -161,6 +193,16 @@
             text-align: center;
             font-weight: bold;
             box-sizing: border-box;
+            background: white;
+            color: #333;
+            transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        body.dark-mode input[type="number"],
+        body.dark-mode input[type="text"] {
+            background: #3a3a52;
+            color: #f0f0f0;
+            border-color: #9b8ff7;
         }
         
         @media (min-width: 768px) {
@@ -220,6 +262,11 @@
             font-weight: bold;
             margin-top: 8px;
             word-break: keep-all;
+            transition: color 0.3s ease;
+        }
+
+        body.dark-mode .time-display {
+            color: #9b8ff7;
         }
         
         @media (min-width: 768px) {
@@ -265,6 +312,11 @@
             border: 3px solid;
             min-width: 0;
             overflow: hidden;
+            position: relative;
+        }
+
+        body.dark-mode .money-card {
+            background: #3a3a52;
         }
         
         @media (min-width: 768px) {
@@ -275,6 +327,23 @@
         
         .money-card:hover {
             transform: translateY(-5px);
+        }
+        
+        .data-source-badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(0,0,0,0.1);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            color: #666;
+            font-weight: 600;
+        }
+
+        body.dark-mode .data-source-badge {
+            background: rgba(255,255,255,0.2);
+            color: #ddd;
         }
         
         .money-card.inflation { border-color: #ff6b6b; background: linear-gradient(135deg, #ffe3e3 0%, #fff 100%); }
@@ -295,6 +364,11 @@
             margin-bottom: 10px;
             color: #333;
             word-break: keep-all;
+            transition: color 0.3s ease;
+        }
+
+        body.dark-mode .card-title {
+            color: #f0f0f0;
         }
         
         @media (min-width: 768px) {
@@ -336,6 +410,11 @@
             font-size: 0.85em;
             color: #666;
             word-break: keep-all;
+            transition: color 0.3s ease;
+        }
+
+        body.dark-mode .card-detail {
+            color: #b0b0b0;
         }
         
         @media (min-width: 768px) {
@@ -362,34 +441,18 @@
             }
         }
         
-        .loading-spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-        
-        @media (min-width: 768px) {
-            .loading-spinner {
-                width: 50px;
-                height: 50px;
-            }
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
         .info-box {
             background: #fff3cd;
             padding: 15px;
             border-radius: 10px;
             margin-top: 20px;
             border-left: 5px solid #ffc107;
+            transition: background 0.3s ease;
+        }
+
+        body.dark-mode .info-box {
+            background: #3a3a52;
+            border-left-color: #f39c12;
         }
         
         @media (min-width: 768px) {
@@ -403,6 +466,11 @@
             line-height: 1.6;
             font-size: 0.9em;
             word-break: keep-all;
+            transition: color 0.3s ease;
+        }
+
+        body.dark-mode .info-box p {
+            color: #f0b050;
         }
         
         @media (min-width: 768px) {
@@ -595,6 +663,12 @@
             margin-top: 20px;
             border: 2px solid #e0e0e0;
             overflow: hidden;
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+
+        body.dark-mode .faq-section {
+            background: #3a3a52;
+            border-color: #555;
         }
         
         .faq-header {
@@ -636,6 +710,11 @@
         .faq-item {
             padding: 20px;
             border-bottom: 1px solid #f0f0f0;
+            transition: border-color 0.3s ease;
+        }
+
+        body.dark-mode .faq-item {
+            border-bottom-color: #555;
         }
         
         .faq-item:last-child {
@@ -648,6 +727,11 @@
             color: #333;
             margin-bottom: 12px;
             word-break: keep-all;
+            transition: color 0.3s ease;
+        }
+
+        body.dark-mode .faq-question {
+            color: #f0f0f0;
         }
         
         @media (min-width: 768px) {
@@ -661,6 +745,11 @@
             line-height: 1.7;
             font-size: 0.95em;
             word-break: keep-all;
+            transition: color 0.3s ease;
+        }
+
+        body.dark-mode .faq-answer {
+            color: #b0b0b0;
         }
         
         @media (min-width: 768px) {
@@ -669,69 +758,273 @@
             }
         }
         
-        .disclaimer-section {
-            background: #fff5f5;
-            border: 2px solid #ffcccc;
-            border-radius: 15px;
+        /* 모달 스타일 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            animation: fadeIn 0.3s ease;
             padding: 20px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        body.dark-mode .modal-content {
+            background: #2d2d44;
+            color: #f0f0f0;
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .modal-header {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #c92a2a;
+        }
+        
+        .modal-body {
+            font-size: 14px;
+            line-height: 1.8;
+            color: #555;
+            margin-bottom: 20px;
+            transition: color 0.3s ease;
+        }
+
+        body.dark-mode .modal-body {
+            color: #b0b0b0;
+        }
+        
+        .modal-body strong {
+            color: #c92a2a;
+        }
+
+        body.dark-mode .modal-body strong {
+            color: #ff6b6b;
+        }
+        
+        .modal-body p {
+            margin-bottom: 15px;
+        }
+        
+        .modal-footer {
+            display: flex;
+            gap: 10px;
             margin-top: 20px;
         }
         
+        .modal-btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .modal-btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .modal-btn-primary:hover {
+            background: #5568d3;
+        }
+        
+        .modal-btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        body.dark-mode .modal-btn-secondary {
+            background: #555;
+            color: #f0f0f0;
+        }
+        
+        .modal-btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        body.dark-mode .modal-btn-secondary:hover {
+            background: #666;
+        }
+        
+        /* 플로팅 도움말 버튼 */
+        .floating-help {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: #c92a2a;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 32px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(201, 42, 42, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            padding: 0;
+        }
+
+        .floating-help::before {
+            content: "⚠️";
+            display: block;
+        }
+        
+        .floating-help:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(201, 42, 42, 0.6);
+        }
+        
+        .floating-help:active {
+            transform: scale(0.95);
+        }
+
+        /* 다크모드 토글 버튼 */
+        .dark-mode-toggle {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dark-mode-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .dark-mode-toggle:active {
+            transform: scale(0.95);
+        }
+        
         @media (min-width: 768px) {
-            .disclaimer-section {
-                padding: 25px;
+            .modal-content {
+                padding: 30px;
             }
         }
         
-        .disclaimer-title {
-            font-size: 1.1em;
-            font-weight: bold;
-            color: #c92a2a;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        
-        @media (min-width: 768px) {
-            .disclaimer-title {
-                font-size: 1.2em;
+        @media (max-width: 600px) {
+            .floating-help {
+                width: 50px;
+                height: 50px;
+                font-size: 28px;
+                bottom: 20px;
+                right: 20px;
+            }
+
+            .dark-mode-toggle {
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+                bottom: 80px;
+                right: 20px;
+            }
+            
+            .modal-content {
+                padding: 20px;
+            }
+            
+            .modal-header {
+                font-size: 18px;
+            }
+            
+            .modal-body {
+                font-size: 13px;
             }
         }
         
-        .disclaimer-content {
-            color: #666;
-            line-height: 1.8;
-            font-size: 0.85em;
-            word-break: keep-all;
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4caf50;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            animation: slideInNotif 0.3s ease;
+            z-index: 3000;
+            max-width: 300px;
         }
         
-        @media (min-width: 768px) {
-            .disclaimer-content {
-                font-size: 0.9em;
+        .notification.error {
+            background: #f44336;
+        }
+        
+        @keyframes slideInNotif {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
             }
-        }
-        
-        .disclaimer-content p {
-            margin-bottom: 12px;
-        }
-        
-        .disclaimer-content p:last-child {
-            margin-bottom: 0;
-        }
-        
-        .disclaimer-content strong {
-            color: #c92a2a;
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>💰 내 돈의 실제 가치 vs 투자 수익</h1>
-        <p class="subtitle">물가상승으로 줄어드는 돈의 가치와 투자했다면의 수익을 실시간 비교</p>
+        <p class="subtitle">물가상승으로 줄어드는 돈의 가치와 투자했다면의 수익을 비교</p>
         
         <div style="text-align: center; margin-bottom: 20px;">
             <div class="live-badge">
-                <div class="live-dot"></div>
-                <span style="color: #4caf50; font-weight: bold;">실시간 데이터</span>
+                <span style="color: #856404; font-weight: bold;">⚠️ 역사적 평균값 기준 (참고용)</span>
             </div>
         </div>
         
@@ -739,32 +1032,30 @@
             <div class="input-grid">
                 <div class="input-group">
                     <label>💵 금액 입력</label>
-                    <input type="number" id="amount" value="10000" min="1" max="1000000000" step="1000">
+                    <input type="number" id="amount" value="10000" min="1" max="1000000000" step="1000" 
+                           aria-label="금액 입력" aria-describedby="amountDisplay">
                     <div style="text-align: center; margin-top: 8px; color: #666; font-size: 0.9em;" id="amountDisplay">1억원</div>
                 </div>
                 
                 <div class="input-group">
                     <label>⏰ 언제와 비교할까요?</label>
-                    <input type="range" id="months" min="1" max="60" value="12" step="1">
+                    <input type="range" id="months" min="1" max="60" value="12" step="1"
+                           aria-label="기간 선택" aria-valuetext="12개월">
                     <div class="time-display" id="timeDisplay">12개월 전 (1년)</div>
                 </div>
                 
                 <div class="input-group">
                     <label>📈 미국 주식 티커 (선택)</label>
                     <div class="stock-input-group">
-                        <input type="text" id="stockTicker" placeholder="AAPL, TSLA 등" style="text-transform: uppercase;">
+                        <input type="text" id="stockTicker" placeholder="AAPL, TSLA 등" 
+                               style="text-transform: uppercase;" aria-label="주식 티커 입력">
                         <button onclick="addStock()">추가</button>
                     </div>
                 </div>
             </div>
         </div>
         
-        <div id="loadingDiv" class="loading">
-            <div class="loading-spinner"></div>
-            <p>실시간 투자 데이터를 불러오는 중...</p>
-        </div>
-        
-        <div id="resultDiv" style="display: none;">
+        <div id="resultDiv">
             <div class="comparison-grid" id="comparisonGrid"></div>
             
             <div class="realtime-counter">
@@ -800,7 +1091,7 @@
             <div class="info-box">
                 <p><strong>💡 이 데이터의 의미:</strong></p>
                 <p id="explanationText"></p>
-                <p style="margin-top: 10px; font-size: 0.85em;"><strong>📊 데이터:</strong> 물가(통계청 1.7%), 예금(한국은행 평균), 금/주식/암호화폐(실시간 API), 부동산(KB부동산 서울 평균)</p>
+                <p style="margin-top: 10px; font-size: 0.85em;"><strong>📊 데이터:</strong> 물가(2025년 1.7%), 예금(평균 3.5%), 금/주식/암호화폐(역사적 평균), 부동산(평균 4%)</p>
             </div>
             
             <div class="faq-section">
@@ -816,7 +1107,7 @@
                             <strong style="color: #ff6b6b;">💸 물가상승 (1.7%)</strong> = 일상 소비재 가격 상승 (식료품, 의류, 교통비 등)<br>
                             → 통계청 소비자물가지수(CPI) 기준, <strong>집값은 포함 안 됨</strong><br><br>
                             <strong style="color: #a29bfe;">🏠 서울 아파트 (4%)</strong> = 부동산 자산 가치 상승<br>
-                            → KB부동산 서울 평균 매매가 기준<br><br>
+                            → 역사적 평균 기준<br><br>
                             <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-top: 10px;">
                                 <strong>예시:</strong> 1년 전 1억원을<br>
                                 • 💸 현금 보관 → <strong style="color: #ff6b6b;">9,830만원</strong> 구매력 (물가상승 1.7%)<br>
@@ -829,12 +1120,12 @@
                     <div class="faq-item">
                         <div class="faq-question">📊 데이터는 어디서 가져오나요?</div>
                         <div class="faq-answer">
-                            • <strong>물가상승률:</strong> 통계청 소비자물가지수 (2025년 기준 1.7%)<br>
-                            • <strong>정기예금:</strong> 한국은행 평균 금리 (약 3.5%)<br>
-                            • <strong>금:</strong> 국제 금 시세 역사적 평균<br>
-                            • <strong>부동산:</strong> KB부동산 서울 아파트 평균 매매가<br>
-                            • <strong>주식:</strong> KOSPI, KOSDAQ, S&P 500, 나스닥 역사적 수익률<br>
-                            • <strong>암호화폐:</strong> 코인게코 API 실시간 데이터
+                            • <strong>물가상승률:</strong> 2025년 기준 1.7% (고정값)<br>
+                            • <strong>정기예금:</strong> 평균 금리 3.5% (고정값)<br>
+                            • <strong>금:</strong> 역사적 평균 수익률 8%<br>
+                            • <strong>부동산:</strong> 역사적 평균 4%<br>
+                            • <strong>주식:</strong> KOSPI, KOSDAQ, S&P 500, QQQ 역사적 평균 수익률<br>
+                            • <strong>암호화폐:</strong> 비트코인 50%, 이더리움 40% (역사적 평균)
                         </div>
                     </div>
                     
@@ -844,33 +1135,49 @@
                             실제 구매력 손실을 시각적으로 보여주기 위한 것으로, 페이지를 켠 순간부터 누적 계산됩니다.
                         </div>
                     </div>
-                </div>
-            </div>
-            
-            <div class="disclaimer-section">
-                <div class="disclaimer-title">⚠️ 면책 조항 (Disclaimer)</div>
-                <div class="disclaimer-content">
-                    <p><strong>데이터 정확성:</strong> 이 페이지에 표시된 모든 수익률, 손실률, 물가상승률 등의 값들은 <strong>참고용 추정치</strong>이며, 사용된 기준과 계산 방식에 따라 실제 값과 다를 수 있습니다. 암호화폐 데이터는 실시간 API를 사용하지만, 나머지 데이터는 역사적 평균값을 기반으로 계산됩니다.</p>
                     
-                    <p><strong>투자 조언 아님:</strong> 본 페이지의 정보는 교육 및 정보 제공 목적으로만 제공되며, <strong>투자 권유, 매수/매도 추천, 또는 재무 상담이 아닙니다.</strong> 모든 투자 결정은 전적으로 귀하의 책임이며, 투자하기 전에 반드시 전문가와 상담하시기 바랍니다.</p>
-                    
-                    <p><strong>손실 책임:</strong> 주식, 암호화폐, 부동산 등 모든 투자에는 원금 손실의 위험이 있습니다. 과거의 수익률이 미래의 수익을 보장하지 않습니다. 본 페이지의 정보를 기반으로 한 투자 결정에 따른 어떠한 손실이나 손해에 대해서도 <strong>제작자는 법적 책임을 지지 않습니다.</strong></p>
-                    
-                    <p><strong>정보의 정확성:</strong> 본 페이지는 정보의 정확성, 완전성, 신뢰성을 보장하지 않으며, 언제든지 예고 없이 내용이 변경될 수 있습니다. 사용자는 본인의 판단과 책임 하에 정보를 활용해야 합니다.</p>
-                    
-                    <p style="margin-top: 15px; font-size: 0.9em; opacity: 0.8;"><strong>By using this website, you acknowledge that you have read and understood this disclaimer and agree to its terms.</strong></p>
+                    <div class="faq-item">
+                        <div class="faq-question">⚠️ 데이터가 정확한가요?</div>
+                        <div class="faq-answer">
+                            <strong>모든 데이터는 역사적 평균값입니다.</strong><br><br>
+                            실시간 API를 사용하지 않고, <strong>과거 평균 수익률</strong>을 기준으로 계산됩니다.<br><br>
+                            <strong>실제 수익률은 시기에 따라 크게 다를 수 있습니다!</strong><br>
+                            예: KOSPI는 어떤 해는 +30%, 어떤 해는 -25%일 수 있음<br><br>
+                            <strong style="color: #c92a2a;">이 계산기는 교육 및 참고 목적으로만 사용하세요.</strong>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- 플로팅 버튼들 -->
+    <button class="floating-help" id="floatingHelp" title="면책조항"></button>
+    <button class="dark-mode-toggle" id="darkModeToggle" title="다크모드">🌙</button>
+
     <script>
-        const INFLATION_RATE = 0.017;
-        const DEPOSIT_RATE = 0.035;
+        // ============ 설정 ============
+        const CONFIG = {
+            INFLATION_RATE: 0.017,
+            DEPOSIT_RATE: 0.035,
+            AVG_RETURNS: {
+                gold: 0.08,
+                realestate: 0.04,
+                kospi: 0.06,
+                kosdaq: 0.07,
+                sp500: 0.10,
+                qqq: 0.13,
+                stock: 0.12,
+                bitcoin: 0.50,
+                ethereum: 0.40
+            }
+        };
+        
         let realtimeCounter = 0;
         let customStocks = [];
         
-        function formatMoney(won) {
+        // ============ 유틸리티 함수 ============
+        const formatMoney = (won) => {
             if (won >= 100000000) {
                 return (won / 100000000).toFixed(1) + '억원';
             } else if (won >= 10000) {
@@ -878,276 +1185,198 @@
             } else {
                 return Math.round(won).toLocaleString() + '원';
             }
-        }
+        };
         
-        function updateAmountDisplay() {
-            const amount = parseFloat(document.getElementById('amount').value);
-            document.getElementById('amountDisplay').textContent = formatMoney(amount * 10000);
-        }
+        const showNotification = (message, isError = false) => {
+            const notification = document.createElement('div');
+            notification.className = 'notification' + (isError ? ' error' : '');
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideInNotif 0.3s ease reverse';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        };
         
-        async function fetchHistoricalData(months) {
-            try {
-                const results = {
-                    inflation: calculateInflation(months),
-                    deposit: calculateDeposit(months),
-                    gold: await fetchGoldData(months),
-                    realestate: calculateRealEstate(months),
-                    kospi: await fetchKoreanStockData('KOSPI', months),
-                    kosdaq: await fetchKoreanStockData('KOSDAQ', months),
-                    sp500: await fetchUSStockData('SPY', months),
-                    qqq: await fetchUSStockData('QQQ', months),
-                    btc: await fetchCryptoData('bitcoin', months),
-                    eth: await fetchCryptoData('ethereum', months)
-                };
-                
-                for (const ticker of customStocks) {
-                    results[ticker] = await fetchUSStockData(ticker, months);
+        // ============ 모달 관련 함수 ============
+        const showDisclaimerModal = () => {
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        ⚠️ 면책 조항 (Disclaimer)
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>📊 데이터 정확성:</strong></p>
+                        <p>이 페이지의 수익률은 <strong>참고용 추정치</strong>입니다. 모든 데이터는 <strong>역사적 평균값</strong>을 기반으로 계산되며, 실제 값과 크게 다를 수 있습니다.</p>
+                        
+                        <p><strong>💡 투자 조언 아님:</strong></p>
+                        <p>본 페이지는 <strong>교육 및 정보 제공 목적</strong>으로만 제공되며, <strong>투자 권유, 매수/매도 추천이 아닙니다.</strong> 모든 투자 결정은 전적으로 귀하의 책임입니다.</p>
+                        
+                        <p><strong>⚠️ 손실 책임:</strong></p>
+                        <p>모든 투자에는 <strong>원금 손실의 위험</strong>이 있습니다. 과거의 수익률이 미래를 보장하지 않습니다. 본 페이지 정보를 기반으로 한 투자 결정에 따른 어떠한 손실에 대해서도 <strong>제작자는 법적 책임을 지지 않습니다.</strong></p>
+                        
+                        <p><strong>🔄 데이터 출처:</strong></p>
+                        <p>• 물가상승률: 1.7% (2025년 기준 고정값)<br>
+                        • 예금 금리: 3.5% (평균값)<br>
+                        • 주식/부동산/금/암호화폐: 역사적 평균 수익률<br>
+                        • <strong>실시간 데이터가 아닙니다</strong></p>
+                        
+                        <p style="margin-top: 15px; font-size: 0.9em; opacity: 0.8;"><strong>By using this calculator, you acknowledge that you have read and understood this disclaimer.</strong></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="modal-btn modal-btn-secondary" id="modalDontShow">다시 보지 않기</button>
+                        <button class="modal-btn modal-btn-primary" id="modalClose">확인</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(overlay);
+
+            document.getElementById('modalClose').addEventListener('click', () => {
+                overlay.style.animation = 'fadeIn 0.3s ease reverse';
+                setTimeout(() => overlay.remove(), 300);
+            });
+
+            document.getElementById('modalDontShow').addEventListener('click', () => {
+                localStorage.setItem('dontShowDisclaimer', 'true');
+                overlay.style.animation = 'fadeIn 0.3s ease reverse';
+                setTimeout(() => overlay.remove(), 300);
+                showNotification('✅ 다시 표시하지 않습니다');
+            });
+
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    overlay.style.animation = 'fadeIn 0.3s ease reverse';
+                    setTimeout(() => overlay.remove(), 300);
                 }
-                
-                return results;
-            } catch (error) {
-                console.error('데이터 로딩 오류:', error);
-                return null;
-            }
-        }
+            });
+        };
         
-        function calculateInflation(months) {
+        // ============ 데이터 계산 함수 ============
+        const calculateInflation = (months) => {
             const years = months / 12;
-            const multiplier = 1 / Math.pow(1 + INFLATION_RATE, years);
+            const multiplier = 1 / Math.pow(1 + CONFIG.INFLATION_RATE, years);
             return {
                 multiplier: multiplier,
                 change: ((multiplier - 1) * 100)
             };
-        }
+        };
         
-        function calculateDeposit(months) {
+        const calculateDeposit = (months) => {
             const years = months / 12;
-            const multiplier = Math.pow(1 + DEPOSIT_RATE, years);
+            const multiplier = Math.pow(1 + CONFIG.DEPOSIT_RATE, years);
             return {
                 multiplier: multiplier,
                 change: ((multiplier - 1) * 100)
             };
-        }
+        };
         
-        async function fetchGoldData(months) {
+        const calculateGeneric = (months, avgReturn) => {
             const years = months / 12;
-            const avgReturn = 0.08;
             const multiplier = Math.pow(1 + avgReturn, years);
             return {
                 multiplier: multiplier,
                 change: ((multiplier - 1) * 100)
             };
-        }
+        };
         
-        function calculateRealEstate(months) {
-            const years = months / 12;
-            const avgReturn = 0.04;
-            const multiplier = Math.pow(1 + avgReturn, years);
-            return {
-                multiplier: multiplier,
-                change: ((multiplier - 1) * 100)
+        const fetchHistoricalData = (months) => {
+            const results = {
+                inflation: calculateInflation(months),
+                deposit: calculateDeposit(months),
+                gold: calculateGeneric(months, CONFIG.AVG_RETURNS.gold),
+                realestate: calculateGeneric(months, CONFIG.AVG_RETURNS.realestate),
+                kospi: calculateGeneric(months, CONFIG.AVG_RETURNS.kospi),
+                kosdaq: calculateGeneric(months, CONFIG.AVG_RETURNS.kosdaq),
+                sp500: calculateGeneric(months, CONFIG.AVG_RETURNS.sp500),
+                qqq: calculateGeneric(months, CONFIG.AVG_RETURNS.qqq),
+                btc: calculateGeneric(months, CONFIG.AVG_RETURNS.bitcoin),
+                eth: calculateGeneric(months, CONFIG.AVG_RETURNS.ethereum)
             };
-        }
-        
-        async function fetchKoreanStockData(index, months) {
-            const years = months / 12;
-            const avgReturn = index === 'KOSPI' ? 0.06 : 0.07;
-            const multiplier = Math.pow(1 + avgReturn, years);
-            return {
-                multiplier: multiplier,
-                change: ((multiplier - 1) * 100),
-                name: index
-            };
-        }
-        
-        async function fetchUSStockData(ticker, months) {
-            try {
-                const years = months / 12;
-                let avgReturn;
-                
-                if (ticker === 'SPY') avgReturn = 0.10;
-                else if (ticker === 'QQQ') avgReturn = 0.13;
-                else avgReturn = 0.12;
-                
-                const multiplier = Math.pow(1 + avgReturn, years);
-                return {
-                    multiplier: multiplier,
-                    change: ((multiplier - 1) * 100),
-                    name: ticker
-                };
-            } catch (error) {
-                console.error(`${ticker} 오류:`, error);
-                return null;
+            
+            for (const ticker of customStocks) {
+                results[ticker] = calculateGeneric(months, CONFIG.AVG_RETURNS.stock);
             }
-        }
+            
+            return results;
+        };
         
-        async function fetchCryptoData(coinId, months) {
-            try {
-                const daysAgo = Math.min(months * 30, 365);
-                const today = new Date();
-                const pastDate = new Date(today.getTime() - daysAgo * 24 * 60 * 60 * 1000);
-                
-                const url = `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart/range?vs_currency=usd&from=${Math.floor(pastDate.getTime() / 1000)}&to=${Math.floor(today.getTime() / 1000)}`;
-                
-                console.log(`${coinId} API 호출 중...`);
-                
-                const response = await fetch(url);
-                
-                console.log(`${coinId} 응답 상태:`, response.status);
-                
-                if (!response.ok) {
-                    throw new Error(`API 오류: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                const prices = data.prices;
-                
-                if (prices && prices.length > 0) {
-                    const oldPrice = prices[0][1];
-                    const newPrice = prices[prices.length - 1][1];
-                    const multiplier = newPrice / oldPrice;
-                    
-                    console.log(`${coinId} 성공:`, {oldPrice, newPrice, multiplier});
-                    
-                    return {
-                        multiplier: multiplier,
-                        change: ((multiplier - 1) * 100)
-                    };
-                }
-                
-                throw new Error('가격 데이터 없음');
-                
-            } catch (error) {
-                console.error(`${coinId} 오류:`, error);
-                console.log(`${coinId} 폴백 데이터 사용`);
-                
-                const years = months / 12;
-                const avgReturn = coinId === 'bitcoin' ? 0.50 : 0.40;
-                const multiplier = Math.pow(1 + avgReturn, years);
-                
-                return {
-                    multiplier: multiplier,
-                    change: ((multiplier - 1) * 100),
-                    isFallback: true
-                };
-            }
-        }
-        
-        function addStock() {
+        // ============ 주식 추가 함수 ============
+        const addStock = () => {
             const ticker = document.getElementById('stockTicker').value.toUpperCase().trim();
-            if (ticker && !customStocks.includes(ticker)) {
-                customStocks.push(ticker);
-                document.getElementById('stockTicker').value = '';
-                updateCalculation();
+            
+            if (!ticker) {
+                showNotification('티커를 입력하세요', true);
+                return;
             }
-        }
+            
+            if (!/^[A-Z]{1,5}$/.test(ticker)) {
+                showNotification('올바른 티커를 입력하세요 (예: AAPL, TSLA)', true);
+                return;
+            }
+            
+            if (customStocks.includes(ticker)) {
+                showNotification('이미 추가된 티커입니다', true);
+                return;
+            }
+            
+            customStocks.push(ticker);
+            document.getElementById('stockTicker').value = '';
+            showNotification(`${ticker} 추가됨`);
+            updateCalculation();
+        };
         
-        function displayResults(amount, months, data) {
+        // ============ 카드 생성 함수 ============
+        const createCard = (type, title, emoji, data, wonAmount, dataSource = '평균') => {
+            const change = data.change;
+            const isPositive = change >= 0;
+            const value = wonAmount * data.multiplier;
+            const profit = wonAmount * (data.multiplier - 1);
+            
+            const sourceBadge = `<div class="data-source-badge">${dataSource}</div>`;
+            
+            return `
+                <div class="money-card ${type}">
+                    ${sourceBadge}
+                    <div class="card-title">${emoji} ${title}</div>
+                    <div class="card-value ${isPositive ? 'positive' : 'negative'}">
+                        ${formatMoney(value)}
+                    </div>
+                    <div class="card-change ${isPositive ? 'positive' : 'negative'}">
+                        ${isPositive ? '+' : ''}${change.toFixed(2)}%
+                    </div>
+                    <div class="card-detail">
+                        ${isPositive ? '수익' : '손실'}: ${formatMoney(Math.abs(profit))}
+                    </div>
+                </div>
+            `;
+        };
+        
+        // ============ 결과 표시 함수 ============
+        const displayResults = (amount, months, data) => {
             const wonAmount = amount * 10000;
             let cardsHTML = '';
             
-            cardsHTML += `
-                <div class="money-card inflation">
-                    <div class="card-title">💸 물가상승 (현금)</div>
-                    <div class="card-value negative">${formatMoney(wonAmount * data.inflation.multiplier)}</div>
-                    <div class="card-change negative">${data.inflation.change.toFixed(2)}%</div>
-                    <div class="card-detail">손실: ${formatMoney(wonAmount * (1 - data.inflation.multiplier))}</div>
-                </div>
-            `;
-            
-            cardsHTML += `
-                <div class="money-card deposit">
-                    <div class="card-title">🏦 정기예금</div>
-                    <div class="card-value positive">${formatMoney(wonAmount * data.deposit.multiplier)}</div>
-                    <div class="card-change positive">+${data.deposit.change.toFixed(2)}%</div>
-                    <div class="card-detail">수익: ${formatMoney(wonAmount * (data.deposit.multiplier - 1))}</div>
-                </div>
-            `;
-            
-            cardsHTML += `
-                <div class="money-card gold">
-                    <div class="card-title">💰 금 (Gold)</div>
-                    <div class="card-value positive">${formatMoney(wonAmount * data.gold.multiplier)}</div>
-                    <div class="card-change positive">+${data.gold.change.toFixed(2)}%</div>
-                    <div class="card-detail">수익: ${formatMoney(wonAmount * (data.gold.multiplier - 1))}</div>
-                </div>
-            `;
-            
-            cardsHTML += `
-                <div class="money-card realestate">
-                    <div class="card-title">🏠 서울 아파트</div>
-                    <div class="card-value positive">${formatMoney(wonAmount * data.realestate.multiplier)}</div>
-                    <div class="card-change positive">+${data.realestate.change.toFixed(2)}%</div>
-                    <div class="card-detail">수익: ${formatMoney(wonAmount * (data.realestate.multiplier - 1))}</div>
-                </div>
-            `;
-            
-            cardsHTML += `
-                <div class="money-card kospi">
-                    <div class="card-title">📊 KOSPI</div>
-                    <div class="card-value ${data.kospi.change >= 0 ? 'positive' : 'negative'}">${formatMoney(wonAmount * data.kospi.multiplier)}</div>
-                    <div class="card-change ${data.kospi.change >= 0 ? 'positive' : 'negative'}">${data.kospi.change >= 0 ? '+' : ''}${data.kospi.change.toFixed(2)}%</div>
-                    <div class="card-detail">${data.kospi.change >= 0 ? '수익' : '손실'}: ${formatMoney(wonAmount * (data.kospi.multiplier - 1))}</div>
-                </div>
-            `;
-            
-            cardsHTML += `
-                <div class="money-card kosdaq">
-                    <div class="card-title">📈 KOSDAQ</div>
-                    <div class="card-value ${data.kosdaq.change >= 0 ? 'positive' : 'negative'}">${formatMoney(wonAmount * data.kosdaq.multiplier)}</div>
-                    <div class="card-change ${data.kosdaq.change >= 0 ? 'positive' : 'negative'}">${data.kosdaq.change >= 0 ? '+' : ''}${data.kosdaq.change.toFixed(2)}%</div>
-                    <div class="card-detail">${data.kosdaq.change >= 0 ? '수익' : '손실'}: ${formatMoney(wonAmount * (data.kosdaq.multiplier - 1))}</div>
-                </div>
-            `;
-            
-            cardsHTML += `
-                <div class="money-card sp500">
-                    <div class="card-title">📈 S&P 500 (SPY)</div>
-                    <div class="card-value positive">${formatMoney(wonAmount * data.sp500.multiplier)}</div>
-                    <div class="card-change positive">+${data.sp500.change.toFixed(2)}%</div>
-                    <div class="card-detail">수익: ${formatMoney(wonAmount * (data.sp500.multiplier - 1))}</div>
-                </div>
-            `;
-            
-            cardsHTML += `
-                <div class="money-card qqq">
-                    <div class="card-title">💻 나스닥 100 (QQQ)</div>
-                    <div class="card-value positive">${formatMoney(wonAmount * data.qqq.multiplier)}</div>
-                    <div class="card-change positive">+${data.qqq.change.toFixed(2)}%</div>
-                    <div class="card-detail">수익: ${formatMoney(wonAmount * (data.qqq.multiplier - 1))}</div>
-                </div>
-            `;
+            cardsHTML += createCard('inflation', '물가상승 (현금)', '💸', data.inflation, wonAmount, '2025');
+            cardsHTML += createCard('deposit', '정기예금', '🏦', data.deposit, wonAmount, '평균');
+            cardsHTML += createCard('gold', '금 (Gold)', '💰', data.gold, wonAmount, '평균');
+            cardsHTML += createCard('realestate', '서울 아파트', '🏠', data.realestate, wonAmount, '평균');
+            cardsHTML += createCard('kospi', 'KOSPI', '📊', data.kospi, wonAmount, '평균');
+            cardsHTML += createCard('kosdaq', 'KOSDAQ', '📈', data.kosdaq, wonAmount, '평균');
+            cardsHTML += createCard('sp500', 'S&P 500 (SPY)', '📈', data.sp500, wonAmount, '평균');
+            cardsHTML += createCard('qqq', '나스닥 100 (QQQ)', '💻', data.qqq, wonAmount, '평균');
             
             for (const ticker of customStocks) {
                 if (data[ticker]) {
-                    cardsHTML += `
-                        <div class="money-card stock">
-                            <div class="card-title">📊 ${ticker}</div>
-                            <div class="card-value ${data[ticker].change >= 0 ? 'positive' : 'negative'}">${formatMoney(wonAmount * data[ticker].multiplier)}</div>
-                            <div class="card-change ${data[ticker].change >= 0 ? 'positive' : 'negative'}">${data[ticker].change >= 0 ? '+' : ''}${data[ticker].change.toFixed(2)}%</div>
-                            <div class="card-detail">${data[ticker].change >= 0 ? '수익' : '손실'}: ${formatMoney(wonAmount * (data[ticker].multiplier - 1))}</div>
-                        </div>
-                    `;
+                    cardsHTML += createCard('stock', ticker, '📊', data[ticker], wonAmount, '평균');
                 }
             }
             
-            cardsHTML += `
-                <div class="money-card btc">
-                    <div class="card-title">₿ 비트코인</div>
-                    <div class="card-value ${data.btc.change >= 0 ? 'positive' : 'negative'}">${formatMoney(wonAmount * data.btc.multiplier)}</div>
-                    <div class="card-change ${data.btc.change >= 0 ? 'positive' : 'negative'}">${data.btc.change >= 0 ? '+' : ''}${data.btc.change.toFixed(2)}%</div>
-                    <div class="card-detail">${data.btc.change >= 0 ? '수익' : '손실'}: ${formatMoney(wonAmount * (data.btc.multiplier - 1))}</div>
-                </div>
-            `;
-            
-            cardsHTML += `
-                <div class="money-card eth">
-                    <div class="card-title">⟠ 이더리움</div>
-                    <div class="card-value ${data.eth.change >= 0 ? 'positive' : 'negative'}">${formatMoney(wonAmount * data.eth.multiplier)}</div>
-                    <div class="card-change ${data.eth.change >= 0 ? 'positive' : 'negative'}">${data.eth.change >= 0 ? '+' : ''}${data.eth.change.toFixed(2)}%</div>
-                    <div class="card-detail">${data.eth.change >= 0 ? '수익' : '손실'}: ${formatMoney(wonAmount * (data.eth.multiplier - 1))}</div>
-                </div>
-            `;
+            cardsHTML += createCard('btc', '비트코인', '₿', data.btc, wonAmount, '평균');
+            cardsHTML += createCard('eth', '이더리움', '⟠', data.eth, wonAmount, '평균');
             
             document.getElementById('comparisonGrid').innerHTML = cardsHTML;
             
@@ -1179,9 +1408,15 @@
                 document.getElementById('realtimeCounter').textContent = 
                     Math.round(realtimeCounter).toLocaleString() + '원';
             }, 1000);
-        }
+        };
         
-        async function updateCalculation() {
+        // ============ 계산 업데이트 함수 ============
+        const updateAmountDisplay = () => {
+            const amount = parseFloat(document.getElementById('amount').value);
+            document.getElementById('amountDisplay').textContent = formatMoney(amount * 10000);
+        };
+        
+        const updateCalculation = () => {
             const amount = parseFloat(document.getElementById('amount').value);
             const months = parseInt(document.getElementById('months').value);
             
@@ -1193,29 +1428,12 @@
             if (remainingMonths > 0) timeText += ` ${remainingMonths}개월`;
             document.getElementById('timeDisplay').textContent = timeText + ' 전';
             
-            document.getElementById('loadingDiv').style.display = 'block';
-            document.getElementById('resultDiv').style.display = 'none';
-            
-            const data = await fetchHistoricalData(months);
-            
-            if (data) {
-                displayResults(amount, months, data);
-                document.getElementById('loadingDiv').style.display = 'none';
-                document.getElementById('resultDiv').style.display = 'block';
-            }
-        }
+            const data = fetchHistoricalData(months);
+            displayResults(amount, months, data);
+        };
         
-        document.getElementById('amount').addEventListener('input', updateCalculation);
-        document.getElementById('months').addEventListener('input', updateCalculation);
-        document.getElementById('amount').addEventListener('input', updateAmountDisplay);
-        
-        document.getElementById('stockTicker').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                addStock();
-            }
-        });
-        
-        function toggleFAQ() {
+        // ============ FAQ 토글 함수 ============
+        const toggleFAQ = () => {
             const content = document.getElementById('faqContent');
             const arrow = document.getElementById('faqArrow');
             
@@ -1226,9 +1444,55 @@
                 content.classList.add('open');
                 arrow.classList.add('open');
             }
-        }
+        };
         
-        updateCalculation();
+        // ============ 다크모드 토글 함수 ============
+        const toggleDarkMode = () => {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            document.getElementById('darkModeToggle').textContent = isDark ? '☀️' : '🌙';
+            localStorage.setItem('darkMode', isDark);
+            showNotification(isDark ? '🌙 다크모드 활성화' : '☀️ 라이트모드 활성화');
+        };
+
+        // ============ 이벤트 리스너 ============
+        document.getElementById('amount').addEventListener('input', updateCalculation);
+        document.getElementById('months').addEventListener('input', updateCalculation);
+        document.getElementById('amount').addEventListener('input', updateAmountDisplay);
+        document.getElementById('floatingHelp').addEventListener('click', showDisclaimerModal);
+        document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+        
+        document.getElementById('stockTicker').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addStock();
+            }
+        });
+        
+        // ============ 초기화 ============
+        const init = () => {
+            // 다크모드 설정 불러오기
+            const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+            if (savedDarkMode) {
+                document.body.classList.add('dark-mode');
+                document.getElementById('darkModeToggle').textContent = '☀️';
+            }
+
+            // 첫 방문 시 면책 조항 표시
+            const dontShow = localStorage.getItem('dontShowDisclaimer');
+            if (!dontShow) {
+                setTimeout(showDisclaimerModal, 1000);
+            }
+            
+            // 초기 계산
+            updateCalculation();
+        };
+        
+        // 페이지 로드 시 초기화
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
     </script>
 </body>
 </html>
