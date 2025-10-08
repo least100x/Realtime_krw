@@ -350,9 +350,180 @@
             }
         }
 
+        /* 모달 스타일 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            animation: fadeIn 0.3s ease;
+            padding: 20px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        .dark-mode .modal-content {
+            background: #2d2d44;
+            color: #f0f0f0;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #667eea;
+        }
+
+        .dark-mode .modal-header {
+            color: #9b8ff7;
+        }
+
+        .modal-body {
+            font-size: 14px;
+            line-height: 1.8;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .dark-mode .modal-body {
+            color: #b0b0b0;
+        }
+
+        .modal-body strong {
+            color: #333;
+        }
+
+        .dark-mode .modal-body strong {
+            color: #f0f0f0;
+        }
+
+        .modal-body ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .modal-body li {
+            margin: 8px 0;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .modal-btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .modal-btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .dark-mode .modal-btn-secondary {
+            background: #444;
+            color: #f0f0f0;
+        }
+
+        .modal-btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .dark-mode .modal-btn-secondary:hover {
+            background: #555;
+        }
+
+        /* 플로팅 도움말 버튼 */
+        .floating-help {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .floating-help:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .floating-help:active {
+            transform: scale(0.95);
+        }
+
         @media (max-width: 600px) {
             .grid {
                 grid-template-columns: 1fr;
+            }
+
+            .floating-help {
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+                bottom: 20px;
+                right: 20px;
             }
         }
 
@@ -383,6 +554,18 @@
 
             .chart-container {
                 height: 250px;
+            }
+
+            .modal-content {
+                padding: 20px;
+            }
+
+            .modal-header {
+                font-size: 18px;
+            }
+
+            .modal-body {
+                font-size: 13px;
             }
         }
 
@@ -420,6 +603,9 @@
         <div id="chartSection" style="display: none;"></div>
         <div id="content" class="loading">데이터를 불러오는 중...</div>
     </div>
+
+    <!-- 플로팅 도움말 버튼 -->
+    <button class="floating-help" id="floatingHelp" title="도움말">?</button>
 
     <script>
         // ============ 설정 및 상태 관리 ============
@@ -492,6 +678,66 @@
             if ('Notification' in window && Notification.permission === 'granted') {
                 new Notification(title, { body, icon: '💱' });
             }
+        };
+
+        // ============ 모달 관련 함수 ============
+        const showInfoModal = () => {
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        ⚠️ 안내사항
+                    </div>
+                    <div class="modal-body">
+                        <strong>📌 이 페이지에 대해</strong>
+                        <ul>
+                            <li>현재 페이지는 <strong>주요 코인(BTC/ETH)</strong>에 대한 <strong>원래 의미의 김프</strong> 정보를 제공합니다.</li>
+                            <li>전문적인 김프 정보를 확인하시려면 
+                                <a href="https://kimpga.com/" target="_blank" style="color: #667eea; font-weight: bold; text-decoration: none;">kimpga.com</a>
+                                을 참조해 주세요.
+                            </li>
+                        </ul>
+
+                        <strong>💡 사용 팁</strong>
+                        <ul>
+                            <li>새로고침 버튼을 <strong>연속으로 누르지 마세요</strong> (API 제한)</li>
+                            <li>차트 기능은 데이터가 쌓일수록 유용합니다 (최대 ${CONFIG.MAX_HISTORY_LENGTH}개 저장)</li>
+                            <li>우측 하단 <strong>? 버튼</strong>을 눌러 언제든 이 안내를 다시 볼 수 있습니다</li>
+                        </ul>
+
+                        <strong style="color: #e67e22;">📊 정확한 데이터는 직접 확인하시는 것을 추천드립니다.</strong>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="modal-btn modal-btn-secondary" id="modalDontShow">다시 보지 않기</button>
+                        <button class="modal-btn modal-btn-primary" id="modalClose">확인</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(overlay);
+
+            // 닫기 버튼
+            document.getElementById('modalClose').addEventListener('click', () => {
+                overlay.style.animation = 'fadeIn 0.3s ease reverse';
+                setTimeout(() => overlay.remove(), 300);
+            });
+
+            // 다시 보지 않기
+            document.getElementById('modalDontShow').addEventListener('click', () => {
+                localStorage.setItem('dontShowInfoModal', 'true');
+                overlay.style.animation = 'fadeIn 0.3s ease reverse';
+                setTimeout(() => overlay.remove(), 300);
+                showNotification('✅ 다시 표시하지 않습니다');
+            });
+
+            // 배경 클릭 시 닫기
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    overlay.style.animation = 'fadeIn 0.3s ease reverse';
+                    setTimeout(() => overlay.remove(), 300);
+                }
+            });
         };
 
         // ============ API 호출 함수 ============
@@ -913,18 +1159,7 @@
                     &nbsp;&nbsp;&nbsp;차이(%) = (바이낸스 가격 / 1 - 1) × 100<br><br>
                     
                     <strong style="color: #e74c3c;">플러스(+)</strong>: 한국이 더 비쌈 (김치 프리미엄) 또는 1달러보다 비쌈<br>
-                    <strong style="color: #3498db;">마이너스(-)</strong>: 한국이 더 쌈 (역프/디스카운트) 또는 1달러보다 쌈<br><br>
-
-                    <div style="border-top: 1px solid #eee; margin-top: 12px; padding-top: 12px; font-size: 12px;">
-                        ⚠️ <strong>안내사항</strong><br>
-                        • 현재 페이지에서는 <b>주요 코인(BTC/ETH)</b>에 대한 <b>원래 의미의 김프</b> 정보를 제공하고 있습니다.<br>
-                        • 전문적인 김프 정보를 확인하시려면 
-                        <a href="https://kimpga.com/" target="_blank" style="color: #667eea; font-weight: bold; text-decoration: none;">https://kimpga.com/</a>
-                        을 참조해 주세요.<br>
-                        • 새로고침 버튼을 연속으로 누르지 마세요<br>
-                        • 차트 기능은 데이터가 쌓일수록 유용합니다 (최대 ${CONFIG.MAX_HISTORY_LENGTH}개 저장)<br>
-                        <strong style="color: #e67e22;">📌 정확한 데이터는 직접 확인하시는 것을 추천드립니다.</strong><br>
-                    </div>
+                    <strong style="color: #3498db;">마이너스(-)</strong>: 한국이 더 쌈 (역프/디스카운트) 또는 1달러보다 쌈<br>
                 </div>
 
                 <button class="refresh-btn" onclick="manualRefresh()">🔄 새로고침</button>
@@ -999,6 +1234,14 @@
             document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
             document.getElementById('notificationToggle').addEventListener('click', toggleNotifications);
             document.getElementById('chartToggle').addEventListener('click', toggleChart);
+            document.getElementById('floatingHelp').addEventListener('click', showInfoModal);
+
+            // 첫 방문 확인 - 모달 표시
+            const dontShowModal = localStorage.getItem('dontShowInfoModal');
+            if (!dontShowModal) {
+                // 1초 후 모달 표시 (데이터 로딩 후)
+                setTimeout(showInfoModal, 1000);
+            }
 
             // 초기 데이터 로드
             fetchData();
