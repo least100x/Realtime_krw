@@ -592,7 +592,6 @@
             <h1>💱 실시간 환율 & 김프</h1>
             <div class="header-controls">
                 <button class="control-btn" id="darkModeToggle">🌙 다크모드</button>
-                <button class="control-btn" id="notificationToggle">🔔 알림 설정</button>
                 <button class="control-btn" id="chartToggle">📊 차트 보기</button>
             </div>
             <div style="font-size: 13px; opacity: 0.85; margin: 8px 0;">자동 업데이트: 30초마다</div>
@@ -615,7 +614,6 @@
             FETCH_TIMEOUT: 10000,
             MIN_VALID_EXCHANGE_RATE: 100,
             UPDATE_INTERVAL: 30000,
-            NOTIFICATION_THRESHOLD: 3.0,
             MAX_HISTORY_LENGTH: 50
         };
 
@@ -626,7 +624,6 @@
             retryCount: 0,
             settings: JSON.parse(localStorage.getItem('settings')) || {
                 darkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
-                notifications: false,
                 showChart: false
             }
         };
@@ -664,20 +661,6 @@
                 notification.style.animation = 'slideIn 0.3s ease reverse';
                 setTimeout(() => notification.remove(), 300);
             }, duration);
-        };
-
-        const requestNotificationPermission = async () => {
-            if ('Notification' in window && Notification.permission === 'default') {
-                const permission = await Notification.requestPermission();
-                return permission === 'granted';
-            }
-            return Notification.permission === 'granted';
-        };
-
-        const sendBrowserNotification = (title, body) => {
-            if ('Notification' in window && Notification.permission === 'granted') {
-                new Notification(title, { body, icon: '💱' });
-            }
         };
 
         // ============ 모달 관련 함수 ============
@@ -882,17 +865,6 @@
 
                 saveToLocalStorage('kimpHistory', state.history);
 
-                // 알림 확인
-                if (state.settings.notifications) {
-                    const btcKimpNum = parseFloat(btcKimp);
-                    if (Math.abs(btcKimpNum) >= CONFIG.NOTIFICATION_THRESHOLD) {
-                        sendBrowserNotification(
-                            '김프 알림',
-                            `BTC 김프: ${btcKimp}% (임계값: ±${CONFIG.NOTIFICATION_THRESHOLD}%)`
-                        );
-                    }
-                }
-
                 state.cache = { data: resultData, timestamp: Date.now() };
                 saveToLocalStorage('kimpCache', state.cache);
                 saveToLocalStorage('lastValidData', resultData);
@@ -958,13 +930,24 @@
 
         const renderKimpCard = (coin, upbitPrice, binancePrice, kimp) => {
             const kimpNum = parseFloat(kimp);
-            const kimpClass = isNaN(kimpNum) ? 'neutral' : (kimpNum >= 0 ? 'positive' : 'negative');
-            const kimpSign = isNaN(kimpNum) ? '' : (kimpNum >= 0 ? '+' : '');
+            let kimpClass, kimpDisplay;
+            
+            if (isNaN(kimpNum)) {
+                kimpClass = 'neutral';
+                kimpDisplay = 'N/A';
+            } else if (Math.abs(kimpNum) < 0.01) {
+                kimpClass = 'neutral';
+                kimpDisplay = '0!';
+            } else {
+                kimpClass = kimpNum >= 0 ? 'positive' : 'negative';
+                const kimpSign = kimpNum >= 0 ? '+' : '';
+                kimpDisplay = `${kimpSign}${kimp}%`;
+            }
             
             return `<div class="card">
                 <div class="card-title">${coin}</div>
                 <div class="card-kimp-value ${kimpClass}">
-                    ${kimp === 'N/A' ? 'N/A' : `${kimpSign}${kimp}%`}
+                    ${kimpDisplay}
                 </div>
                 <div class="kimp-info">
                     <strong>업비트 (USDT)</strong><br>
@@ -983,13 +966,24 @@
         const renderStableKimpCard = (coin, upbitPrice, usdKrw, kimp) => {
             const fxKrw = parseFloat(usdKrw).toLocaleString('ko-KR', { maximumFractionDigits: 2 });
             const kimpNum = parseFloat(kimp);
-            const kimpClass = isNaN(kimpNum) ? 'neutral' : (kimpNum >= 0 ? 'positive' : 'negative');
-            const kimpSign = isNaN(kimpNum) ? '' : (kimpNum >= 0 ? '+' : '');
+            let kimpClass, kimpDisplay;
+            
+            if (isNaN(kimpNum)) {
+                kimpClass = 'neutral';
+                kimpDisplay = 'N/A';
+            } else if (Math.abs(kimpNum) < 0.01) {
+                kimpClass = 'neutral';
+                kimpDisplay = '0!';
+            } else {
+                kimpClass = kimpNum >= 0 ? 'positive' : 'negative';
+                const kimpSign = kimpNum >= 0 ? '+' : '';
+                kimpDisplay = `${kimpSign}${kimp}%`;
+            }
             
             return `<div class="card">
                 <div class="card-title">${coin}</div>
                 <div class="card-kimp-value ${kimpClass}">
-                    ${kimp === 'N/A' ? 'N/A' : `${kimpSign}${kimp}%`}
+                    ${kimpDisplay}
                 </div>
                 <div class="kimp-info">
                     <strong>업비트 (KRW)</strong><br>
@@ -1185,24 +1179,6 @@
             showNotification(state.settings.darkMode ? '🌙 다크모드 활성화' : '☀️ 라이트모드 활성화');
         };
 
-        const toggleNotifications = async () => {
-            if (!state.settings.notifications) {
-                const granted = await requestNotificationPermission();
-                if (!granted) {
-                    showNotification('❌ 알림 권한이 거부되었습니다');
-                    return;
-                }
-                state.settings.notifications = true;
-                showNotification('🔔 알림이 활성화되었습니다');
-            } else {
-                state.settings.notifications = false;
-                showNotification('🔕 알림이 비활성화되었습니다');
-            }
-            
-            document.getElementById('notificationToggle').classList.toggle('active', state.settings.notifications);
-            saveToLocalStorage('settings', state.settings);
-        };
-
         const toggleChart = () => {
             state.settings.showChart = !state.settings.showChart;
             document.getElementById('chartToggle').classList.toggle('active', state.settings.showChart);
@@ -1228,11 +1204,6 @@
                 document.getElementById('darkModeToggle').classList.add('active');
             }
 
-            // 알림 설정 반영
-            if (state.settings.notifications) {
-                document.getElementById('notificationToggle').classList.add('active');
-            }
-
             // 차트 설정 반영
             if (state.settings.showChart) {
                 document.getElementById('chartToggle').classList.add('active');
@@ -1240,14 +1211,12 @@
 
             // 이벤트 리스너
             document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
-            document.getElementById('notificationToggle').addEventListener('click', toggleNotifications);
             document.getElementById('chartToggle').addEventListener('click', toggleChart);
             document.getElementById('floatingHelp').addEventListener('click', showInfoModal);
 
             // 첫 방문 확인 - 모달 표시
             const dontShowModal = localStorage.getItem('dontShowInfoModal');
             if (!dontShowModal) {
-                // 1초 후 모달 표시 (데이터 로딩 후)
                 setTimeout(showInfoModal, 1000);
             }
 
@@ -1256,14 +1225,6 @@
 
             // 자동 업데이트
             setInterval(fetchData, CONFIG.UPDATE_INTERVAL);
-
-            // PWA 설치 프롬프트
-            let deferredPrompt;
-            window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault();
-                deferredPrompt = e;
-                showNotification('💾 홈 화면에 추가할 수 있습니다!');
-            });
 
             // 온라인/오프라인 감지
             window.addEventListener('online', () => {
@@ -1274,13 +1235,6 @@
             window.addEventListener('offline', () => {
                 showNotification('📡 오프라인 모드');
             });
-
-            // 서비스 워커 등록 (PWA)
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('data:text/javascript;base64,Y29uc3QgQ0FDSEVfTkFNRSA9ICdraW1wLWRhc2hib2FyZC12MSc7CmNvbnN0IHVybHNUb0NhY2hlID0gWycvJ107CgpzZWxmLmFkZEV2ZW50TGlzdGVuZXIoJ2luc3RhbGwnLCAoZXZlbnQpID0+IHsKICBldmVudC53YWl0VW50aWwoY2FjaGVzLm9wZW4oQ0FDSEVfTkFNRSkudGhlbigoY2FjaGUpID0+IGNhY2hlLmFkZEFsbCh1cmxzVG9DYWNoZSkpKTsKfSk7CgpzZWxmLmFkZEV2ZW50TGlzdGVuZXIoJ2ZldGNoJywgKGV2ZW50KSA9PiB7CiAgZXZlbnQucmVzcG9uZFdpdGgoY2FjaGVzLm1hdGNoKGV2ZW50LnJlcXVlc3QpLnRoZW4oKHJlc3BvbnNlKSA9PiByZXNwb25zZSB8fCBmZXRjaChldmVudC5yZXF1ZXN0KSkpOwp9KTs=')
-                    .then(() => console.log('Service Worker 등록 성공'))
-                    .catch((error) => console.log('Service Worker 등록 실패:', error));
-            }
         };
 
         // 페이지 로드 시 초기화
