@@ -93,10 +93,11 @@
         }
 
         .update-time {
-            font-size: 15px;
+            font-size: 13px;
             opacity: 0.95;
             font-weight: 500;
             margin-top: 8px;
+            line-height: 1.6;
         }
 
         .section-title {
@@ -280,6 +281,21 @@
             border-radius: 4px;
             font-size: 11px;
             margin-top: 4px;
+        }
+
+        .source-tag.warning {
+            background: #f39c12;
+        }
+
+        .warning-box {
+            background: rgba(243, 156, 18, 0.15);
+            border: 1px solid rgba(243, 156, 18, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 12px;
+            font-size: 12px;
+            color: var(--text-primary);
+            line-height: 1.5;
         }
 
         .error-message {
@@ -557,8 +573,8 @@
                 <button class="control-btn" id="darkModeToggle">🌙 다크모드</button>
                 <button class="control-btn" id="chartToggle">📊 차트 보기</button>
             </div>
-            <div style="font-size: 15px; opacity: 0.9; margin: 8px 0; font-weight: 500;">
-                자동 업데이트: 5분마다
+            <div style="font-size: 13px; opacity: 0.9; margin: 8px 0; font-weight: 500;">
+                자동 업데이트: 환율 5분 / 코인 1분
             </div>
             <div class="update-time" id="updateTime">로딩 중...</div>
         </div>
@@ -571,28 +587,44 @@
     <button class="floating-help" id="floatingHelp" title="도움말">?</button>
 
     <script>
+        // 버전 관리
+        const APP_VERSION = '2.1';
+        const savedVersion = localStorage.getItem('appVersion');
+        if (savedVersion !== APP_VERSION) {
+            console.log('🔄 새 버전 감지 - 캐시 초기화 중...');
+            localStorage.clear();
+            localStorage.setItem('appVersion', APP_VERSION);
+        }
+
         const CONFIG = {
-            CACHE_TTL: 300000,
+            EXCHANGE_CACHE_TTL: 300000,
+            COIN_CACHE_TTL: 60000,
             MAX_RETRIES: 3,
             FETCH_TIMEOUT: 10000,
             MIN_VALID_EXCHANGE_RATE: 100,
-            UPDATE_INTERVAL: 300000,
+            EXCHANGE_UPDATE_INTERVAL: 300000,
+            COIN_UPDATE_INTERVAL: 60000,
             MAX_HISTORY_LENGTH: 50
         };
 
         const state = {
-            cache: JSON.parse(localStorage.getItem('kimpCache')) || { data: null, timestamp: 0 },
+            exchangeCache: JSON.parse(localStorage.getItem('exchangeCache')) || { data: null, timestamp: 0 },
+            coinCache: JSON.parse(localStorage.getItem('coinCache')) || { data: null, timestamp: 0 },
             history: JSON.parse(localStorage.getItem('kimpHistory')) || [],
-            isLoading: false,
+            isLoadingExchange: false,
+            isLoadingCoin: false,
             retryCount: 0,
+            exchangeSource: localStorage.getItem('exchangeSource') || 'unknown',
             settings: JSON.parse(localStorage.getItem('settings')) || {
                 darkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
                 showChart: false
             }
         };
 
-        let countdownInterval = null;
-        let nextFetchTime = null;
+        let exchangeCountdownInterval = null;
+        let coinCountdownInterval = null;
+        let exchangeScheduleInterval = null;
+        let coinScheduleInterval = null;
 
         const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -628,6 +660,33 @@
             }, duration);
         };
 
+        const getNextExchangeUpdateTime = () => {
+            const now = new Date();
+            const minutes = now.getMinutes();
+            const nextMinute = Math.ceil((minutes + 1) / 5) * 5;
+            
+            const next = new Date(now);
+            next.setMinutes(nextMinute);
+            next.setSeconds(0);
+            next.setMilliseconds(0);
+            
+            if (next <= now) {
+                next.setMinutes(next.getMinutes() + 5);
+            }
+            
+            return next.getTime();
+        };
+
+        const getNextCoinUpdateTime = () => {
+            const now = new Date();
+            const next = new Date(now);
+            next.setMinutes(next.getMinutes() + 1);
+            next.setSeconds(0);
+            next.setMilliseconds(0);
+            
+            return next.getTime();
+        };
+
         const showInfoModal = () => {
             const overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
@@ -648,17 +707,18 @@
 
                         <strong>💡 사용 팁</strong>
                         <ul>
-                            <li>5분마다 자동으로 데이터가 갱신됩니다</li>
+                            <li><strong>환율:</strong> 5분마다 자동 갱신 (글로벌 정각 기준)</li>
+                            <li><strong>코인 가격:</strong> 1분마다 자동 갱신 (글로벌 정각 기준)</li>
                             <li>차트 기능은 데이터가 쌓일수록 유용합니다 (최대 ${CONFIG.MAX_HISTORY_LENGTH}개 저장)</li>
                             <li>우측 하단 <strong>? 버튼</strong>을 눌러 언제든 이 안내를 다시 볼 수 있습니다</li>
                         </ul>
 
-                        <strong>🔄 환율 데이터 안내</strong>
+                        <strong>🔄 데이터 출처</strong>
                         <ul>
-                            <li><strong>업데이트 주기:</strong> 5분마다 자동 갱신</li>
-                            <li><strong>정확도:</strong> 실제 은행 고시 환율과 <strong>±0.5% 차이</strong>가 있을 수 있습니다</li>
-                            <li><strong>데이터 출처:</strong> Twelve Data API</li>
-                            <li>실시간 환율이 아닌 <strong>참고용</strong>입니다</li>
+                            <li><strong>환율 (우선):</strong> Twelve Data API</li>
+                            <li><strong>환율 (백업):</strong> ExchangeRate-API (하루 1회 업데이트)</li>
+                            <li><strong>코인:</strong> 업비트, 바이낸스</li>
+                            <li>모든 타이머는 <strong>글로벌 기준</strong>으로 작동합니다</li>
                         </ul>
 
                         <strong style="color: #e67e22;">📊 정확한 거래를 원하시면 거래소에서 직접 확인하시는 것을 추천드립니다.</strong>
@@ -696,6 +756,7 @@
             const WORKER_URL = 'https://exchange-rate-proxy.least100x.workers.dev';
             
             try {
+                console.log('🔄 환율 API 호출 시도 (Twelve Data)...');
                 const response = await fetchWithTimeout(WORKER_URL, 10000);
                 
                 if (!response.ok) {
@@ -712,14 +773,45 @@
                     throw new Error('유효하지 않은 환율 데이터');
                 }
                 
-                console.log(`✅ 환율 수신: ${data.rate}`);
+                console.log(`✅ 환율 수신 (Twelve Data): ${data.rate}`);
+                state.exchangeSource = 'twelve_data';
+                localStorage.setItem('exchangeSource', 'twelve_data');
                 
-                return data.rate;
+                return { rate: data.rate, source: 'twelve_data', daily: false };
                 
             } catch (error) {
-                console.error('❌ 환율 API 오류:', error);
-                console.warn('⚠️ 임시로 고정 환율 1380 사용');
-                return 1380;
+                console.warn('⚠️ Twelve Data 실패, ExchangeRate-API로 전환:', error.message);
+                
+                try {
+                    const fallbackResponse = await fetchWithTimeout(
+                        'https://api.exchangerate-api.com/v4/latest/USD', 
+                        10000
+                    );
+                    const fallbackData = await fallbackResponse.json();
+                    
+                    const krwRate = fallbackData.rates.KRW;
+                    if (!krwRate || krwRate < 100 || krwRate > 10000) {
+                        throw new Error('KRW 환율 없음');
+                    }
+                    
+                    console.log(`✅ 환율 수신 (ExchangeRate-API): ${krwRate}`);
+                    state.exchangeSource = 'exchangerate_api';
+                    localStorage.setItem('exchangeSource', 'exchangerate_api');
+                    
+                    return { rate: krwRate, source: 'exchangerate_api', daily: true };
+                    
+                } catch (fallbackError) {
+                    console.error('❌ 모든 환율 API 실패:', fallbackError);
+                    
+                    // 마지막 저장된 환율 사용
+                    const lastRate = localStorage.getItem('lastValidRate');
+                    if (lastRate) {
+                        console.warn('⚠️ 마지막 저장된 환율 사용:', lastRate);
+                        return { rate: parseFloat(lastRate), source: 'cached', daily: true };
+                    }
+                    
+                    throw new Error('환율 데이터를 가져올 수 없습니다');
+                }
             }
         };
 
@@ -773,46 +865,42 @@
             }
         };
 
-        const fetchData = async () => {
-            if (state.isLoading) return;
+        const fetchExchangeData = async () => {
+            if (state.isLoadingExchange) return;
             
             const now = Date.now();
-            if (state.cache.data && (now - state.cache.timestamp) < CONFIG.CACHE_TTL) {
-                displayData(state.cache.data, true);
-                return;
+            if (state.exchangeCache.data && (now - state.exchangeCache.timestamp) < CONFIG.EXCHANGE_CACHE_TTL) {
+                console.log('📦 환율 캐시 사용');
+                return state.exchangeCache.data;
             }
 
-            state.isLoading = true;
-            const startTime = Date.now();
-            
-            // 업데이트 시작 시 타이머 갱신
-            document.getElementById('updateTime').textContent = '🔄 갱신 중...';
+            state.isLoadingExchange = true;
+            console.log('🔄 환율 데이터 갱신 중...');
 
             try {
-                const [usdKrw, upbitData, binanceCoinData, binanceStable] = await Promise.all([
+                const [exchangeResult, upbitData, binanceStable] = await Promise.all([
                     getExchangeRate(),
                     getUpbitPrices(),
-                    getBinanceCoinPrices(),
                     getBinanceStablePrice()
                 ]);
+
+                const usdKrw = exchangeResult.rate;
+                const exchangeSource = exchangeResult.source;
+                const isDaily = exchangeResult.daily;
 
                 if (usdKrw < CONFIG.MIN_VALID_EXCHANGE_RATE) {
                     throw new Error('환율 데이터를 가져올 수 없습니다');
                 }
 
+                // 유효한 환율 저장
+                localStorage.setItem('lastValidRate', usdKrw.toString());
+
                 const usdtPremium = upbitData.usdt ? ((upbitData.usdt / usdKrw - 1) * 100).toFixed(2) : 'N/A';
                 const usdcPremium = upbitData.usdc ? ((upbitData.usdc / usdKrw - 1) * 100).toFixed(2) : 'N/A';
                 const binanceUsdtDiff = ((binanceStable.usdt - 1) * 100).toFixed(4);
                 const binanceUsdcDiff = ((binanceStable.usdc - 1) * 100).toFixed(4);
-                
-                const btcKimp = (upbitData.btcUsdt && binanceCoinData.btc) ? 
-                    ((upbitData.btcUsdt / binanceCoinData.btc - 1) * 100).toFixed(2) : 'N/A';
-                const ethKimp = (upbitData.ethUsdt && binanceCoinData.eth) ? 
-                    ((upbitData.ethUsdt / binanceCoinData.eth - 1) * 100).toFixed(2) : 'N/A';
-                
-                const loadTime = ((Date.now() - startTime) / 1000).toFixed(2);
 
-                const resultData = {
+                const exchangeData = {
                     timestamp: Date.now(),
                     usdKrw: usdKrw.toFixed(2),
                     upbitUsdt: upbitData.usdt.toLocaleString('ko-KR'),
@@ -823,20 +911,69 @@
                     binanceUsdc: binanceStable.usdc.toFixed(4),
                     binanceUsdtDiff: binanceUsdtDiff,
                     binanceUsdcDiff: binanceUsdcDiff,
+                    exchangeSource: exchangeSource,
+                    isDaily: isDaily
+                };
+
+                state.exchangeCache = { data: exchangeData, timestamp: Date.now() };
+                saveToLocalStorage('exchangeCache', state.exchangeCache);
+                
+                state.retryCount = 0;
+                console.log('✅ 환율 데이터 갱신 완료');
+
+                return exchangeData;
+
+            } catch (error) {
+                console.error('환율 데이터 가져오기 오류:', error);
+                
+                if (state.exchangeCache.data) {
+                    console.warn('⚠️ 캐시된 환율 데이터 사용');
+                    return state.exchangeCache.data;
+                }
+                
+                throw error;
+            } finally {
+                state.isLoadingExchange = false;
+            }
+        };
+
+        const fetchCoinData = async () => {
+            if (state.isLoadingCoin) return;
+            
+            const now = Date.now();
+            if (state.coinCache.data && (now - state.coinCache.timestamp) < CONFIG.COIN_CACHE_TTL) {
+                console.log('📦 코인 캐시 사용');
+                return state.coinCache.data;
+            }
+
+            state.isLoadingCoin = true;
+            console.log('🔄 코인 데이터 갱신 중...');
+
+            try {
+                const [upbitData, binanceCoinData] = await Promise.all([
+                    getUpbitPrices(),
+                    getBinanceCoinPrices()
+                ]);
+
+                const btcKimp = (upbitData.btcUsdt && binanceCoinData.btc) ? 
+                    ((upbitData.btcUsdt / binanceCoinData.btc - 1) * 100).toFixed(2) : 'N/A';
+                const ethKimp = (upbitData.ethUsdt && binanceCoinData.eth) ? 
+                    ((upbitData.ethUsdt / binanceCoinData.eth - 1) * 100).toFixed(2) : 'N/A';
+
+                const coinData = {
+                    timestamp: Date.now(),
                     upbitBtcUsdt: upbitData.btcUsdt ? upbitData.btcUsdt.toLocaleString('en-US', { maximumFractionDigits: 2 }) : 'N/A',
                     upbitEthUsdt: upbitData.ethUsdt ? upbitData.ethUsdt.toLocaleString('en-US', { maximumFractionDigits: 2 }) : 'N/A',
                     binanceBtc: binanceCoinData.btc.toLocaleString('en-US', { maximumFractionDigits: 2 }),
                     binanceEth: binanceCoinData.eth.toLocaleString('en-US', { maximumFractionDigits: 2 }),
                     btcKimp: btcKimp,
-                    ethKimp: ethKimp,
-                    loadTime: loadTime
+                    ethKimp: ethKimp
                 };
 
                 state.history.push({
-                    timestamp: resultData.timestamp,
+                    timestamp: coinData.timestamp,
                     btcKimp: parseFloat(btcKimp) || 0,
-                    ethKimp: parseFloat(ethKimp) || 0,
-                    usdtPremium: parseFloat(usdtPremium) || 0
+                    ethKimp: parseFloat(ethKimp) || 0
                 });
 
                 if (state.history.length > CONFIG.MAX_HISTORY_LENGTH) {
@@ -845,51 +982,44 @@
 
                 saveToLocalStorage('kimpHistory', state.history);
 
-                state.cache = { data: resultData, timestamp: Date.now() };
-                saveToLocalStorage('kimpCache', state.cache);
-                saveToLocalStorage('lastValidData', resultData);
+                state.coinCache = { data: coinData, timestamp: Date.now() };
+                saveToLocalStorage('coinCache', state.coinCache);
                 
                 state.retryCount = 0;
-                
-                // 다음 업데이트 시간 설정
-                nextFetchTime = Date.now() + CONFIG.UPDATE_INTERVAL;
-                
-                displayData(resultData);
+                console.log('✅ 코인 데이터 갱신 완료');
+
+                return coinData;
 
             } catch (error) {
-                console.error('데이터 가져오기 오류:', error);
+                console.error('코인 데이터 가져오기 오류:', error);
                 
-                if (state.retryCount < CONFIG.MAX_RETRIES) {
-                    state.retryCount++;
-                    document.getElementById('content').innerHTML = 
-                        `<div class="error-message">
-                            ⚠️ 데이터를 가져오는 중 오류가 발생했습니다. 
-                            재시도 중... (${state.retryCount}/${CONFIG.MAX_RETRIES})
-                        </div>`;
-                    
-                    await sleep(2000);
-                    state.isLoading = false;
-                    fetchData();
-                } else {
-                    const lastValidData = JSON.parse(localStorage.getItem('lastValidData'));
-                    if (lastValidData) {
-                        displayData(lastValidData, true);
-                        document.getElementById('content').insertAdjacentHTML('afterbegin',
-                            `<div class="error-message">
-                                ⚠️ 실시간 데이터를 불러올 수 없어 마지막 저장된 데이터를 표시합니다.
-                            </div>`
-                        );
-                    } else {
-                        document.getElementById('content').innerHTML = 
-                            `<div class="error-message">
-                                ❌ 데이터를 불러올 수 없습니다.<br>
-                                ${error.message}<br>
-                                잠시 후 다시 시도해주세요.
-                            </div>`;
-                    }
+                if (state.coinCache.data) {
+                    console.warn('⚠️ 캐시된 코인 데이터 사용');
+                    return state.coinCache.data;
                 }
+                
+                throw error;
             } finally {
-                state.isLoading = false;
+                state.isLoadingCoin = false;
+            }
+        };
+
+        const refreshDisplay = async () => {
+            try {
+                const [exchangeData, coinData] = await Promise.all([
+                    fetchExchangeData(),
+                    fetchCoinData()
+                ]);
+
+                displayData(exchangeData, coinData);
+            } catch (error) {
+                console.error('데이터 표시 오류:', error);
+                document.getElementById('content').innerHTML = 
+                    `<div class="error-message">
+                        ❌ 데이터를 불러올 수 없습니다.<br>
+                        ${error.message}<br>
+                        잠시 후 다시 시도해주세요.
+                    </div>`;
             }
         };
 
@@ -988,10 +1118,9 @@
             
             const btcData = recentHistory.map(h => h.btcKimp);
             const ethData = recentHistory.map(h => h.ethKimp);
-            const usdtData = recentHistory.map(h => h.usdtPremium);
 
-            const maxValue = Math.max(...btcData, ...ethData, ...usdtData, 5);
-            const minValue = Math.min(...btcData, ...ethData, ...usdtData, -5);
+            const maxValue = Math.max(...btcData, ...ethData, 5);
+            const minValue = Math.min(...btcData, ...ethData, -5);
             const range = maxValue - minValue;
             const padding = 40;
 
@@ -1023,7 +1152,6 @@
                         
                         ${createPath(btcData, '#f39c12')}
                         ${createPath(ethData, '#3498db')}
-                        ${createPath(usdtData, '#9b59b6')}
                         
                         ${timestamps.map((time, i) => {
                             if (i % Math.ceil(timestamps.length / 5) === 0 || i === timestamps.length - 1) {
@@ -1041,31 +1169,47 @@
                             
                             <circle cx="0" cy="20" r="4" fill="#3498db"/>
                             <text x="10" y="24" fill="var(--text-secondary)" font-size="12">ETH</text>
-                            
-                            <circle cx="0" cy="40" r="4" fill="#9b59b6"/>
-                            <text x="10" y="44" fill="var(--text-secondary)" font-size="12">USDT</text>
                         </g>
                     </svg>
                 </div>
             `;
         };
 
-        const renderStats = (data) => {
-            const btcKimp = parseFloat(data.btcKimp) || 0;
+        const renderStats = (coinData) => {
+            const btcKimp = parseFloat(coinData.btcKimp) || 0;
             const avgKimp = state.history.length > 0 
                 ? (state.history.reduce((sum, h) => sum + h.btcKimp, 0) / state.history.length).toFixed(2)
                 : '0.00';
 
             return `
                 <div class="stats-summary">
-                    <div>📊 BTC 현재 김프: <strong style="color: ${btcKimp >= 0 ? '#e74c3c' : '#3498db'}">${data.btcKimp}%</strong></div>
+                    <div>📊 BTC 현재 김프: <strong style="color: ${btcKimp >= 0 ? '#e74c3c' : '#3498db'}">${coinData.btcKimp}%</strong></div>
                     <div style="margin-top: 4px; font-size: 12px;">평균 김프 (최근 ${state.history.length}회): ${avgKimp}%</div>
                 </div>
             `;
         };
 
-        const displayData = (data, isFromCache = false) => {
-            document.getElementById('statsContainer').innerHTML = renderStats(data);
+        const updateTimers = () => {
+            const now = Date.now();
+            
+            const nextExchangeTime = getNextExchangeUpdateTime();
+            const exchangeRemaining = Math.max(0, Math.floor((nextExchangeTime - now) / 1000));
+            const exchangeMinutes = Math.floor(exchangeRemaining / 60);
+            const exchangeSeconds = exchangeRemaining % 60;
+            
+            const nextCoinTime = getNextCoinUpdateTime();
+            const coinRemaining = Math.max(0, Math.floor((nextCoinTime - now) / 1000));
+            const coinMinutes = Math.floor(coinRemaining / 60);
+            const coinSeconds = coinRemaining % 60;
+            
+            document.getElementById('updateTime').innerHTML = `
+                ⏱️ 환율 갱신: ${exchangeMinutes}:${String(exchangeSeconds).padStart(2, '0')} | 
+                코인 갱신: ${coinMinutes}:${String(coinSeconds).padStart(2, '0')}
+            `;
+        };
+
+        const displayData = (exchangeData, coinData) => {
+            document.getElementById('statsContainer').innerHTML = renderStats(coinData);
 
             if (state.settings.showChart) {
                 document.getElementById('chartSection').style.display = 'block';
@@ -1074,64 +1218,58 @@
                 document.getElementById('chartSection').style.display = 'none';
             }
 
-            // 타이머 정리
-            if (countdownInterval) {
-                clearInterval(countdownInterval);
-                countdownInterval = null;
+            if (exchangeCountdownInterval) clearInterval(exchangeCountdownInterval);
+            if (coinCountdownInterval) clearInterval(coinCountdownInterval);
+            
+            updateTimers();
+            exchangeCountdownInterval = setInterval(updateTimers, 1000);
+
+            // 환율 소스 태그 및 경고 메시지
+            let exchangeSourceTag = '';
+            let exchangeWarning = '';
+            
+            if (exchangeData.exchangeSource === 'twelve_data') {
+                exchangeSourceTag = '<div class="source-tag">Twelve Data</div>';
+            } else if (exchangeData.exchangeSource === 'exchangerate_api') {
+                exchangeSourceTag = '<div class="source-tag warning">ExchangeRate-API ⚠️</div>';
+                exchangeWarning = '<div class="warning-box">⚠️ 오류가 발생하여 매일 1회만 업데이트되는 환율로 보여드리고 있습니다.</div>';
+            } else if (exchangeData.exchangeSource === 'cached') {
+                exchangeSourceTag = '<div class="source-tag warning">캐시된 데이터 ⚠️</div>';
+                exchangeWarning = '<div class="warning-box">⚠️ 환율 API에 접근할 수 없어 마지막 저장된 환율을 사용하고 있습니다.</div>';
             }
-            
-            // 실제 다음 업데이트 시간 계산
-            if (!nextFetchTime || Date.now() >= nextFetchTime) {
-                nextFetchTime = Date.now() + CONFIG.UPDATE_INTERVAL;
-            }
-            
-            const updateCountdown = () => {
-                const remaining = Math.max(0, Math.floor((nextFetchTime - Date.now()) / 1000));
-                
-                if (remaining > 0) {
-                    const minutes = Math.floor(remaining / 60);
-                    const seconds = remaining % 60;
-                    document.getElementById('updateTime').textContent = 
-                        `⏱️ 다음 갱신: ${minutes}:${String(seconds).padStart(2, '0')}`;
-                } else {
-                    document.getElementById('updateTime').textContent = '🔄 갱신 중...';
-                }
-            };
-            
-            updateCountdown();
-            countdownInterval = setInterval(updateCountdown, 1000);
 
             const content = `
                 <div class="card">
                     <div class="card-title">USD/KRW 환율</div>
-                    <div class="card-value">₩${data.usdKrw}</div>
+                    <div class="card-value">₩${exchangeData.usdKrw}</div>
                     <div class="card-sub">1달러당</div>
-                    <div class="source-tag">Twelve Data</div>
+                    ${exchangeSourceTag}
+                    ${exchangeWarning}
                 </div>
                 
                 <div class="section-title">💲 스테이블코인 김프</div>
-                ${renderStableKimpCard('USDT (테더)', data.upbitUsdt, data.usdKrw, data.usdtPremium)}
-                ${renderStableKimpCard('USDC', data.upbitUsdc, data.usdKrw, data.usdcPremium)}
+                ${renderStableKimpCard('USDT (테더)', exchangeData.upbitUsdt, exchangeData.usdKrw, exchangeData.usdtPremium)}
+                ${renderStableKimpCard('USDC', exchangeData.upbitUsdc, exchangeData.usdKrw, exchangeData.usdcPremium)}
 
                 <div class="section-title" style="margin-top: 40px;">⚓ 해외 페그 현황</div>
                 <div class="grid">
                     <div class="small-card">
                         <div class="small-card-title">바이낸스 USDT</div>
-                        <div class="small-card-value">${data.binanceUsdt}</div>
-                        ${renderPremium(data.binanceUsdtDiff, true)}
+                        <div class="small-card-value">${exchangeData.binanceUsdt}</div>
+                        ${renderPremium(exchangeData.binanceUsdtDiff, true)}
                         <div class="source-tag">바이낸스</div>
                     </div>
                     <div class="small-card">
                         <div class="small-card-title">바이낸스 USDC</div>
-                        <div class="small-card-value">${data.binanceUsdc}</div>
-                        ${renderPremium(data.binanceUsdcDiff, true)}
+                        <div class="small-card-value">${exchangeData.binanceUsdc}</div>
+                        ${renderPremium(exchangeData.binanceUsdcDiff, true)}
                         <div class="source-tag">바이낸스</div>
                     </div>
                 </div>
                 
                 <div class="section-title">📈 주요 코인 김프</div>
-                ${renderKimpCard('비트코인 (BTC)', data.upbitBtcUsdt, data.binanceBtc, data.btcKimp)}
-                ${renderKimpCard('이더리움 (ETH)', data.upbitEthUsdt, data.binanceEth, data.ethKimp)}
+                ${renderKimpCard('비트코인 (BTC)', coinData.upbitBtcUsdt, coinData.binanceBtc, coinData.btcKimp)}
+                ${renderKimpCard('이더리움 (ETH)', coinData.upbitEthUsdt, coinData.binanceEth, coinData.ethKimp)}
 
                 <div class="info-card">
                     <strong>💡 페깅(Pegging)이 중요한 이유</strong><br>
@@ -1168,11 +1306,48 @@
             document.getElementById('chartToggle').classList.toggle('active', state.settings.showChart);
             saveToLocalStorage('settings', state.settings);
             
-            if (state.cache.data) {
-                displayData(state.cache.data, true);
-            }
+            refreshDisplay();
             
             showNotification(state.settings.showChart ? '📊 차트 표시' : '📊 차트 숨김');
+        };
+
+        const setupSchedulers = () => {
+            const scheduleExchangeUpdate = () => {
+                const now = Date.now();
+                const nextTime = getNextExchangeUpdateTime();
+                const delay = nextTime - now;
+                
+                console.log(`📅 다음 환율 갱신: ${new Date(nextTime).toLocaleTimeString('ko-KR')} (${Math.floor(delay/1000)}초 후)`);
+                
+                if (exchangeScheduleInterval) clearTimeout(exchangeScheduleInterval);
+                
+                exchangeScheduleInterval = setTimeout(async () => {
+                    console.log('🔔 환율 갱신 시간!');
+                    await fetchExchangeData();
+                    await refreshDisplay();
+                    scheduleExchangeUpdate();
+                }, delay);
+            };
+
+            const scheduleCoinUpdate = () => {
+                const now = Date.now();
+                const nextTime = getNextCoinUpdateTime();
+                const delay = nextTime - now;
+                
+                console.log(`📅 다음 코인 갱신: ${new Date(nextTime).toLocaleTimeString('ko-KR')} (${Math.floor(delay/1000)}초 후)`);
+                
+                if (coinScheduleInterval) clearTimeout(coinScheduleInterval);
+                
+                coinScheduleInterval = setTimeout(async () => {
+                    console.log('🔔 코인 갱신 시간!');
+                    await fetchCoinData();
+                    await refreshDisplay();
+                    scheduleCoinUpdate();
+                }, delay);
+            };
+
+            scheduleExchangeUpdate();
+            scheduleCoinUpdate();
         };
 
         const init = () => {
@@ -1194,12 +1369,12 @@
                 setTimeout(showInfoModal, 1000);
             }
 
-            fetchData();
-            setInterval(fetchData, CONFIG.UPDATE_INTERVAL);
+            refreshDisplay();
+            setupSchedulers();
 
             window.addEventListener('online', () => {
                 showNotification('🌐 인터넷 연결됨');
-                fetchData();
+                refreshDisplay();
             });
 
             window.addEventListener('offline', () => {
