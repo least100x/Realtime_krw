@@ -831,10 +831,13 @@
                 const loadTime = ((Date.now() - startTime) / 1000).toFixed(2);
 
                 const resultData = {
-                    timestamp: Date.now(),
-                    usdKrw: usdKrw.toFixed(2),
-                    upbitUsdt​​​​​​​​​​​​​​​​```javascript
-: upbitData.usdt.toLocaleString('ko-KR'),
+    timestamp: Date.now(),
+    usdKrw: usdKrw.toFixed(2),
+    upbitUsdt: upbitData.usdt.toLocaleString('ko-KR'),  // 수정!
+    upbitUsdc: upbitData.usdc.toLocaleString('ko-KR'),
+    // ... 나머지 코드
+                    
+        : upbitData.usdt.toLocaleString('ko-KR'),
                     upbitUsdc: upbitData.usdc.toLocaleString('ko-KR'),
                     usdtPremium: usdtPremium,
                     usdcPremium: usdcPremium,
