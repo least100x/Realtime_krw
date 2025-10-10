@@ -714,7 +714,7 @@
 
         // ============ API 호출 함수 ============
         const getExchangeRate = async () => {
-            const WORKER_URL = 'exchange-rate-proxy.least100x.workers.dev'; // ⚠️ 여기 수정!
+            const WORKER_URL = 'https://exchange-rate-proxy.least100x.workers.dev'; // ⚠️ 여기 수정!
             
             try {
                 const response = await fetchWithTimeout(WORKER_URL, 10000);
