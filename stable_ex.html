@@ -609,12 +609,12 @@
     <script>
         // ============ 설정 및 상태 관리 ============
         const CONFIG = {
-            CACHE_TTL: 30000,
-            MAX_RETRIES: 3,
-            FETCH_TIMEOUT: 10000,
-            MIN_VALID_EXCHANGE_RATE: 100,
-            UPDATE_INTERVAL: 30000,
-            MAX_HISTORY_LENGTH: 50
+        CACHE_TTL: 300000,              // 30000 → 300000
+        MAX_RETRIES: 3,
+        FETCH_TIMEOUT: 10000,
+        MIN_VALID_EXCHANGE_RATE: 100,
+        UPDATE_INTERVAL: 300000,         // 30000 → 300000 👈 여기!
+        MAX_HISTORY_LENGTH: 50
         };
 
         const state = {
