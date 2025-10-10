@@ -592,6 +592,7 @@
         };
 
         let countdownInterval = null;
+        let nextFetchTime = null;
 
         const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -783,6 +784,9 @@
 
             state.isLoading = true;
             const startTime = Date.now();
+            
+            // 업데이트 시작 시 타이머 갱신
+            document.getElementById('updateTime').textContent = '🔄 갱신 중...';
 
             try {
                 const [usdKrw, upbitData, binanceCoinData, binanceStable] = await Promise.all([
@@ -846,6 +850,10 @@
                 saveToLocalStorage('lastValidData', resultData);
                 
                 state.retryCount = 0;
+                
+                // 다음 업데이트 시간 설정
+                nextFetchTime = Date.now() + CONFIG.UPDATE_INTERVAL;
+                
                 displayData(resultData);
 
             } catch (error) {
@@ -1066,15 +1074,19 @@
                 document.getElementById('chartSection').style.display = 'none';
             }
 
-            const nextUpdateTime = data.timestamp + CONFIG.UPDATE_INTERVAL;
-            
+            // 타이머 정리
             if (countdownInterval) {
                 clearInterval(countdownInterval);
                 countdownInterval = null;
             }
             
+            // 실제 다음 업데이트 시간 계산
+            if (!nextFetchTime || Date.now() >= nextFetchTime) {
+                nextFetchTime = Date.now() + CONFIG.UPDATE_INTERVAL;
+            }
+            
             const updateCountdown = () => {
-                const remaining = Math.max(0, Math.floor((nextUpdateTime - Date.now()) / 1000));
+                const remaining = Math.max(0, Math.floor((nextFetchTime - Date.now()) / 1000));
                 
                 if (remaining > 0) {
                     const minutes = Math.floor(remaining / 60);
