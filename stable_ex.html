@@ -255,35 +255,6 @@
             padding: 20px;
         }
 
-        .refresh-btn {
-            background: white;
-            border: none;
-            border-radius: 12px;
-            padding: 12px 24px;
-            font-size: 14px;
-            font-weight: 600;
-            color: #667eea;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 16px;
-            box-shadow: 0 4px 6px var(--shadow);
-            transition: transform 0.1s;
-        }
-
-        .dark-mode .refresh-btn {
-            background: var(--card-bg);
-            color: white;
-        }
-
-        .refresh-btn:active {
-            transform: scale(0.98);
-        }
-
-        .refresh-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
         .info-card {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 12px;
@@ -594,7 +565,7 @@
                 <button class="control-btn" id="darkModeToggle">🌙 다크모드</button>
                 <button class="control-btn" id="chartToggle">📊 차트 보기</button>
             </div>
-            <div style="font-size: 13px; opacity: 0.85; margin: 8px 0;">자동 업데이트: 30초마다</div>
+            <div style="font-size: 13px; opacity: 0.85; margin: 8px 0;">자동 업데이트: 5분마다</div>
             <div class="update-time" id="updateTime">로딩 중...</div>
         </div>
 
@@ -609,12 +580,12 @@
     <script>
         // ============ 설정 및 상태 관리 ============
         const CONFIG = {
-        CACHE_TTL: 300000,              // 30000 → 300000
-        MAX_RETRIES: 3,
-        FETCH_TIMEOUT: 10000,
-        MIN_VALID_EXCHANGE_RATE: 100,
-        UPDATE_INTERVAL: 300000,         // 30000 → 300000 👈 여기!
-        MAX_HISTORY_LENGTH: 50
+            CACHE_TTL: 300000,
+            MAX_RETRIES: 3,
+            FETCH_TIMEOUT: 10000,
+            MIN_VALID_EXCHANGE_RATE: 100,
+            UPDATE_INTERVAL: 300000,
+            MAX_HISTORY_LENGTH: 50
         };
 
         const state = {
@@ -684,16 +655,16 @@
 
                         <strong>💡 사용 팁</strong>
                         <ul>
-                            <li>새로고침 버튼을 <strong>연속으로 누르지 마세요</strong> (API 제한)</li>
+                            <li>5분마다 자동으로 데이터가 갱신됩니다</li>
                             <li>차트 기능은 데이터가 쌓일수록 유용합니다 (최대 ${CONFIG.MAX_HISTORY_LENGTH}개 저장)</li>
                             <li>우측 하단 <strong>? 버튼</strong>을 눌러 언제든 이 안내를 다시 볼 수 있습니다</li>
                         </ul>
 
                         <strong>🔄 환율 데이터 안내</strong>
                         <ul>
-                            <li><strong>업데이트 주기:</strong> 실시간 (5분 캐시)</li>
+                            <li><strong>업데이트 주기:</strong> 5분마다 자동 갱신</li>
                             <li><strong>정확도:</strong> 실제 은행 고시 환율과 <strong>±0.5% 차이</strong>가 있을 수 있습니다</li>
-                            <li><strong>데이터 출처:</strong> Twelve Data (Cloudflare Workers 경유)</li>
+                            <li><strong>데이터 출처:</strong> Twelve Data API</li>
                             <li>실시간 환율이 아닌 <strong>참고용</strong>입니다</li>
                         </ul>
 
@@ -732,9 +703,8 @@
         };
 
         // ============ API 호출 함수 ============
-        // ⚠️ 여기 수정! Cloudflare Workers URL 입력
         const getExchangeRate = async () => {
-            const WORKER_URL = 'https://exchange-rate-proxy.least100x.workers.dev/'; // 👈 여기 수정!
+            const WORKER_URL = 'https://exchange-rate-proxy.least100x.workers.dev/'; // ⚠️ 여기 수정!
             
             try {
                 const response = await fetchWithTimeout(WORKER_URL, 10000);
@@ -760,7 +730,7 @@
                 return data.rate;
                 
             } catch (error) {
-                console.error('❌ Cloudflare Worker 오류:', error);
+                console.error('❌ 환율 API 오류:', error);
                 throw error;
             }
         };
@@ -827,11 +797,6 @@
 
             state.isLoading = true;
             const startTime = Date.now();
-            const refreshBtn = document.querySelector('.refresh-btn');
-            if (refreshBtn) {
-                refreshBtn.disabled = true;
-                refreshBtn.textContent = '🔄 로딩 중...';
-            }
 
             try {
                 const [usdKrw, upbitData, binanceCoinData, binanceStable] = await Promise.all([
@@ -911,7 +876,6 @@
                     
                     await sleep(2000);
                     state.isLoading = false;
-                    if (refreshBtn) refreshBtn.disabled = false;
                     fetchData();
                 } else {
                     // Fallback: 마지막 유효 데이터 표시
@@ -929,16 +893,11 @@
                                 ❌ 데이터를 불러올 수 없습니다.<br>
                                 ${error.message}<br>
                                 잠시 후 다시 시도해주세요.
-                            </div>
-                            <button class="refresh-btn" onclick="location.reload()">🔄 페이지 새로고침</button>`;
+                            </div>`;
                     }
                 }
             } finally {
                 state.isLoading = false;
-                if (refreshBtn) {
-                    refreshBtn.disabled = false;
-                    refreshBtn.textContent = '🔄 새로고침';
-                }
             }
         };
 
@@ -1189,8 +1148,6 @@
                     <strong style="color: #e74c3c;">플러스(+)</strong>: 한국이 더 비쌈 (김치 프리미엄) 또는 1달러보다 비쌈<br>
                     <strong style="color: #3498db;">마이너스(-)</strong>: 한국이 더 쌈 (역프/디스카운트) 또는 1달러보다 쌈<br>
                 </div>
-
-                <button class="refresh-btn" onclick="manualRefresh()">🔄 새로고침</button>
             `;
 
             document.getElementById('content').innerHTML = content;
@@ -1215,11 +1172,6 @@
             }
             
             showNotification(state.settings.showChart ? '📊 차트 표시' : '📊 차트 숨김');
-        };
-
-        const manualRefresh = () => {
-            state.cache.timestamp = 0;
-            fetchData();
         };
 
         // ============ 초기화 ============
