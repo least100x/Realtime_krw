@@ -83,16 +83,22 @@
 
         const showNotification = (msg) => console.log("✅", msg);
 
-        // ======================
-        // 💱 API 호출
-        // ======================
-        const getExchangeRate = async () => {
-            const response = await fetchWithTimeout(`${WORKER_BASE_URL}/usdkrw`);
-            const data = await response.json();
-            if (!data?.rate) throw new Error("환율 데이터 형식 오류");
-            localStorage.setItem("twelveDataTimestamp", data.timestamp || new Date().toISOString());
-            return data.rate;
-        };
+        
+        // ========== 새로운 코드 (Cloudflare Worker 사용) ==========
+const getExchangeRate = async () => {
+    const WORKER_URL = 'https://exchange-rate-proxy.least100x.workers.dev/'; // ⚠️ 여기에 실제 Worker URL 입력!
+    
+    const response = await fetchWithTimeout(WORKER_URL, 10000);
+    const data = await response.json();
+    
+    if (!data?.rate || data.rate < 100) {
+        throw new Error('환율 데이터 형식 오류');
+    }
+    
+    console.log(`✅ 환율 수신: ${data.rate} (출처: ${data.source})`);
+    
+    return data.rate;
+};
 
         const getUpbitPrices = async () => {
             const response = await fetchWithTimeout('https://api.upbit.com/v1/ticker?markets=KRW-USDT,KRW-BTC,USDT-BTC');
