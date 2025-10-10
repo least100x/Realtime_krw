@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -7,19 +6,11 @@
     <meta name="description" content="비트코인, 이더리움 김치프리미엄 실시간 확인. USDT, USDC 환율 대비 프리미엄 체크">
     <meta name="keywords" content="김프, 김치프리미엄, 비트코인, 이더리움, 환율, USDT, USDC">
     
-    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="실시간 김프 대시보드">
     <meta property="og:description" content="비트코인, 이더리움 김치프리미엄 실시간 확인">
-    <meta property="og:image" content="https://via.placeholder.com/1200x630.png?text=Kimchi+Premium+Dashboard">
-    
-    <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="실시간 김프 대시보드">
-    <meta name="twitter:description" content="비트코인, 이더리움 김치프리미엄 실시간 확인">
     
     <title>실시간 환율 & 김프 대시보드</title>
-    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIuq5gO2UhCDrjIDsi5zrs7Trk5wiLAogICJzaG9ydF9uYW1lIjogIuq5gO2UhCIsCiAgInN0YXJ0X3VybCI6ICIvIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjNjY3ZWVhIiwKICAidGhlbWVfY29sb3IiOiAiIzY2N2VlYSIsCiAgImljb25zIjogW10KfQ==">
     
     <style>
         :root {
@@ -324,7 +315,6 @@
             }
         }
 
-        /* 모달 스타일 */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -457,7 +447,6 @@
             background: #555;
         }
 
-        /* 플로팅 도움말 버튼 */
         .floating-help {
             position: fixed;
             bottom: 30px;
@@ -579,11 +568,9 @@
         <div id="content" class="loading">데이터를 불러오는 중...</div>
     </div>
 
-    <!-- 플로팅 도움말 버튼 -->
     <button class="floating-help" id="floatingHelp" title="도움말">?</button>
 
     <script>
-        // ============ 설정 및 상태 관리 ============
         const CONFIG = {
             CACHE_TTL: 300000,
             MAX_RETRIES: 3,
@@ -604,10 +591,8 @@
             }
         };
 
-        // 카운트다운 타이머 전역 변수
         let countdownInterval = null;
 
-        // ============ 유틸리티 함수 ============
         const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
         const fetchWithTimeout = (url, timeout = CONFIG.FETCH_TIMEOUT) => {
@@ -642,7 +627,6 @@
             }, duration);
         };
 
-        // ============ 모달 관련 함수 ============
         const showInfoModal = () => {
             const overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
@@ -687,13 +671,11 @@
 
             document.body.appendChild(overlay);
 
-            // 닫기 버튼
             document.getElementById('modalClose').addEventListener('click', () => {
                 overlay.style.animation = 'fadeIn 0.3s ease reverse';
                 setTimeout(() => overlay.remove(), 300);
             });
 
-            // 다시 보지 않기
             document.getElementById('modalDontShow').addEventListener('click', () => {
                 localStorage.setItem('dontShowInfoModal', 'true');
                 overlay.style.animation = 'fadeIn 0.3s ease reverse';
@@ -701,7 +683,6 @@
                 showNotification('✅ 다시 표시하지 않습니다');
             });
 
-            // 배경 클릭 시 닫기
             overlay.addEventListener('click', (e) => {
                 if (e.target === overlay) {
                     overlay.style.animation = 'fadeIn 0.3s ease reverse';
@@ -710,9 +691,8 @@
             });
         };
 
-        // ============ API 호출 함수 ============
         const getExchangeRate = async () => {
-            const WORKER_URL = 'https://exchange-rate-proxy.least100x.workers.dev'; // ⚠️ 여기 수정!
+            const WORKER_URL = 'https://exchange-rate-proxy.least100x.workers.dev';
             
             try {
                 const response = await fetchWithTimeout(WORKER_URL, 10000);
@@ -723,23 +703,22 @@
                 
                 const data = await response.json();
                 
-                // 에러 체크
                 if (data.error) {
                     throw new Error(data.message || 'API 오류');
                 }
                 
-                // 환율 유효성 검증
                 if (!data.rate || data.rate < 100 || data.rate > 10000) {
                     throw new Error('유효하지 않은 환율 데이터');
                 }
                 
-                console.log(`✅ 환율 수신: ${data.rate} (출처: ${data.source}, 캐시: ${data.cached || false})`);
+                console.log(`✅ 환율 수신: ${data.rate}`);
                 
                 return data.rate;
                 
             } catch (error) {
                 console.error('❌ 환율 API 오류:', error);
-                throw error;
+                console.warn('⚠️ 임시로 고정 환율 1380 사용');
+                return 1380;
             }
         };
 
@@ -793,7 +772,6 @@
             }
         };
 
-        // ============ 데이터 가져오기 ============
         const fetchData = async () => {
             if (state.isLoading) return;
             
@@ -831,13 +809,9 @@
                 const loadTime = ((Date.now() - startTime) / 1000).toFixed(2);
 
                 const resultData = {
-    timestamp: Date.now(),
-    usdKrw: usdKrw.toFixed(2),
-    upbitUsdt: upbitData.usdt.toLocaleString('ko-KR'),  // 수정!
-    upbitUsdc: upbitData.usdc.toLocaleString('ko-KR'),
-    // ... 나머지 코드
-                    
-        : upbitData.usdt.toLocaleString('ko-KR'),
+                    timestamp: Date.now(),
+                    usdKrw: usdKrw.toFixed(2),
+                    upbitUsdt: upbitData.usdt.toLocaleString('ko-KR'),
                     upbitUsdc: upbitData.usdc.toLocaleString('ko-KR'),
                     usdtPremium: usdtPremium,
                     usdcPremium: usdcPremium,
@@ -854,7 +828,6 @@
                     loadTime: loadTime
                 };
 
-                // 히스토리 저장
                 state.history.push({
                     timestamp: resultData.timestamp,
                     btcKimp: parseFloat(btcKimp) || 0,
@@ -890,7 +863,6 @@
                     state.isLoading = false;
                     fetchData();
                 } else {
-                    // Fallback: 마지막 유효 데이터 표시
                     const lastValidData = JSON.parse(localStorage.getItem('lastValidData'));
                     if (lastValidData) {
                         displayData(lastValidData, true);
@@ -913,7 +885,6 @@
             }
         };
 
-        // ============ UI 렌더링 함수 ============
         const renderPremium = (premium, showSign = true) => {
             if (premium === 'N/A') {
                 return '<div class="premium" style="color:#999; font-weight: normal;">N/A</div>';
@@ -1040,15 +1011,12 @@
                 <div class="section-title">📈 김프 변화 추이 (최근 ${recentHistory.length}개 데이터)</div>
                 <div class="chart-container">
                     <svg viewBox="0 0 ${chartWidth} ${chartHeight}" class="chart-canvas">
-                        <!-- 배경 그리드 -->
                         <line x1="0" y1="${zeroY}" x2="${chartWidth}" y2="${zeroY}" stroke="var(--text-light)" stroke-width="1" stroke-dasharray="5,5" opacity="0.5"/>
                         
-                        <!-- 데이터 라인 -->
                         ${createPath(btcData, '#f39c12')}
                         ${createPath(ethData, '#3498db')}
                         ${createPath(usdtData, '#9b59b6')}
                         
-                        <!-- X축 레이블 -->
                         ${timestamps.map((time, i) => {
                             if (i % Math.ceil(timestamps.length / 5) === 0 || i === timestamps.length - 1) {
                                 return `<text x="${i * pointDistance}" y="${chartHeight - 10}" fill="var(--text-secondary)" font-size="11" text-anchor="middle">${time}</text>`;
@@ -1056,11 +1024,9 @@
                             return '';
                         }).join('')}
                         
-                        <!-- Y축 레이블 -->
                         <text x="5" y="20" fill="var(--text-secondary)" font-size="11">${maxValue.toFixed(1)}%</text>
                         <text x="5" y="${chartHeight - padding + 15}" fill="var(--text-secondary)" font-size="11">${minValue.toFixed(1)}%</text>
                         
-                        <!-- 범례 -->
                         <g transform="translate(${chartWidth - 160}, 20)">
                             <circle cx="0" cy="0" r="4" fill="#f39c12"/>
                             <text x="10" y="4" fill="var(--text-secondary)" font-size="12">BTC</text>
@@ -1091,10 +1057,8 @@
         };
 
         const displayData = (data, isFromCache = false) => {
-            // 통계 표시
             document.getElementById('statsContainer').innerHTML = renderStats(data);
 
-            // 차트 표시
             if (state.settings.showChart) {
                 document.getElementById('chartSection').style.display = 'block';
                 document.getElementById('chartSection').innerHTML = renderChart();
@@ -1102,10 +1066,8 @@
                 document.getElementById('chartSection').style.display = 'none';
             }
 
-            // 카운트다운 시작
             const nextUpdateTime = data.timestamp + CONFIG.UPDATE_INTERVAL;
             
-            // 기존 타이머 정리
             if (countdownInterval) {
                 clearInterval(countdownInterval);
                 countdownInterval = null;
@@ -1121,14 +1083,10 @@
                         `⏱️ 다음 갱신: ${minutes}:${String(seconds).padStart(2, '0')}`;
                 } else {
                     document.getElementById('updateTime').textContent = '🔄 갱신 중...';
-                    // 타이머를 멈추지 않음 - displayData가 다시 호출될 때 자동으로 재시작됨
                 }
             };
             
-            // 즉시 한 번 실행
             updateCountdown();
-            
-            // 1초마다 업데이트
             countdownInterval = setInterval(updateCountdown, 1000);
 
             const content = `
@@ -1185,7 +1143,6 @@
             document.getElementById('content').innerHTML = content;
         };
 
-        // ============ 설정 관련 함수 ============
         const toggleDarkMode = () => {
             state.settings.darkMode = !state.settings.darkMode;
             document.body.classList.toggle('dark-mode', state.settings.darkMode);
@@ -1206,37 +1163,28 @@
             showNotification(state.settings.showChart ? '📊 차트 표시' : '📊 차트 숨김');
         };
 
-        // ============ 초기화 ============
         const init = () => {
-            // 다크모드 적용
             if (state.settings.darkMode) {
                 document.body.classList.add('dark-mode');
                 document.getElementById('darkModeToggle').classList.add('active');
             }
 
-            // 차트 설정 반영
             if (state.settings.showChart) {
                 document.getElementById('chartToggle').classList.add('active');
             }
 
-            // 이벤트 리스너
             document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
             document.getElementById('chartToggle').addEventListener('click', toggleChart);
             document.getElementById('floatingHelp').addEventListener('click', showInfoModal);
 
-            // 첫 방문 확인 - 모달 표시
             const dontShowModal = localStorage.getItem('dontShowInfoModal');
             if (!dontShowModal) {
                 setTimeout(showInfoModal, 1000);
             }
 
-            // 초기 데이터 로드
             fetchData();
-
-            // 자동 업데이트
             setInterval(fetchData, CONFIG.UPDATE_INTERVAL);
 
-            // 온라인/오프라인 감지
             window.addEventListener('online', () => {
                 showNotification('🌐 인터넷 연결됨');
                 fetchData();
@@ -1247,7 +1195,6 @@
             });
         };
 
-        // 페이지 로드 시 초기화
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', init);
         } else {
@@ -1256,4 +1203,3 @@
     </script>
 </body>
 </html>
-
