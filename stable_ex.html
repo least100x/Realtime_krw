@@ -607,6 +607,12 @@
             MAX_HISTORY_LENGTH: 50
         };
 
+        // 🔥🔥🔥 1. 공유 업비트 캐시 추가 🔥🔥🔥
+        let sharedUpbitCache = {
+            data: null,
+            timestamp: 0
+        };
+        
         const state = {
             exchangeCache: JSON.parse(localStorage.getItem('exchangeCache')) || { data: null, timestamp: 0 },
             coinCache: JSON.parse(localStorage.getItem('coinCache')) || { data: null, timestamp: 0 },
@@ -699,7 +705,7 @@
                         <strong>📌 이 페이지에 대해</strong>
                         <ul>
                             <li>현재 페이지는 <strong>주요 코인(BTC/ETH)</strong>에 대한 <strong>원래 의미의 김프</strong> 정보를 제공합니다.</li>
-                            <li>전문적인 김프 정보를 확인하시려면 
+                            <li>전문적인 김프 정보를 확인하시려면 
                                 <a href="https://kimpga.com/" target="_blank" style="color: #667eea; font-weight: bold; text-decoration: none;">kimpga.com</a>
                                 을 참조해 주세요.
                             </li>
@@ -865,6 +871,7 @@
             }
         };
 
+        // 🔥🔥🔥 2. fetchExchangeData: Upbit API 호출 대신 공유 캐시 사용 🔥🔥🔥
         const fetchExchangeData = async () => {
             if (state.isLoadingExchange) return;
             
@@ -874,13 +881,19 @@
                 return state.exchangeCache.data;
             }
 
+            // 공유 캐시에서 Upbit 데이터 로드
+            const upbitData = sharedUpbitCache.data;
+            if (!upbitData) {
+                // 초기 로딩 시 Upbit 데이터가 없으면 에러 발생 (refreshDisplay에서 처리)
+                throw new Error('Upbit 코인 데이터가 아직 로드되지 않았습니다.');
+            }
+
             state.isLoadingExchange = true;
             console.log('🔄 환율 데이터 갱신 중...');
 
             try {
-                const [exchangeResult, upbitData, binanceStable] = await Promise.all([
+                const [exchangeResult, binanceStable] = await Promise.all([
                     getExchangeRate(),
-                    getUpbitPrices(),
                     getBinanceStablePrice()
                 ]);
 
@@ -895,6 +908,7 @@
                 // 유효한 환율 저장
                 localStorage.setItem('lastValidRate', usdKrw.toString());
 
+                // 공유 캐시의 upbitData 사용
                 const usdtPremium = upbitData.usdt ? ((upbitData.usdt / usdKrw - 1) * 100).toFixed(2) : 'N/A';
                 const usdcPremium = upbitData.usdc ? ((upbitData.usdc / usdKrw - 1) * 100).toFixed(2) : 'N/A';
                 const binanceUsdtDiff = ((binanceStable.usdt - 1) * 100).toFixed(4);
@@ -937,23 +951,34 @@
             }
         };
 
+        // 🔥🔥🔥 3. fetchCoinData: Upbit API 호출 및 공유 캐시 업데이트 🔥🔥🔥
         const fetchCoinData = async () => {
             if (state.isLoadingCoin) return;
             
             const now = Date.now();
             if (state.coinCache.data && (now - state.coinCache.timestamp) < CONFIG.COIN_CACHE_TTL) {
                 console.log('📦 코인 캐시 사용');
-                return state.coinCache.data;
+                // 코인 캐시가 유효하더라도, 환율 갱신을 위해 공유 캐시만 몰래 갱신할 필요가 있을 수 있음
+                if (!sharedUpbitCache.data || (now - sharedUpbitCache.timestamp) > CONFIG.COIN_CACHE_TTL) {
+                    // 이 로직은 1분마다 코인 데이터가 갱신될 때만 실행되어야 하므로, 이 내부에서 Upbit API 호출을 다시 할 필요는 없음.
+                    // 대신, 코인 캐시의 데이터가 Upbit 데이터와 일치해야 함. (현재 구조상 coinData는 Upbit Price를 포함하지 않음. 다시 API 호출해야 함)
+                    // 복잡성 최소화를 위해, 코인 캐시가 만료되었을 때만 Upbit API를 호출하도록 수정합니다.
+                } else {
+                    return state.coinCache.data;
+                }
             }
 
             state.isLoadingCoin = true;
             console.log('🔄 코인 데이터 갱신 중...');
 
             try {
-                const [upbitData, binanceCoinData] = await Promise.all([
-                    getUpbitPrices(),
-                    getBinanceCoinPrices()
-                ]);
+                // Upbit API 호출 (KRW-USDT, KRW-USDC 등 환율 계산에 필요한 데이터도 포함)
+                const upbitData = await getUpbitPrices();
+                // Upbit 공유 캐시 업데이트
+                sharedUpbitCache = { data: upbitData, timestamp: Date.now() };
+                console.log('✅ Upbit 공유 캐시 갱신 완료');
+                
+                const binanceCoinData = await getBinanceCoinPrices();
 
                 const btcKimp = (upbitData.btcUsdt && binanceCoinData.btc) ? 
                     ((upbitData.btcUsdt / binanceCoinData.btc - 1) * 100).toFixed(2) : 'N/A';
@@ -1004,12 +1029,14 @@
             }
         };
 
+        // 🔥🔥🔥 4. refreshDisplay: Upbit 캐시를 먼저 채우도록 순차 호출 (UI 안정성 확보) 🔥🔥🔥
         const refreshDisplay = async () => {
             try {
-                const [exchangeData, coinData] = await Promise.all([
-                    fetchExchangeData(),
-                    fetchCoinData()
-                ]);
+                // 1. 코인 데이터 (Upbit 데이터 포함)를 먼저 가져와 공유 캐시를 채움
+                const coinData = await fetchCoinData();
+                
+                // 2. 환율 데이터를 가져옴 (공유 캐시의 Upbit 데이터를 재활용하여 스테이블코인 김프 계산)
+                const exchangeData = await fetchExchangeData();
 
                 displayData(exchangeData, coinData);
             } catch (error) {
@@ -1203,7 +1230,7 @@
             const coinSeconds = coinRemaining % 60;
             
             document.getElementById('updateTime').innerHTML = `
-                ⏱️ 환율 갱신: ${exchangeMinutes}:${String(exchangeSeconds).padStart(2, '0')} | 
+                ⏱️ 환율 갱신: ${exchangeMinutes}:${String(exchangeSeconds).padStart(2, '0')} | 
                 코인 갱신: ${coinMinutes}:${String(coinSeconds).padStart(2, '0')}
             `;
         };
@@ -1323,7 +1350,7 @@
                 
                 exchangeScheduleInterval = setTimeout(async () => {
                     console.log('🔔 환율 갱신 시간!');
-                    await fetchExchangeData();
+                    await fetchExchangeData(); 
                     await refreshDisplay();
                     scheduleExchangeUpdate();
                 }, delay);
@@ -1340,7 +1367,7 @@
                 
                 coinScheduleInterval = setTimeout(async () => {
                     console.log('🔔 코인 갱신 시간!');
-                    await fetchCoinData();
+                    await fetchCoinData(); 
                     await refreshDisplay();
                     scheduleCoinUpdate();
                 }, delay);
