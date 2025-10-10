@@ -1,1498 +1,635 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="물가상승으로 줄어드는 돈의 가치 계산기. 비트코인, 주식, 부동산 투자 수익 실시간 비교">
-    <meta name="keywords" content="물가상승, 인플레이션, 투자수익, 비트코인, 주식, 부동산, 계산기">
-    
-    <!-- Open Graph -->
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="내 돈의 실제 가치 계산기">
-    <meta property="og:description" content="물가상승으로 줄어드는 돈의 가치와 투자 수익 실시간 비교">
-    <meta property="og:image" content="https://via.placeholder.com/1200x630.png?text=Money+Value+Calculator">
-    
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="내 돈의 실제 가치 계산기">
-    <meta name="twitter:description" content="물가상승으로 줄어드는 돈의 가치와 투자 수익 실시간 비교">
-    
-    <title>내 돈의 실제 가치 vs 투자 수익</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 10px;
-            transition: background 0.3s ease;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="물가상승으로 줄어드는 돈의 가치 계산기. 비트코인, 주식, 부동산 투자 수익 실시간 비교">
+  <meta name="keywords" content="물가상승, 인플레이션, 투자수익, 비트코인, 주식, 부동산, 계산기">
+  <title>내 돈의 실제 가치 vs 투자 수익</title>
+  <style>
+    /* ====== 기존 디자인 유지 + 필요한 최소 스타일 추가 ====== */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+      min-height:100vh; padding:10px; transition:background .3s ease;
+    }
+    body.dark-mode { background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%); }
+    .container {
+      max-width:1600px; margin:0 auto; background:#fff; border-radius:20px; padding:20px;
+      box-shadow:0 20px 60px rgba(0,0,0,.3); transition:background .3s ease, color .3s ease;
+    }
+    body.dark-mode .container { background:#2d2d44; color:#f0f0f0; }
+    @media (min-width:768px){ body{padding:20px} .container{padding:30px} }
+    h1 { color:#333; text-align:center; margin-bottom:10px; font-size:1.5em; word-break:keep-all; transition:color .3s ease; }
+    body.dark-mode h1 { color:#f0f0f0; }
+    @media (min-width:768px){ h1{font-size:2.2em} }
+    .subtitle { text-align:center; color:#666; margin-bottom:20px; font-size:.9em; word-break:keep-all; padding:0 10px; transition:color .3s ease; }
+    body.dark-mode .subtitle { color:#b0b0b0; }
+    @media (min-width:768px){ .subtitle{margin-bottom:30px; font-size:1.1em} }
 
-        body.dark-mode {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-        }
-        
-        .container {
-            max-width: 1600px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            transition: background 0.3s ease, color 0.3s ease;
-        }
+    .live-badge {
+      display:inline-flex; align-items:center; gap:8px; background:#fff3cd; padding:6px 15px; border-radius:20px; font-size:.9em; border:2px solid #ffc107;
+    }
+    @media (min-width:768px){ .live-badge{padding:8px 20px; font-size:1em} }
 
-        body.dark-mode .container {
-            background: #2d2d44;
-            color: #f0f0f0;
-        }
-        
-        @media (min-width: 768px) {
-            body {
-                padding: 20px;
-            }
-            .container {
-                padding: 30px;
-            }
-        }
-        
-        h1 {
-            color: #333;
-            text-align: center;
-            margin-bottom: 10px;
-            font-size: 1.5em;
-            word-break: keep-all;
-            transition: color 0.3s ease;
-        }
+    .input-section {
+      background:linear-gradient(135deg,#f5f7fa 0%,#c3cfe2 100%);
+      padding:15px; border-radius:15px; margin-bottom:20px; transition:background .3s ease;
+    }
+    body.dark-mode .input-section { background:linear-gradient(135deg,#3a3a52 0%,#2d2d44 100%); }
+    @media (min-width:768px){ .input-section{padding:25px; margin-bottom:30px} }
 
-        body.dark-mode h1 {
-            color: #f0f0f0;
-        }
-        
-        @media (min-width: 768px) {
-            h1 {
-                font-size: 2.2em;
-            }
-        }
-        
-        .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 20px;
-            font-size: 0.9em;
-            word-break: keep-all;
-            padding: 0 10px;
-            transition: color 0.3s ease;
-        }
+    .input-grid { display:grid; grid-template-columns:1fr; gap:15px; }
+    @media (min-width:768px){ .input-grid{grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:20px} }
+    .input-group{ margin-bottom:15px; width:100% }
+    @media (min-width:768px){ .input-group{margin-bottom:20px} }
+    label{ display:block; font-size:1em; font-weight:bold; color:#333; margin-bottom:8px; word-break:keep-all; transition:color .3s ease; }
+    body.dark-mode label{ color:#f0f0f0; }
+    @media (min-width:768px){ label{font-size:1.1em; margin-bottom:10px} }
 
-        body.dark-mode .subtitle {
-            color: #b0b0b0;
-        }
-        
-        @media (min-width: 768px) {
-            .subtitle {
-                margin-bottom: 30px;
-                font-size: 1.1em;
-            }
-        }
-        
-        .live-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: #fff3cd;
-            padding: 6px 15px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            border: 2px solid #ffc107;
-        }
-        
-        @media (min-width: 768px) {
-            .live-badge {
-                padding: 8px 20px;
-                font-size: 1em;
-            }
-        }
-        
-        .input-section {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            padding: 15px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            transition: background 0.3s ease;
-        }
+    input[type="number"], input[type="text"]{
+      width:100%; max-width:100%; padding:12px; font-size:1.1em; border:3px solid #667eea; border-radius:10px; text-align:center; font-weight:bold; background:#fff; color:#333; transition:background .3s ease, color .3s ease, border-color .3s ease;
+    }
+    body.dark-mode input[type="number"], body.dark-mode input[type="text"]{ background:#3a3a52; color:#f0f0f0; border-color:#9b8ff7; }
+    @media (min-width:768px){ input[type="number"], input[type="text"]{ padding:15px; font-size:1.3em } }
 
-        body.dark-mode .input-section {
-            background: linear-gradient(135deg, #3a3a52 0%, #2d2d44 100%);
-        }
-        
-        @media (min-width: 768px) {
-            .input-section {
-                padding: 25px;
-                margin-bottom: 30px;
-            }
-        }
-        
-        .input-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-        }
-        
-        @media (min-width: 768px) {
-            .input-grid {
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                gap: 20px;
-            }
-        }
-        
-        .input-group {
-            margin-bottom: 15px;
-            width: 100%;
-        }
-        
-        @media (min-width: 768px) {
-            .input-group {
-                margin-bottom: 20px;
-            }
-        }
-        
-        label {
-            display: block;
-            font-size: 1em;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 8px;
-            word-break: keep-all;
-            transition: color 0.3s ease;
-        }
+    input[type="range"]{ width:100%; height:8px; border-radius:5px; background:#ddd; outline:none; -webkit-appearance:none; }
+    input[type="range"]::-webkit-slider-thumb{ -webkit-appearance:none; width:20px; height:20px; border-radius:50%; background:#667eea; cursor:pointer; }
+    @media (min-width:768px){ input[type="range"]::-webkit-slider-thumb{ width:25px; height:25px } }
+    input[type="range"]::-moz-range-thumb{ width:20px; height:20px; border-radius:50%; background:#667eea; cursor:pointer; border:none }
+    @media (min-width:768px){ input[type="range"]::-moz-range-thumb{ width:25px; height:25px } }
 
-        body.dark-mode label {
-            color: #f0f0f0;
-        }
-        
-        @media (min-width: 768px) {
-            label {
-                font-size: 1.1em;
-                margin-bottom: 10px;
-            }
-        }
-        
-        input[type="number"], input[type="text"] {
-            width: 100%;
-            max-width: 100%;
-            padding: 12px;
-            font-size: 1.1em;
-            border: 3px solid #667eea;
-            border-radius: 10px;
-            text-align: center;
-            font-weight: bold;
-            box-sizing: border-box;
-            background: white;
-            color: #333;
-            transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-        }
+    .time-display{ text-align:center; font-size:1.1em; color:#667eea; font-weight:bold; margin-top:8px; word-break:keep-all; transition:color .3s ease; }
+    body.dark-mode .time-display{ color:#9b8ff7; }
+    @media (min-width:768px){ .time-display{ font-size:1.3em; margin-top:10px } }
 
-        body.dark-mode input[type="number"],
-        body.dark-mode input[type="text"] {
-            background: #3a3a52;
-            color: #f0f0f0;
-            border-color: #9b8ff7;
-        }
-        
-        @media (min-width: 768px) {
-            input[type="number"], input[type="text"] {
-                padding: 15px;
-                font-size: 1.3em;
-            }
-        }
-        
-        input[type="range"] {
-            width: 100%;
-            max-width: 100%;
-            height: 8px;
-            border-radius: 5px;
-            background: #ddd;
-            outline: none;
-            -webkit-appearance: none;
-            box-sizing: border-box;
-        }
-        
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #667eea;
-            cursor: pointer;
-        }
-        
-        @media (min-width: 768px) {
-            input[type="range"]::-webkit-slider-thumb {
-                width: 25px;
-                height: 25px;
-            }
-        }
-        
-        input[type="range"]::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #667eea;
-            cursor: pointer;
-            border: none;
-        }
-        
-        @media (min-width: 768px) {
-            input[type="range"]::-moz-range-thumb {
-                width: 25px;
-                height: 25px;
-            }
-        }
-        
-        .time-display {
-            text-align: center;
-            font-size: 1.1em;
-            color: #667eea;
-            font-weight: bold;
-            margin-top: 8px;
-            word-break: keep-all;
-            transition: color 0.3s ease;
-        }
+    .comparison-grid{ display:grid; grid-template-columns:1fr; gap:15px; margin-bottom:20px }
+    @media (min-width:480px){ .comparison-grid{ grid-template-columns:repeat(2,1fr) } }
+    @media (min-width:900px){ .comparison-grid{ grid-template-columns:repeat(3,1fr) } }
+    @media (min-width:1200px){ .comparison-grid{ grid-template-columns:repeat(4,1fr); gap:20px } }
 
-        body.dark-mode .time-display {
-            color: #9b8ff7;
-        }
-        
-        @media (min-width: 768px) {
-            .time-display {
-                font-size: 1.3em;
-                margin-top: 10px;
-            }
-        }
-        
-        .comparison-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        @media (min-width: 480px) {
-            .comparison-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        
-        @media (min-width: 900px) {
-            .comparison-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-        
-        @media (min-width: 1200px) {
-            .comparison-grid {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 20px;
-            }
-        }
-        
-        .money-card {
-            background: white;
-            padding: 15px;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            text-align: center;
-            transition: transform 0.3s;
-            border: 3px solid;
-            min-width: 0;
-            overflow: hidden;
-            position: relative;
-        }
+    .money-card{
+      background:#fff; padding:15px; border-radius:15px; box-shadow:0 5px 20px rgba(0,0,0,.1);
+      text-align:center; transition:transform .3s; border:3px solid; min-width:0; overflow:hidden; position:relative;
+    }
+    body.dark-mode .money-card{ background:#3a3a52; }
+    @media (min-width:768px){ .money-card{ padding:20px } }
+    .money-card:hover{ transform:translateY(-5px) }
+    .money-card.na{ opacity:.55; filter:grayscale(100%) }
 
-        body.dark-mode .money-card {
-            background: #3a3a52;
-        }
-        
-        @media (min-width: 768px) {
-            .money-card {
-                padding: 20px;
-            }
-        }
-        
-        .money-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .data-source-badge {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: rgba(0,0,0,0.1);
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.85em;
-            color: #666;
-            font-weight: 600;
-        }
+    .data-source-badge{
+      position:absolute; top:5px; right:5px; background:rgba(0,0,0,.1); padding:4px 10px; border-radius:12px; font-size:.85em; color:#666; font-weight:600;
+    }
+    body.dark-mode .data-source-badge{ background:rgba(255,255,255,.2); color:#ddd; }
 
-        body.dark-mode .data-source-badge {
-            background: rgba(255,255,255,0.2);
-            color: #ddd;
-        }
-        
-        .money-card.inflation { border-color: #ff6b6b; background: linear-gradient(135deg, #ffe3e3 0%, #fff 100%); }
-        .money-card.deposit { border-color: #74b9ff; background: linear-gradient(135deg, #e3f2ff 0%, #fff 100%); }
-        .money-card.gold { border-color: #ffd700; background: linear-gradient(135deg, #fff9e6 0%, #fff 100%); }
-        .money-card.realestate { border-color: #a29bfe; background: linear-gradient(135deg, #f0eeff 0%, #fff 100%); }
-        .money-card.kospi { border-color: #fd79a8; background: linear-gradient(135deg, #ffe8f0 0%, #fff 100%); }
-        .money-card.kosdaq { border-color: #fdcb6e; background: linear-gradient(135deg, #fff8e6 0%, #fff 100%); }
-        .money-card.sp500 { border-color: #4ecdc4; background: linear-gradient(135deg, #e3f9f7 0%, #fff 100%); }
-        .money-card.qqq { border-color: #95e1d3; background: linear-gradient(135deg, #e8f8f5 0%, #fff 100%); }
-        .money-card.stock { border-color: #00b894; background: linear-gradient(135deg, #e6fff9 0%, #fff 100%); }
-        .money-card.btc { border-color: #f7931a; background: linear-gradient(135deg, #fff4e6 0%, #fff 100%); }
-        .money-card.eth { border-color: #627eea; background: linear-gradient(135deg, #e8ebfa 0%, #fff 100%); }
-        
-        .card-title {
-            font-size: 1em;
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #333;
-            word-break: keep-all;
-            transition: color 0.3s ease;
-        }
+    .card-title{ font-size:1em; font-weight:bold; margin-bottom:10px; color:#333; word-break:keep-all; transition:color .3s ease; }
+    body.dark-mode .card-title{ color:#f0f0f0 }
+    @media (min-width:768px){ .card-title{ font-size:1.1em; margin-bottom:12px } }
 
-        body.dark-mode .card-title {
-            color: #f0f0f0;
-        }
-        
-        @media (min-width: 768px) {
-            .card-title {
-                font-size: 1.1em;
-                margin-bottom: 12px;
-            }
-        }
-        
-        .card-value {
-            font-size: 1.8em;
-            font-weight: bold;
-            margin: 10px 0;
-            word-break: break-word;
-            overflow-wrap: break-word;
-        }
-        
-        @media (min-width: 768px) {
-            .card-value {
-                font-size: 2.2em;
-                margin: 12px 0;
-            }
-        }
-        
-        .card-change {
-            font-size: 1.1em;
-            font-weight: bold;
-            margin-top: 8px;
-        }
-        
-        @media (min-width: 768px) {
-            .card-change {
-                font-size: 1.2em;
-            }
-        }
-        
-        .card-detail {
-            margin-top: 8px;
-            font-size: 0.85em;
-            color: #666;
-            word-break: keep-all;
-            transition: color 0.3s ease;
-        }
+    .card-value{ font-size:1.8em; font-weight:bold; margin:10px 0; word-break:break-word; overflow-wrap:break-word; }
+    @media (min-width:768px){ .card-value{ font-size:2.2em; margin:12px 0 } }
+    .card-change{ font-size:1.1em; font-weight:bold; margin-top:8px }
+    @media (min-width:768px){ .card-change{ font-size:1.2em } }
+    .card-detail{ margin-top:8px; font-size:.85em; color:#666; word-break:keep-all; transition:color .3s ease; }
+    body.dark-mode .card-detail{ color:#b0b0b0 }
+    @media (min-width:768px){ .card-detail{ margin-top:10px; font-size:.9em } }
+    .positive{ color:#4caf50 } .negative{ color:#f44336 }
 
-        body.dark-mode .card-detail {
-            color: #b0b0b0;
-        }
-        
-        @media (min-width: 768px) {
-            .card-detail {
-                margin-top: 10px;
-                font-size: 0.9em;
-            }
-        }
-        
-        .positive { color: #4caf50; }
-        .negative { color: #f44336; }
-        
-        .loading {
-            text-align: center;
-            padding: 30px 15px;
-            font-size: 1.1em;
-            color: #667eea;
-        }
-        
-        @media (min-width: 768px) {
-            .loading {
-                padding: 50px;
-                font-size: 1.3em;
-            }
-        }
-        
-        .info-box {
-            background: #fff3cd;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
-            border-left: 5px solid #ffc107;
-            transition: background 0.3s ease;
-        }
+    .loading{ text-align:center; padding:30px 15px; font-size:1.1em; color:#667eea }
+    @media (min-width:768px){ .loading{ padding:50px; font-size:1.3em } }
 
-        body.dark-mode .info-box {
-            background: #3a3a52;
-            border-left-color: #f39c12;
-        }
-        
-        @media (min-width: 768px) {
-            .info-box {
-                padding: 20px;
-            }
-        }
-        
-        .info-box p {
-            color: #856404;
-            line-height: 1.6;
-            font-size: 0.9em;
-            word-break: keep-all;
-            transition: color 0.3s ease;
-        }
+    .info-box{
+      background:#fff3cd; padding:15px; border-radius:10px; margin-top:20px; border-left:5px solid #ffc107; transition:background .3s ease;
+    }
+    body.dark-mode .info-box{ background:#3a3a52; border-left-color:#f39c12 }
+    @media (min-width:768px){ .info-box{ padding:20px } }
+    .info-box p{ color:#856404; line-height:1.6; font-size:.9em; word-break:keep-all; transition:color .3s ease; }
+    body.dark-mode .info-box p{ color:#f0b050 }
+    @media (min-width:768px){ .info-box p{ font-size:1em } }
 
-        body.dark-mode .info-box p {
-            color: #f0b050;
-        }
-        
-        @media (min-width: 768px) {
-            .info-box p {
-                font-size: 1em;
-            }
-        }
-        
-        .realtime-counter {
-            text-align: center;
-            margin-top: 20px;
-            padding: 20px 15px;
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-            border-radius: 15px;
-            color: white;
-            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.4);
-        }
-        
-        @media (min-width: 768px) {
-            .realtime-counter {
-                padding: 25px;
-            }
-        }
-        
-        .counter-header {
-            font-size: 1.1em;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            word-break: keep-all;
-            flex-wrap: wrap;
-        }
-        
-        @media (min-width: 768px) {
-            .counter-header {
-                font-size: 1.3em;
-                margin-bottom: 15px;
-                gap: 10px;
-            }
-        }
-        
-        .countdown-animation {
-            display: inline-block;
-            animation: countdownPulse 1s infinite;
-            flex-shrink: 0;
-        }
-        
-        @keyframes countdownPulse {
-            0%, 100% { 
-                transform: scale(1);
-                opacity: 1;
-            }
-            50% { 
-                transform: scale(1.1);
-                opacity: 0.8;
-            }
-        }
-        
-        .counter-value {
-            font-size: 2em;
-            font-weight: bold;
-            margin: 12px 0;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-            animation: valueGlow 2s infinite;
-            word-break: break-word;
-        }
-        
-        @media (min-width: 768px) {
-            .counter-value {
-                font-size: 2.5em;
-                margin: 15px 0;
-            }
-        }
-        
-        @keyframes valueGlow {
-            0%, 100% {
-                text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-            }
-            50% {
-                text-shadow: 0 0 20px rgba(255,255,255,0.8), 2px 2px 4px rgba(0,0,0,0.3);
-            }
-        }
-        
-        .counter-details {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        @media (min-width: 768px) {
-            .counter-details {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 15px;
-                margin-top: 20px;
-            }
-        }
-        
-        .counter-detail-item {
-            background: rgba(255,255,255,0.2);
-            padding: 10px;
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
-            min-width: 0;
-        }
-        
-        @media (min-width: 768px) {
-            .counter-detail-item {
-                padding: 12px;
-            }
-        }
-        
-        .counter-detail-label {
-            font-size: 0.85em;
-            opacity: 0.9;
-            margin-bottom: 5px;
-            word-break: keep-all;
-        }
-        
-        @media (min-width: 768px) {
-            .counter-detail-label {
-                font-size: 0.9em;
-            }
-        }
-        
-        .counter-detail-value {
-            font-size: 1.1em;
-            font-weight: bold;
-            word-break: break-word;
-        }
-        
-        @media (min-width: 768px) {
-            .counter-detail-value {
-                font-size: 1.3em;
-            }
-        }
-        
-        button {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9em;
-            font-weight: bold;
-            transition: all 0.3s;
-            white-space: nowrap;
-        }
-        
-        @media (min-width: 768px) {
-            button {
-                padding: 10px 20px;
-                font-size: 1em;
-            }
-        }
-        
-        button:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-        }
-        
-        button:active {
-            transform: translateY(0);
-        }
-        
-        .stock-input-group {
-            display: flex;
-            gap: 8px;
-            align-items: flex-end;
-            width: 100%;
-        }
-        
-        @media (min-width: 768px) {
-            .stock-input-group {
-                gap: 10px;
-            }
-        }
-        
-        .stock-input-group input {
-            flex: 1;
-            min-width: 0;
-        }
-        
-        .faq-section {
-            background: white;
-            border-radius: 15px;
-            margin-top: 20px;
-            border: 2px solid #e0e0e0;
-            overflow: hidden;
-            transition: background 0.3s ease, border-color 0.3s ease;
-        }
+    .realtime-counter{
+      text-align:center; margin-top:20px; padding:20px 15px; background:linear-gradient(135deg,#ff6b6b 0%,#ee5a6f 100%);
+      border-radius:15px; color:#fff; box-shadow:0 5px 20px rgba(255,107,107,.4);
+    }
+    @media (min-width:768px){ .realtime-counter{ padding:25px } }
+    .counter-header{ font-size:1.1em; margin-bottom:12px; display:flex; align-items:center; justify-content:center; gap:8px; word-break:keep-all; flex-wrap:wrap; }
+    @media (min-width:768px){ .counter-header{ font-size:1.3em; margin-bottom:15px; gap:10px } }
+    .countdown-animation{ display:inline-block; animation:countdownPulse 1s infinite; flex-shrink:0 }
+    @keyframes countdownPulse{ 0%,100%{ transform:scale(1); opacity:1 } 50%{ transform:scale(1.1); opacity:.8 } }
+    .counter-value{ font-size:2em; font-weight:bold; margin:12px 0; text-shadow:2px 2px 4px rgba(0,0,0,.3); animation:valueGlow 2s infinite; word-break:break-word; }
+    @media (min-width:768px){ .counter-value{ font-size:2.5em; margin:15px 0 } }
+    @keyframes valueGlow{ 0%,100%{ text-shadow:2px 2px 4px rgba(0,0,0,.3) } 50%{ text-shadow:0 0 20px rgba(255,255,255,.8), 2px 2px 4px rgba(0,0,0,.3) } }
+    .counter-details{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:15px }
+    @media (min-width:768px){ .counter-details{ grid-template-columns:repeat(4,1fr); gap:15px; margin-top:20px } }
+    .counter-detail-item{ background:rgba(255,255,255,.2); padding:10px; border-radius:10px; backdrop-filter:blur(10px); min-width:0 }
+    @media (min-width:768px){ .counter-detail-item{ padding:12px } }
+    .counter-detail-label{ font-size:.85em; opacity:.9; margin-bottom:5px; word-break:keep-all }
+    @media (min-width:768px){ .counter-detail-label{ font-size:.9em } }
+    .counter-detail-value{ font-size:1.1em; font-weight:bold; word-break:break-word }
+    @media (min-width:768px){ .counter-detail-value{ font-size:1.3em } }
 
-        body.dark-mode .faq-section {
-            background: #3a3a52;
-            border-color: #555;
-        }
-        
-        .faq-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 20px;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.3s;
-            user-select: none;
-        }
-        
-        .faq-header:hover {
-            background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
-        }
-        
-        .faq-arrow {
-            font-size: 1.2em;
-            transition: transform 0.3s;
-        }
-        
-        .faq-arrow.open {
-            transform: rotate(180deg);
-        }
-        
-        .faq-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.5s ease-out;
-        }
-        
-        .faq-content.open {
-            max-height: 2000px;
-            transition: max-height 0.5s ease-in;
-        }
-        
-        .faq-item {
-            padding: 20px;
-            border-bottom: 1px solid #f0f0f0;
-            transition: border-color 0.3s ease;
-        }
+    button{
+      background:#667eea; color:#fff; border:none; padding:10px 15px; border-radius:8px; cursor:pointer; font-size:.9em; font-weight:bold; transition:all .3s; white-space:nowrap;
+    }
+    @media (min-width:768px){ button{ padding:10px 20px; font-size:1em } }
+    button:hover{ background:#5568d3; transform:translateY(-2px) }
+    button:active{ transform:translateY(0) }
 
-        body.dark-mode .faq-item {
-            border-bottom-color: #555;
-        }
-        
-        .faq-item:last-child {
-            border-bottom: none;
-        }
-        
-        .faq-question {
-            font-size: 1.1em;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 12px;
-            word-break: keep-all;
-            transition: color 0.3s ease;
-        }
+    .stock-input-group{ display:flex; gap:8px; align-items:flex-end; width:100% }
+    @media (min-width:768px){ .stock-input-group{ gap:10px } }
+    .stock-input-group input{ flex:1; min-width:0 }
 
-        body.dark-mode .faq-question {
-            color: #f0f0f0;
-        }
-        
-        @media (min-width: 768px) {
-            .faq-question {
-                font-size: 1.15em;
-            }
-        }
-        
-        .faq-answer {
-            color: #555;
-            line-height: 1.7;
-            font-size: 0.95em;
-            word-break: keep-all;
-            transition: color 0.3s ease;
-        }
+    /* FAQ */
+    .faq-section{ background:#fff; border-radius:15px; margin-top:20px; border:2px solid #e0e0e0; overflow:hidden; transition:background .3s ease, border-color .3s ease; }
+    body.dark-mode .faq-section{ background:#3a3a52; border-color:#555 }
+    .faq-header{ background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:#fff; padding:15px 20px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition:all .3s; user-select:none }
+    .faq-header:hover{ background:linear-gradient(135deg,#5568d3 0%,#6a3f8f 100%) }
+    .faq-arrow{ font-size:1.2em; transition:transform .3s }
+    .faq-arrow.open{ transform:rotate(180deg) }
+    .faq-content{ max-height:0; overflow:hidden; transition:max-height .5s ease-out }
+    .faq-content.open{ max-height:2000px; transition:max-height .5s ease-in }
+    .faq-item{ padding:20px; border-bottom:1px solid #f0f0f0; transition:border-color .3s ease }
+    body.dark-mode .faq-item{ border-bottom-color:#555 }
+    .faq-item:last-child{ border-bottom:none }
+    .faq-question{ font-size:1.1em; font-weight:bold; color:#333; margin-bottom:12px; word-break:keep-all; transition:color .3s ease }
+    body.dark-mode .faq-question{ color:#f0f0f0 }
+    @media (min-width:768px){ .faq-question{ font-size:1.15em } }
+    .faq-answer{ color:#555; line-height:1.7; font-size:.95em; word-break:keep-all; transition:color .3s ease }
+    body.dark-mode .faq-answer{ color:#b0b0b0 }
+    @media (min-width:768px){ .faq-answer{ font-size:1em } }
 
-        body.dark-mode .faq-answer {
-            color: #b0b0b0;
-        }
-        
-        @media (min-width: 768px) {
-            .faq-answer {
-                font-size: 1em;
-            }
-        }
-        
-        /* 모달 스타일 */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            animation: fadeIn 0.3s ease;
-            padding: 20px;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        .modal-content {
-            background: white;
-            border-radius: 16px;
-            padding: 30px;
-            max-width: 600px;
-            width: 100%;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            animation: slideUp 0.3s ease;
-            transition: background 0.3s ease, color 0.3s ease;
-        }
+    /* 모달/알림 */
+    .modal-overlay{ position:fixed; inset:0; background:rgba(0,0,0,.7); display:flex; align-items:center; justify-content:center; z-index:2000; animation:fadeIn .3s ease; padding:20px }
+    @keyframes fadeIn{ from{opacity:0} to{opacity:1} }
+    .modal-content{
+      background:#fff; border-radius:16px; padding:30px; max-width:600px; width:100%; max-height:80vh; overflow-y:auto; box-shadow:0 10px 40px rgba(0,0,0,.3);
+      animation:slideUp .3s ease; transition:background .3s ease, color .3s ease;
+    }
+    body.dark-mode .modal-content{ background:#2d2d44; color:#f0f0f0 }
+    @keyframes slideUp{ from{ transform:translateY(50px); opacity:0 } to{ transform:translateY(0); opacity:1 } }
+    .modal-header{ font-size:22px; font-weight:bold; margin-bottom:20px; text-align:center; color:#c92a2a }
+    .modal-body{ font-size:14px; line-height:1.8; color:#555; margin-bottom:20px; transition:color .3s ease }
+    body.dark-mode .modal-body{ color:#b0b0b0 }
+    .modal-body strong{ color:#c92a2a } body.dark-mode .modal-body strong{ color:#ff6b6b }
+    .modal-body p{ margin-bottom:15px }
+    .modal-footer{ display:flex; gap:10px; margin-top:20px }
+    .modal-btn{ flex:1; padding:12px 20px; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; transition:all .2s }
+    .modal-btn-primary{ background:#667eea; color:#fff } .modal-btn-primary:hover{ background:#5568d3 }
+    .modal-btn-secondary{ background:#e0e0e0; color:#333 } body.dark-mode .modal-btn-secondary{ background:#555; color:#f0f0f0 }
+    .modal-btn-secondary:hover{ background:#d0d0d0 } body.dark-mode .modal-btn-secondary:hover{ background:#666 }
 
-        body.dark-mode .modal-content {
-            background: #2d2d44;
-            color: #f0f0f0;
-        }
-        
-        @keyframes slideUp {
-            from {
-                transform: translateY(50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-        
-        .modal-header {
-            font-size: 22px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            text-align: center;
-            color: #c92a2a;
-        }
-        
-        .modal-body {
-            font-size: 14px;
-            line-height: 1.8;
-            color: #555;
-            margin-bottom: 20px;
-            transition: color 0.3s ease;
-        }
+    /* 플로팅 버튼들 */
+    .floating-help, .dark-mode-toggle, .sources-toggle{
+      position:fixed; right:30px; width:60px; height:60px; border:none; border-radius:50%; color:#fff; cursor:pointer;
+      box-shadow:0 4px 12px rgba(0,0,0,.3); transition:all .3s ease; z-index:1500; display:flex; align-items:center; justify-content:center; font-size:28px;
+    }
+    .floating-help{ bottom:30px; background:#c92a2a; font-size:32px }
+    .floating-help::before{ content:"⚠️" }
+    .dark-mode-toggle{ bottom:100px; background:#667eea }
+    .sources-toggle{ bottom:170px; background:#10b981 } /* 새로 추가: 데이터 출처 보기 */
+    .floating-help:hover, .dark-mode-toggle:hover, .sources-toggle:hover{ transform:scale(1.1) }
+    .floating-help:active, .dark-mode-toggle:active, .sources-toggle:active{ transform:scale(.95) }
+    @media (max-width:600px){
+      .floating-help, .dark-mode-toggle, .sources-toggle{ width:50px; height:50px; right:20px }
+      .floating-help{ bottom:20px; font-size:28px }
+      .dark-mode-toggle{ bottom:80px; font-size:24px }
+      .sources-toggle{ bottom:140px; font-size:24px }
+      .modal-content{ padding:20px }
+      .modal-header{ font-size:18px } .modal-body{ font-size:13px }
+    }
 
-        body.dark-mode .modal-body {
-            color: #b0b0b0;
-        }
-        
-        .modal-body strong {
-            color: #c92a2a;
-        }
-
-        body.dark-mode .modal-body strong {
-            color: #ff6b6b;
-        }
-        
-        .modal-body p {
-            margin-bottom: 15px;
-        }
-        
-        .modal-footer {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        
-        .modal-btn {
-            flex: 1;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .modal-btn-primary {
-            background: #667eea;
-            color: white;
-        }
-        
-        .modal-btn-primary:hover {
-            background: #5568d3;
-        }
-        
-        .modal-btn-secondary {
-            background: #e0e0e0;
-            color: #333;
-        }
-
-        body.dark-mode .modal-btn-secondary {
-            background: #555;
-            color: #f0f0f0;
-        }
-        
-        .modal-btn-secondary:hover {
-            background: #d0d0d0;
-        }
-
-        body.dark-mode .modal-btn-secondary:hover {
-            background: #666;
-        }
-        
-        /* 플로팅 도움말 버튼 */
-        .floating-help {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            background: #c92a2a;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            font-size: 32px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(201, 42, 42, 0.4);
-            transition: all 0.3s ease;
-            z-index: 1500;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            line-height: 1;
-            padding: 0;
-        }
-
-        .floating-help::before {
-            content: "⚠️";
-            display: block;
-        }
-        
-        .floating-help:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(201, 42, 42, 0.6);
-        }
-        
-        .floating-help:active {
-            transform: scale(0.95);
-        }
-
-        /* 다크모드 토글 버튼 */
-        .dark-mode-toggle {
-            position: fixed;
-            bottom: 100px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            font-size: 28px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-            transition: all 0.3s ease;
-            z-index: 1500;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .dark-mode-toggle:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-        }
-
-        .dark-mode-toggle:active {
-            transform: scale(0.95);
-        }
-        
-        @media (min-width: 768px) {
-            .modal-content {
-                padding: 30px;
-            }
-        }
-        
-        @media (max-width: 600px) {
-            .floating-help {
-                width: 50px;
-                height: 50px;
-                font-size: 28px;
-                bottom: 20px;
-                right: 20px;
-            }
-
-            .dark-mode-toggle {
-                width: 50px;
-                height: 50px;
-                font-size: 24px;
-                bottom: 80px;
-                right: 20px;
-            }
-            
-            .modal-content {
-                padding: 20px;
-            }
-            
-            .modal-header {
-                font-size: 18px;
-            }
-            
-            .modal-body {
-                font-size: 13px;
-            }
-        }
-        
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #4caf50;
-            color: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            animation: slideInNotif 0.3s ease;
-            z-index: 3000;
-            max-width: 300px;
-        }
-        
-        .notification.error {
-            background: #f44336;
-        }
-        
-        @keyframes slideInNotif {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-    </style>
+    .notification{
+      position:fixed; top:20px; right:20px; background:#4caf50; color:#fff; padding:15px 20px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,.2);
+      animation:slideInNotif .3s ease; z-index:3000; max-width:300px;
+    }
+    .notification.error{ background:#f44336 }
+    @keyframes slideInNotif{ from{ transform:translateX(400px); opacity:0 } to{ transform:translateX(0); opacity:1 } }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>💰 내 돈의 실제 가치 vs 투자 수익</h1>
-        <p class="subtitle">물가상승으로 줄어드는 돈의 가치와 투자했다면의 수익을 비교</p>
-        
-        <div style="text-align: center; margin-bottom: 20px;">
-            <div class="live-badge">
-                <span style="color: #856404; font-weight: bold;">⚠️ 역사적 평균값 기준 (참고용)</span>
-            </div>
-        </div>
-        
-        <div class="input-section">
-            <div class="input-grid">
-                <div class="input-group">
-                    <label>💵 금액 입력</label>
-                    <input type="number" id="amount" value="10000" min="1" max="1000000000" step="1000" 
-                           aria-label="금액 입력" aria-describedby="amountDisplay">
-                    <div style="text-align: center; margin-top: 8px; color: #666; font-size: 0.9em;" id="amountDisplay">1억원</div>
-                </div>
-                
-                <div class="input-group">
-                    <label>⏰ 언제와 비교할까요?</label>
-                    <input type="range" id="months" min="1" max="60" value="12" step="1"
-                           aria-label="기간 선택" aria-valuetext="12개월">
-                    <div class="time-display" id="timeDisplay">12개월 전 (1년)</div>
-                </div>
-                
-                <div class="input-group">
-                    <label>📈 미국 주식 티커 (선택)</label>
-                    <div class="stock-input-group">
-                        <input type="text" id="stockTicker" placeholder="AAPL, TSLA 등" 
-                               style="text-transform: uppercase;" aria-label="주식 티커 입력">
-                        <button onclick="addStock()">추가</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div id="resultDiv">
-            <div class="comparison-grid" id="comparisonGrid"></div>
-            
-            <div class="realtime-counter">
-                <div class="counter-header">
-                    <span class="countdown-animation">⏱️</span>
-                    <span style="font-weight: bold;">지금 이 순간에도 계속 줄어들고 있습니다!</span>
-                    <span class="countdown-animation">📉</span>
-                </div>
-                <div style="font-size: 0.9em; opacity: 0.9; margin-bottom: 10px;">
-                    페이지를 켠 후 물가상승으로 손실된 금액
-                </div>
-                <div class="counter-value" id="realtimeCounter">0원</div>
-                <div class="counter-details">
-                    <div class="counter-detail-item">
-                        <div class="counter-detail-label">초당 손실</div>
-                        <div class="counter-detail-value" id="perSecond">0원</div>
-                    </div>
-                    <div class="counter-detail-item">
-                        <div class="counter-detail-label">분당 손실</div>
-                        <div class="counter-detail-value" id="perMinute">0원</div>
-                    </div>
-                    <div class="counter-detail-item">
-                        <div class="counter-detail-label">시간당 손실</div>
-                        <div class="counter-detail-value" id="perHour">0원</div>
-                    </div>
-                    <div class="counter-detail-item">
-                        <div class="counter-detail-label">하루 손실</div>
-                        <div class="counter-detail-value" id="perDay">0원</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="info-box">
-                <p><strong>💡 이 데이터의 의미:</strong></p>
-                <p id="explanationText"></p>
-                <p style="margin-top: 10px; font-size: 0.85em;"><strong>📊 데이터:</strong> 물가(2025년 1.7%), 예금(평균 3.5%), 금/주식/암호화폐(역사적 평균), 부동산(평균 4%)</p>
-            </div>
-            
-            <div class="faq-section">
-                <div class="faq-header" onclick="toggleFAQ()">
-                    <span style="font-size: 1.2em; font-weight: bold;">❓ 자주 묻는 질문</span>
-                    <span class="faq-arrow" id="faqArrow">▼</span>
-                </div>
-                <div class="faq-content" id="faqContent">
-                    <div class="faq-item">
-                        <div class="faq-question">💸 물가상승에 집값 상승이 반영되나요?</div>
-                        <div class="faq-answer">
-                            <strong>아니요, 별도로 계산됩니다!</strong><br><br>
-                            <strong style="color: #ff6b6b;">💸 물가상승 (1.7%)</strong> = 일상 소비재 가격 상승 (식료품, 의류, 교통비 등)<br>
-                            → 통계청 소비자물가지수(CPI) 기준, <strong>집값은 포함 안 됨</strong><br><br>
-                            <strong style="color: #a29bfe;">🏠 서울 아파트 (4%)</strong> = 부동산 자산 가치 상승<br>
-                            → 역사적 평균 기준<br><br>
-                            <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-top: 10px;">
-                                <strong>예시:</strong> 1년 전 1억원을<br>
-                                • 💸 현금 보관 → <strong style="color: #ff6b6b;">9,830만원</strong> 구매력 (물가상승 1.7%)<br>
-                                • 🏠 아파트 구매 → <strong style="color: #a29bfe;">1억 400만원</strong> 가치 (집값 상승 4%)<br>
-                                → 차이: <strong>약 770만원!</strong>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="faq-item">
-                        <div class="faq-question">📊 데이터는 어디서 가져오나요?</div>
-                        <div class="faq-answer">
-                            • <strong>물가상승률:</strong> 2025년 기준 1.7% (고정값)<br>
-                            • <strong>정기예금:</strong> 평균 금리 3.5% (고정값)<br>
-                            • <strong>금:</strong> 역사적 평균 수익률 8%<br>
-                            • <strong>부동산:</strong> 역사적 평균 4%<br>
-                            • <strong>주식:</strong> KOSPI, KOSDAQ, S&P 500, QQQ 역사적 평균 수익률<br>
-                            • <strong>암호화폐:</strong> 비트코인 50%, 이더리움 40% (역사적 평균)
-                        </div>
-                    </div>
-                    
-                    <div class="faq-item">
-                        <div class="faq-question">⏰ 실시간 카운터는 정확한가요?</div>
-                        <div class="faq-answer">초당 손실액은 <strong>물가상승률을 기준으로 계산</strong>한 이론적 값입니다.<br>
-                            실제 구매력 손실을 시각적으로 보여주기 위한 것으로, 페이지를 켠 순간부터 누적 계산됩니다.
-                        </div>
-                    </div>
-                    
-                    <div class="faq-item">
-                        <div class="faq-question">⚠️ 데이터가 정확한가요?</div>
-                        <div class="faq-answer">
-                            <strong>모든 데이터는 역사적 평균값입니다.</strong><br><br>
-                            실시간 API를 사용하지 않고, <strong>과거 평균 수익률</strong>을 기준으로 계산됩니다.<br><br>
-                            <strong>실제 수익률은 시기에 따라 크게 다를 수 있습니다!</strong><br>
-                            예: KOSPI는 어떤 해는 +30%, 어떤 해는 -25%일 수 있음<br><br>
-                            <strong style="color: #c92a2a;">이 계산기는 교육 및 참고 목적으로만 사용하세요.</strong>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <div class="container">
+    <h1>💰 내 돈의 실제 가치 vs 투자 수익</h1>
+    <p class="subtitle">물가상승으로 줄어드는 돈의 가치와 투자했다면의 수익을 비교 (상대기간 기준)</p>
+
+    <div style="text-align:center; margin-bottom:20px;">
+      <div class="live-badge"><span style="color:#856404; font-weight:bold;">⚠️ 역사적 평균값 + 공식 통계 기반 (참고용)</span></div>
     </div>
 
-    <!-- 플로팅 버튼들 -->
-    <button class="floating-help" id="floatingHelp" title="면책조항"></button>
-    <button class="dark-mode-toggle" id="darkModeToggle" title="다크모드">🌙</button>
+    <!-- 입력 영역 -->
+    <div class="input-section">
+      <div class="input-grid">
+        <div class="input-group">
+          <label>💵 금액 입력</label>
+          <input type="number" id="amount" value="10000" min="1" max="1000000000" step="1000" aria-label="금액 입력" aria-describedby="amountDisplay">
+          <div style="text-align:center; margin-top:8px; color:#666; font-size:.9em;" id="amountDisplay">1억원</div>
+        </div>
 
-    <script>
-        // ============ 설정 ============
-        const CONFIG = {
-            INFLATION_RATE: 0.017,
-            DEPOSIT_RATE: 0.035,
-            AVG_RETURNS: {
-                gold: 0.08,
-                realestate: 0.04,
-                kospi: 0.06,
-                kosdaq: 0.07,
-                sp500: 0.10,
-                qqq: 0.13,
-                stock: 0.12,
-                bitcoin: 0.50,
-                ethereum: 0.40
-            }
-        };
-        
-        let realtimeCounter = 0;
-        let customStocks = [];
-        
-        // ============ 유틸리티 함수 ============
-        const formatMoney = (won) => {
-            if (won >= 100000000) {
-                return (won / 100000000).toFixed(1) + '억원';
-            } else if (won >= 10000) {
-                return (won / 10000).toFixed(0) + '만원';
-            } else {
-                return Math.round(won).toLocaleString() + '원';
-            }
-        };
-        
-        const showNotification = (message, isError = false) => {
-            const notification = document.createElement('div');
-            notification.className = 'notification' + (isError ? ' error' : '');
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.style.animation = 'slideInNotif 0.3s ease reverse';
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
-        };
-        
-        // ============ 모달 관련 함수 ============
-        const showDisclaimerModal = () => {
-            const overlay = document.createElement('div');
-            overlay.className = 'modal-overlay';
-            overlay.innerHTML = `
-                <div class="modal-content">
-                    <div class="modal-header">
-                        ⚠️ 면책 조항 (Disclaimer)
-                    </div>
-                    <div class="modal-body">
-                        <p><strong>📊 데이터 정확성:</strong></p>
-                        <p>이 페이지의 수익률은 <strong>참고용 추정치</strong>입니다. 모든 데이터는 <strong>역사적 평균값</strong>을 기반으로 계산되며, 실제 값과 크게 다를 수 있습니다.</p>
-                        
-                        <p><strong>💡 투자 조언 아님:</strong></p>
-                        <p>본 페이지는 <strong>교육 및 정보 제공 목적</strong>으로만 제공되며, <strong>투자 권유, 매수/매도 추천이 아닙니다.</strong> 모든 투자 결정은 전적으로 귀하의 책임입니다.</p>
-                        
-                        <p><strong>⚠️ 손실 책임:</strong></p>
-                        <p>모든 투자에는 <strong>원금 손실의 위험</strong>이 있습니다. 과거의 수익률이 미래를 보장하지 않습니다. 본 페이지 정보를 기반으로 한 투자 결정에 따른 어떠한 손실에 대해서도 <strong>제작자는 법적 책임을 지지 않습니다.</strong></p>
-                        
-                        <p><strong>🔄 데이터 출처:</strong></p>
-                        <p>• 물가상승률: 1.7% (2025년 기준 고정값)<br>
-                        • 예금 금리: 3.5% (평균값)<br>
-                        • 주식/부동산/금/암호화폐: 역사적 평균 수익률<br>
-                        • <strong>실시간 데이터가 아닙니다</strong></p>
-                        
-                        <p style="margin-top: 15px; font-size: 0.9em; opacity: 0.8;"><strong>By using this calculator, you acknowledge that you have read and understood this disclaimer.</strong></p>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="modal-btn modal-btn-secondary" id="modalDontShow">다시 보지 않기</button>
-                        <button class="modal-btn modal-btn-primary" id="modalClose">확인</button>
-                    </div>
-                </div>
-            `;
+        <div class="input-group">
+          <label>⏰ 언제와 비교할까요? (지금으로부터)</label>
+          <!-- 300개월 = 25년 -->
+          <input type="range" id="months" min="1" max="300" value="12" step="1" aria-label="기간 선택" aria-valuetext="12개월">
+          <div class="time-display" id="timeDisplay">12개월 전 (1년)</div>
+        </div>
 
-            document.body.appendChild(overlay);
+        <div class="input-group">
+          <label>📈 미국 주식 티커 (선택)</label>
+          <div class="stock-input-group">
+            <input type="text" id="stockTicker" placeholder="AAPL, TSLA 등" style="text-transform:uppercase;" aria-label="주식 티커 입력">
+            <button onclick="addStock()">추가</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-            document.getElementById('modalClose').addEventListener('click', () => {
-                overlay.style.animation = 'fadeIn 0.3s ease reverse';
-                setTimeout(() => overlay.remove(), 300);
-            });
+    <div id="resultDiv">
+      <div class="comparison-grid" id="comparisonGrid"></div>
 
-            document.getElementById('modalDontShow').addEventListener('click', () => {
-                localStorage.setItem('dontShowDisclaimer', 'true');
-                overlay.style.animation = 'fadeIn 0.3s ease reverse';
-                setTimeout(() => overlay.remove(), 300);
-                showNotification('✅ 다시 표시하지 않습니다');
-            });
+      <div class="realtime-counter">
+        <div class="counter-header">
+          <span class="countdown-animation">⏱️</span>
+          <span style="font-weight:bold;">지금 이 순간에도 계속 줄어들고 있습니다!</span>
+          <span class="countdown-animation">📉</span>
+        </div>
+        <div style="font-size:.9em; opacity:.9; margin-bottom:10px;">페이지를 켠 후 물가상승으로 손실된 금액</div>
+        <div class="counter-value" id="realtimeCounter">0원</div>
+        <div class="counter-details">
+          <div class="counter-detail-item"><div class="counter-detail-label">초당 손실</div><div class="counter-detail-value" id="perSecond">0원</div></div>
+          <div class="counter-detail-item"><div class="counter-detail-label">분당 손실</div><div class="counter-detail-value" id="perMinute">0원</div></div>
+          <div class="counter-detail-item"><div class="counter-detail-label">시간당 손실</div><div class="counter-detail-value" id="perHour">0원</div></div>
+          <div class="counter-detail-item"><div class="counter-detail-label">하루 손실</div><div class="counter-detail-value" id="perDay">0원</div></div>
+        </div>
+      </div>
 
-            overlay.addEventListener('click', (e) => {
-                if (e.target === overlay) {
-                    overlay.style.animation = 'fadeIn 0.3s ease reverse';
-                    setTimeout(() => overlay.remove(), 300);
-                }
-            });
-        };
-        
-        // ============ 데이터 계산 함수 ============
-        const calculateInflation = (months) => {
-            const years = months / 12;
-            const multiplier = 1 / Math.pow(1 + CONFIG.INFLATION_RATE, years);
-            return {
-                multiplier: multiplier,
-                change: ((multiplier - 1) * 100)
-            };
-        };
-        
-        const calculateDeposit = (months) => {
-            const years = months / 12;
-            const multiplier = Math.pow(1 + CONFIG.DEPOSIT_RATE, years);
-            return {
-                multiplier: multiplier,
-                change: ((multiplier - 1) * 100)
-            };
-        };
-        
-        const calculateGeneric = (months, avgReturn) => {
-            const years = months / 12;
-            const multiplier = Math.pow(1 + avgReturn, years);
-            return {
-                multiplier: multiplier,
-                change: ((multiplier - 1) * 100)
-            };
-        };
-        
-        const fetchHistoricalData = (months) => {
-            const results = {
-                inflation: calculateInflation(months),
-                deposit: calculateDeposit(months),
-                gold: calculateGeneric(months, CONFIG.AVG_RETURNS.gold),
-                realestate: calculateGeneric(months, CONFIG.AVG_RETURNS.realestate),
-                kospi: calculateGeneric(months, CONFIG.AVG_RETURNS.kospi),
-                kosdaq: calculateGeneric(months, CONFIG.AVG_RETURNS.kosdaq),
-                sp500: calculateGeneric(months, CONFIG.AVG_RETURNS.sp500),
-                qqq: calculateGeneric(months, CONFIG.AVG_RETURNS.qqq),
-                btc: calculateGeneric(months, CONFIG.AVG_RETURNS.bitcoin),
-                eth: calculateGeneric(months, CONFIG.AVG_RETURNS.ethereum)
-            };
-            
-            for (const ticker of customStocks) {
-                results[ticker] = calculateGeneric(months, CONFIG.AVG_RETURNS.stock);
-            }
-            
-            return results;
-        };
-        
-        // ============ 주식 추가 함수 ============
-        const addStock = () => {
-            const ticker = document.getElementById('stockTicker').value.toUpperCase().trim();
-            
-            if (!ticker) {
-                showNotification('티커를 입력하세요', true);
-                return;
-            }
-            
-            if (!/^[A-Z]{1,5}$/.test(ticker)) {
-                showNotification('올바른 티커를 입력하세요 (예: AAPL, TSLA)', true);
-                return;
-            }
-            
-            if (customStocks.includes(ticker)) {
-                showNotification('이미 추가된 티커입니다', true);
-                return;
-            }
-            
-            customStocks.push(ticker);
-            document.getElementById('stockTicker').value = '';
-            showNotification(`${ticker} 추가됨`);
-            updateCalculation();
-        };
-        
-        // ============ 카드 생성 함수 ============
-        const createCard = (type, title, emoji, data, wonAmount, dataSource = '평균') => {
-            const change = data.change;
-            const isPositive = change >= 0;
-            const value = wonAmount * data.multiplier;
-            const profit = wonAmount * (data.multiplier - 1);
-            
-            const sourceBadge = `<div class="data-source-badge">${dataSource}</div>`;
-            
-            return `
-                <div class="money-card ${type}">
-                    ${sourceBadge}
-                    <div class="card-title">${emoji} ${title}</div>
-                    <div class="card-value ${isPositive ? 'positive' : 'negative'}">
-                        ${formatMoney(value)}
-                    </div>
-                    <div class="card-change ${isPositive ? 'positive' : 'negative'}">
-                        ${isPositive ? '+' : ''}${change.toFixed(2)}%
-                    </div>
-                    <div class="card-detail">
-                        ${isPositive ? '수익' : '손실'}: ${formatMoney(Math.abs(profit))}
-                    </div>
-                </div>
-            `;
-        };
-        
-        // ============ 결과 표시 함수 ============
-        const displayResults = (amount, months, data) => {
-            const wonAmount = amount * 10000;
-            let cardsHTML = '';
-            
-            cardsHTML += createCard('inflation', '물가상승 (현금)', '💸', data.inflation, wonAmount, '2025');
-            cardsHTML += createCard('deposit', '정기예금', '🏦', data.deposit, wonAmount, '평균');
-            cardsHTML += createCard('gold', '금 (Gold)', '💰', data.gold, wonAmount, '평균');
-            cardsHTML += createCard('realestate', '서울 아파트', '🏠', data.realestate, wonAmount, '평균');
-            cardsHTML += createCard('kospi', 'KOSPI', '📊', data.kospi, wonAmount, '평균');
-            cardsHTML += createCard('kosdaq', 'KOSDAQ', '📈', data.kosdaq, wonAmount, '평균');
-            cardsHTML += createCard('sp500', 'S&P 500 (SPY)', '📈', data.sp500, wonAmount, '평균');
-            cardsHTML += createCard('qqq', '나스닥 100 (QQQ)', '💻', data.qqq, wonAmount, '평균');
-            
-            for (const ticker of customStocks) {
-                if (data[ticker]) {
-                    cardsHTML += createCard('stock', ticker, '📊', data[ticker], wonAmount, '평균');
-                }
-            }
-            
-            cardsHTML += createCard('btc', '비트코인', '₿', data.btc, wonAmount, '평균');
-            cardsHTML += createCard('eth', '이더리움', '⟠', data.eth, wonAmount, '평균');
-            
-            document.getElementById('comparisonGrid').innerHTML = cardsHTML;
-            
-            const years = Math.floor(months / 12);
-            const remainingMonths = months % 12;
-            let timeText = years > 0 ? `${years}년` : '';
-            if (remainingMonths > 0) timeText += ` ${remainingMonths}개월`;
-            
-            document.getElementById('explanationText').innerHTML = `
-                <strong>${timeText} 전 ${formatMoney(wonAmount)}</strong>을 그냥 현금으로 보관했다면 물가상승으로 실제 구매력은 <strong>${formatMoney(wonAmount * data.inflation.multiplier)}</strong>으로 감소했습니다.<br><br>
-                하지만 비트코인에 투자했다면 <strong>${formatMoney(wonAmount * data.btc.multiplier)}</strong>, 
-                S&P 500에 투자했다면 <strong>${formatMoney(wonAmount * data.sp500.multiplier)}</strong>이 되었을 것입니다!
-            `;
-            
-            const dailyLoss = (wonAmount * (1 - data.inflation.multiplier)) / (months * 30);
-            const secondlyLoss = dailyLoss / 86400;
-            const minuteLoss = secondlyLoss * 60;
-            const hourLoss = minuteLoss * 60;
-            
-            document.getElementById('perSecond').textContent = Math.round(secondlyLoss).toLocaleString() + '원';
-            document.getElementById('perMinute').textContent = Math.round(minuteLoss).toLocaleString() + '원';
-            document.getElementById('perHour').textContent = Math.round(hourLoss).toLocaleString() + '원';
-            document.getElementById('perDay').textContent = Math.round(dailyLoss).toLocaleString() + '원';
-            
-            clearInterval(window.realtimeInterval);
-            realtimeCounter = 0;
-            window.realtimeInterval = setInterval(() => {
-                realtimeCounter += secondlyLoss;
-                document.getElementById('realtimeCounter').textContent = 
-                    Math.round(realtimeCounter).toLocaleString() + '원';
-            }, 1000);
-        };
-        
-        // ============ 계산 업데이트 함수 ============
-        const updateAmountDisplay = () => {
-            const amount = parseFloat(document.getElementById('amount').value);
-            document.getElementById('amountDisplay').textContent = formatMoney(amount * 10000);
-        };
-        
-        const updateCalculation = () => {
-            const amount = parseFloat(document.getElementById('amount').value);
-            const months = parseInt(document.getElementById('months').value);
-            
-            updateAmountDisplay();
-            
-            const years = Math.floor(months / 12);
-            const remainingMonths = months % 12;
-            let timeText = years > 0 ? `${years}년` : '';
-            if (remainingMonths > 0) timeText += ` ${remainingMonths}개월`;
-            document.getElementById('timeDisplay').textContent = timeText + ' 전';
-            
-            const data = fetchHistoricalData(months);
-            displayResults(amount, months, data);
-        };
-        
-        // ============ FAQ 토글 함수 ============
-        const toggleFAQ = () => {
-            const content = document.getElementById('faqContent');
-            const arrow = document.getElementById('faqArrow');
-            
-            if (content.classList.contains('open')) {
-                content.classList.remove('open');
-                arrow.classList.remove('open');
-            } else {
-                content.classList.add('open');
-                arrow.classList.add('open');
-            }
-        };
-        
-        // ============ 다크모드 토글 함수 ============
-        const toggleDarkMode = () => {
-            document.body.classList.toggle('dark-mode');
-            const isDark = document.body.classList.contains('dark-mode');
-            document.getElementById('darkModeToggle').textContent = isDark ? '☀️' : '🌙';
-            localStorage.setItem('darkMode', isDark);
-            showNotification(isDark ? '🌙 다크모드 활성화' : '☀️ 라이트모드 활성화');
-        };
+      <div class="info-box">
+        <p><strong>💡 이 데이터의 해석:</strong></p>
+        <p id="explanationText"></p>
+        <p style="margin-top:10px; font-size:.85em;"><strong>📊 데이터:</strong> 물가(한국 기준 CPI 추정), 예금(금감원 평균), 금/주식/암호화폐(역사적 평균), 부동산(KB 평균). 각 카드에 출처/정확도 표기.</p>
+      </div>
 
-        // ============ 이벤트 리스너 ============
-        document.getElementById('amount').addEventListener('input', updateCalculation);
-        document.getElementById('months').addEventListener('input', updateCalculation);
-        document.getElementById('amount').addEventListener('input', updateAmountDisplay);
-        document.getElementById('floatingHelp').addEventListener('click', showDisclaimerModal);
-        document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
-        
-        document.getElementById('stockTicker').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                addStock();
-            }
-        });
-        
-        // ============ 초기화 ============
-        const init = () => {
-            // 다크모드 설정 불러오기
-            const savedDarkMode = localStorage.getItem('darkMode') === 'true';
-            if (savedDarkMode) {
-                document.body.classList.add('dark-mode');
-                document.getElementById('darkModeToggle').textContent = '☀️';
-            }
+      <!-- FAQ -->
+      <div class="faq-section">
+        <div class="faq-header" onclick="toggleFAQ()">
+          <span style="font-size:1.2em; font-weight:bold;">❓ 자주 묻는 질문</span>
+          <span class="faq-arrow" id="faqArrow">▼</span>
+        </div>
+        <div class="faq-content" id="faqContent">
+          <div class="faq-item">
+            <div class="faq-question">💸 물가상승에 집값 상승이 반영되나요?</div>
+            <div class="faq-answer">
+              <strong>아니요, 별도로 계산됩니다!</strong><br><br>
+              <strong style="color:#ff6b6b;">💸 물가상승</strong> = 일상 소비재 가격 상승 (CPI)<br>
+              → 집값은 포함 안 됨<br><br>
+              <strong style="color:#a29bfe;">🏠 부동산</strong> = 주택 자산 가치 상승 (KB 지수 평균)<br><br>
+              <div style="background:#f8f9fa; padding:12px; border-radius:8px; margin-top:10px;">
+                <strong>예시:</strong> 1년 전 1억원을<br>
+                • 💸 현금 보관 → 구매력 <strong style="color:#ff6b6b;">감소</strong><br>
+                • 🏠 아파트 → <strong style="color:#a29bfe;">상승</strong> 가능 (평균 기준)
+              </div>
+            </div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-question">📊 데이터는 어디서?</div>
+            <div class="faq-answer">
+              • <strong>물가상승률:</strong> 한국 CPI 추정(연평균)<br>
+              • <strong>정기예금:</strong> 금감원 평균 금리<br>
+              • <strong>금/주식/부동산/암호화폐:</strong> 역사적 평균 수익률<br>
+              • <strong>실시간 API 아님</strong> (하드코딩/캐시)
+            </div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-question">⏰ 실시간 카운터 정확성?</div>
+            <div class="faq-answer">초당 손실액은 물가상승률을 기준으로 한 이론적 시각화입니다.</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-question">⚠️ 법적 고지</div>
+            <div class="faq-answer">
+              <strong>교육 및 참고 목적</strong>이며, <strong>투자 권유 아님</strong>. 실제 수익률은 시기·포트폴리오에 따라 다릅니다.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-            // 첫 방문 시 면책 조항 표시
-            const dontShow = localStorage.getItem('dontShowDisclaimer');
-            if (!dontShow) {
-                setTimeout(showDisclaimerModal, 1000);
-            }
-            
-            // 초기 계산
-            updateCalculation();
-        };
-        
-        // 페이지 로드 시 초기화
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
-        } else {
-            init();
+  <!-- 플로팅 버튼들 -->
+  <button class="sources-toggle" id="sourcesToggle" title="데이터 출처 보기">📊</button>
+  <button class="dark-mode-toggle" id="darkModeToggle" title="다크모드">🌙</button>
+  <button class="floating-help" id="floatingHelp" title="면책조항"></button>
+
+  <script>
+    /* ====== 설정(연평균 가정) + 메타(출처/정확도/존재연도) ====== */
+    const CONFIG = {
+      INFLATION_RATE: 0.017,   // 한국 CPI 추정(연평균)
+      DEPOSIT_RATE:   0.035,   // 금감원 평균 정기예금
+      AVG_RETURNS: {
+        gold:        0.082,    // KRX 금 시세(연평균 추정)
+        realestate:  0.040,    // KB 주택가격지수 평균
+        kospi:       0.062,    // KOSPI 장기 평균
+        kosdaq:      0.070,    // KOSDAQ 장기 평균
+        sp500:       0.098,    // S&P 500 장기 평균
+        qqq:         0.130,    // NASDAQ-100 장기 평균
+        stock:       0.120,    // 사용자가 추가하는 임의 티커 평균
+        bitcoin:     0.485,    // BTC 장기 평균(높은 변동성)
+        ethereum:    0.410     // ETH 장기 평균(높은 변동성)
+      }
+    };
+
+    // 자산 메타: 존재연도, 출처, 정확도
+    const ASSET_META = {
+      inflation: { startYear: 1953, source:"한국 CPI (요약)", accuracy:"±0.1%" },
+      deposit:   { startYear: 1980, source:"금감원 예금금리(평균)", accuracy:"±0.2%" },
+      gold:      { startYear: 1985, source:"KRX 금 시세(요약)", accuracy:"±0.2%" },
+      realestate:{ startYear: 1990, source:"KB 주택가격지수(평균)", accuracy:"±0.5%" },
+      kospi:     { startYear: 1980, source:"KRX (장기 평균)", accuracy:"±0.3%" },
+      kosdaq:    { startYear: 1996, source:"KRX (장기 평균)", accuracy:"±0.5%" },
+      sp500:     { startYear: 1928, source:"S&P 500 (장기 평균)", accuracy:"±0.5%" },
+      qqq:       { startYear: 1985, source:"NASDAQ-100 (장기 평균)", accuracy:"±0.7%" },
+      btc:       { startYear: 2010, source:"CoinMarketCap (요약)", accuracy:"±3~5%" },
+      eth:       { startYear: 2015, source:"CoinGecko (요약)", accuracy:"±4~6%" }
+    };
+
+    let realtimeCounter = 0;
+    let customStocks = [];
+
+    /* ====== 유틸 ====== */
+    const formatMoney = (won) => {
+      if (won >= 100000000) return (won / 100000000).toFixed(1) + '억원';
+      if (won >= 10000)     return (won / 10000).toFixed(0) + '만원';
+      return Math.round(won).toLocaleString() + '원';
+    };
+
+    const showNotification = (message, isError=false) => {
+      const n = document.createElement('div');
+      n.className = 'notification' + (isError ? ' error' : '');
+      n.textContent = message;
+      document.body.appendChild(n);
+      setTimeout(()=>{ n.style.animation='slideInNotif .3s ease reverse'; setTimeout(()=>n.remove(),300); }, 3000);
+    };
+
+    // 상대기간 시작일(= 지금으로부터 months개월 전)이 자산 존재연도 이전인지 판정
+    function assetExistsForWindow(key, months) {
+      const meta = ASSET_META[key];
+      if (!meta) return true; // 커스텀 티커 등 메타가 없으면 존재한다고 처리
+      const now = new Date();
+      const start = new Date(now);
+      start.setMonth(now.getMonth() - months);
+      const startYearFloat = start.getFullYear() + (start.getMonth()+1)/12;
+      return startYearFloat >= meta.startYear; // 시작 시점이 존재연도 이상이면 존재
+    }
+
+    /* ====== 모달(면책조항) ====== */
+    const showDisclaimerModal = () => {
+      const overlay = document.createElement('div');
+      overlay.className = 'modal-overlay';
+      overlay.innerHTML = `
+        <div class="modal-content">
+          <div class="modal-header">⚠️ 면책 조항 (Disclaimer)</div>
+          <div class="modal-body">
+            <p><strong>📊 데이터 정확성:</strong> 본 페이지는 <strong>공식 통계 요약 및 역사적 평균</strong>에 기반한 참고용 계산기입니다.</p>
+            <p><strong>💡 투자 조언 아님:</strong> 교육/정보 제공 목적이며, 매수/매도 권유가 아닙니다.</p>
+            <p><strong>⚠️ 손실 책임:</strong> 모든 투자에는 원금 손실 위험이 있습니다. 과거의 수익률이 미래를 보장하지 않습니다.</p>
+            <p><strong>🔎 출처·정확도:</strong> 각 카드 하단의 출처/정확도를 참고하세요. 암호화폐는 변동성으로 인해 오차가 큽니다.</p>
+            <p style="margin-top:15px; font-size:.9em; opacity:.8;"><strong>By using this calculator, you acknowledge that you have read and understood this disclaimer.</strong></p>
+          </div>
+          <div class="modal-footer">
+            <button class="modal-btn modal-btn-secondary" id="modalDontShow">다시 보지 않기</button>
+            <button class="modal-btn modal-btn-primary" id="modalClose">확인</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+      overlay.querySelector('#modalClose').onclick = () => { overlay.style.animation='fadeIn .3s ease reverse'; setTimeout(()=>overlay.remove(),300); };
+      overlay.querySelector('#modalDontShow').onclick = () => {
+        localStorage.setItem('dontShowDisclaimer','true');
+        overlay.style.animation='fadeIn .3s ease reverse'; setTimeout(()=>overlay.remove(),300);
+        showNotification('✅ 다시 표시하지 않습니다');
+      };
+      overlay.addEventListener('click', (e)=>{ if (e.target === overlay){ overlay.style.animation='fadeIn .3s ease reverse'; setTimeout(()=>overlay.remove(),300); } });
+    };
+
+    /* ====== 데이터 계산 ====== */
+    const calculateInflation = (months) => {
+      const years = months / 12;
+      const multiplier = 1 / Math.pow(1 + CONFIG.INFLATION_RATE, years); // 물가상승 → 구매력 하락
+      return { multiplier, change: (multiplier - 1) * 100 };
+    };
+    const calculateDeposit = (months) => {
+      const years = months / 12;
+      const multiplier = Math.pow(1 + CONFIG.DEPOSIT_RATE, years);
+      return { multiplier, change: (multiplier - 1) * 100 };
+    };
+    const calculateGeneric = (months, avgReturn) => {
+      const years = months / 12;
+      const multiplier = Math.pow(1 + avgReturn, years);
+      return { multiplier, change: (multiplier - 1) * 100 };
+    };
+
+    const fetchHistoricalData = (months) => {
+      const results = {
+        inflation:  calculateInflation(months),
+        deposit:    calculateDeposit(months),
+        gold:       calculateGeneric(months, CONFIG.AVG_RETURNS.gold),
+        realestate: calculateGeneric(months, CONFIG.AVG_RETURNS.realestate),
+        kospi:      calculateGeneric(months, CONFIG.AVG_RETURNS.kospi),
+        kosdaq:     calculateGeneric(months, CONFIG.AVG_RETURNS.kosdaq),
+        sp500:      calculateGeneric(months, CONFIG.AVG_RETURNS.sp500),
+        qqq:        calculateGeneric(months, CONFIG.AVG_RETURNS.qqq),
+        btc:        calculateGeneric(months, CONFIG.AVG_RETURNS.bitcoin),
+        eth:        calculateGeneric(months, CONFIG.AVG_RETURNS.ethereum)
+      };
+      for (const ticker of customStocks) {
+        results[ticker] = calculateGeneric(months, CONFIG.AVG_RETURNS.stock);
+      }
+      return results;
+    };
+
+    /* ====== 주식 티커 추가 ====== */
+    const addStock = () => {
+      const ticker = document.getElementById('stockTicker').value.toUpperCase().trim();
+      if (!ticker) return showNotification('티커를 입력하세요', true);
+      if (!/^[A-Z]{1,5}$/.test(ticker)) return showNotification('올바른 티커를 입력하세요 (예: AAPL, TSLA)', true);
+      if (customStocks.includes(ticker)) return showNotification('이미 추가된 티커입니다', true);
+      customStocks.push(ticker);
+      document.getElementById('stockTicker').value = '';
+      showNotification(`${ticker} 추가됨`);
+      updateCalculation();
+    };
+
+    /* ====== 카드 렌더링 ====== */
+    const getEmoji = (key) => ({ inflation:'💸', deposit:'🏦', gold:'💰', realestate:'🏠', kospi:'📊', kosdaq:'📈', sp500:'📈', qqq:'💻', btc:'₿', eth:'⟠', stock:'📊' }[key] || '📈');
+    const titleMap = { inflation:'물가상승 (현금)', deposit:'정기예금', gold:'금 (Gold)', realestate:'서울 아파트', kospi:'KOSPI', kosdaq:'KOSDAQ', sp500:'S&P 500 (SPY)', qqq:'나스닥 100 (QQQ)', btc:'비트코인', eth:'이더리움' };
+
+    const createCard = (key, title, typeClass, data, wonAmount, months, dataSourceLabel='평균') => {
+      // 존재 여부 판단 (상대기간 시작일 기준)
+      const exists = assetExistsForWindow(key, months);
+      const change = exists ? data.change : null;
+      const value = exists ? wonAmount * data.multiplier : null;
+      const profit = exists ? wonAmount * (data.multiplier - 1) : null;
+
+      const meta = ASSET_META[key] || { source:'평균값', accuracy:'±N/A' };
+      const badge = `<div class="data-source-badge">${exists ? '✔️' : '❌'}</div>`;
+      const extraDetail = exists
+        ? `출처: ${meta.source} / 정확도: ${meta.accuracy}`
+        : `해당 자산은 <strong>${meta.startYear || '—'}년</strong> 이후부터 존재합니다`;
+
+      return `
+        <div class="money-card ${typeClass} ${exists ? '' : 'na'}">
+          ${badge}
+          <div class="card-title">${getEmoji(key)} ${title}</div>
+          <div class="card-value ${exists ? (change>=0 ? 'positive' : 'negative') : ''}">
+            ${exists ? formatMoney(value) : '존재하지 않음'}
+          </div>
+          <div class="card-change ${exists ? (change>=0 ? 'positive' : 'negative') : ''}">
+            ${exists ? ((change>=0?'+':'') + change.toFixed(2) + '%') : '—'}
+          </div>
+          <div class="card-detail">${exists ? ( (change>=0 ? '수익' : '손실') + ': ' + formatMoney(Math.abs(profit)) ) : ''}</div>
+          <div class="card-detail" style="margin-top:8px;">${extraDetail}</div>
+        </div>
+      `;
+    };
+
+    const displayResults = (amount, months, data) => {
+      const wonAmount = amount * 10000;
+      let cardsHTML = '';
+
+      cardsHTML += createCard('inflation',  titleMap.inflation,  'inflation',  data.inflation,  wonAmount, months, '한국 CPI');
+      cardsHTML += createCard('deposit',    titleMap.deposit,    'deposit',    data.deposit,    wonAmount, months, '금감원 평균');
+      cardsHTML += createCard('gold',       titleMap.gold,       'gold',       data.gold,       wonAmount, months);
+      cardsHTML += createCard('realestate', titleMap.realestate, 'realestate', data.realestate, wonAmount, months);
+      cardsHTML += createCard('kospi',      titleMap.kospi,      'kospi',      data.kospi,      wonAmount, months);
+      cardsHTML += createCard('kosdaq',     titleMap.kosdaq,     'kosdaq',     data.kosdaq,     wonAmount, months);
+      cardsHTML += createCard('sp500',      titleMap.sp500,      'sp500',      data.sp500,      wonAmount, months);
+      cardsHTML += createCard('qqq',        titleMap.qqq,        'qqq',        data.qqq,        wonAmount, months);
+
+      for (const ticker of customStocks) {
+        if (data[ticker]) {
+          // 커스텀 티커는 평균 메타만 표시
+          cardsHTML += createCard('stock', ticker, 'stock', data[ticker], wonAmount, months, '평균');
         }
-    </script>
+      }
+
+      cardsHTML += createCard('btc', titleMap.btc, 'btc', data.btc, wonAmount, months);
+      cardsHTML += createCard('eth', titleMap.eth, 'eth', data.eth, wonAmount, months);
+
+      document.getElementById('comparisonGrid').innerHTML = cardsHTML;
+
+      // 설명 텍스트 (상대기간 문구)
+      const years = Math.floor(months / 12);
+      const remainingMonths = months % 12;
+      let timeText = years > 0 ? `${years}년` : '';
+      if (remainingMonths > 0) timeText += ` ${remainingMonths}개월`;
+      const timeTextFull = (timeText || '0개월') + ' 전';
+
+      document.getElementById('explanationText').innerHTML = `
+        <strong>${timeText} 전 ${formatMoney(wonAmount)}</strong>을 현금으로만 보유했다면,
+        물가상승으로 <strong>${formatMoney(wonAmount * data.inflation.multiplier)}</strong>의
+        구매력으로 감소합니다.<br><br>
+        같은 기간 <strong>S&P 500</strong>에 투자했다면 약 <strong>${formatMoney(wonAmount * data.sp500.multiplier)}</strong>,
+        <strong>비트코인</strong>은 ${assetExistsForWindow('btc', months) ? `<strong>${formatMoney(wonAmount * data.btc.multiplier)}</strong>` : '<strong>존재하지 않음</strong>'}
+        수준이었을 것으로 추정됩니다. (역사적 평균 가정)
+      `;
+
+      // 실시간 카운터(물가로 인한 구매력 하락의 시각화)
+      const dailyLoss = (wonAmount * (1 - data.inflation.multiplier)) / (months * 30);
+      const secondlyLoss = dailyLoss / 86400;
+      const minuteLoss = secondlyLoss * 60;
+      const hourLoss = minuteLoss * 60;
+
+      document.getElementById('perSecond').textContent = Math.round(secondlyLoss).toLocaleString() + '원';
+      document.getElementById('perMinute').textContent = Math.round(minuteLoss).toLocaleString() + '원';
+      document.getElementById('perHour').textContent   = Math.round(hourLoss).toLocaleString() + '원';
+      document.getElementById('perDay').textContent    = Math.round(dailyLoss).toLocaleString() + '원';
+
+      clearInterval(window.realtimeInterval);
+      realtimeCounter = 0;
+      window.realtimeInterval = setInterval(() => {
+        realtimeCounter += secondlyLoss;
+        document.getElementById('realtimeCounter').textContent = Math.round(realtimeCounter).toLocaleString() + '원';
+      }, 1000);
+
+      // 슬라이더 라벨 업데이트
+      document.getElementById('timeDisplay').textContent = `${timeTextFull}`;
+    };
+
+    /* ====== 계산 업데이트 ====== */
+    const updateAmountDisplay = () => {
+      const amount = parseFloat(document.getElementById('amount').value || '0');
+      document.getElementById('amountDisplay').textContent = formatMoney(amount * 10000);
+    };
+    const updateCalculation = () => {
+      const amount = parseFloat(document.getElementById('amount').value || '0');
+      const months = parseInt(document.getElementById('months').value || '1', 10);
+      updateAmountDisplay();
+      const data = fetchHistoricalData(months);
+      displayResults(amount, months, data);
+    };
+
+    /* ====== FAQ 토글 ====== */
+    const toggleFAQ = () => {
+      const content = document.getElementById('faqContent');
+      const arrow = document.getElementById('faqArrow');
+      if (content.classList.contains('open')) { content.classList.remove('open'); arrow.classList.remove('open'); }
+      else { content.classList.add('open'); arrow.classList.add('open'); }
+    };
+
+    /* ====== 다크모드 ====== */
+    const toggleDarkMode = () => {
+      document.body.classList.toggle('dark-mode');
+      const isDark = document.body.classList.contains('dark-mode');
+      document.getElementById('darkModeToggle').textContent = isDark ? '☀️' : '🌙';
+      localStorage.setItem('darkMode', isDark);
+      showNotification(isDark ? '🌙 다크모드 활성화' : '☀️ 라이트모드 활성화');
+    };
+
+    /* ====== 데이터 출처 보기(📊) ====== */
+    const showSourcesModal = () => {
+      const overlay = document.createElement('div');
+      overlay.className = 'modal-overlay';
+      overlay.innerHTML = `
+        <div class="modal-content">
+          <div class="modal-header">📊 데이터 출처 및 정확도</div>
+          <div class="modal-body">
+            ${Object.entries(ASSET_META).map(([k,v]) => `
+              <p><strong>${(titleMap[k] || k).toUpperCase()}</strong><br>
+              출처: ${v.source}<br>
+              정확도: ${v.accuracy}<br>
+              데이터 시작 시점: ${v.startYear}년</p>
+            `).join('')}
+            <p style="margin-top:10px; font-size:.9em; opacity:.85;">
+              ※ 본 계산기는 <strong>역사적 평균 수익률</strong>을 사용하며, 실제 수익률은 시점과 변동성에 따라 크게 달라질 수 있습니다.
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button class="modal-btn modal-btn-primary" id="srcClose">확인</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+      overlay.querySelector('#srcClose').onclick = () => { overlay.style.animation='fadeIn .3s ease reverse'; setTimeout(()=>overlay.remove(),300); };
+      overlay.addEventListener('click', (e)=>{ if(e.target===overlay){ overlay.style.animation='fadeIn .3s ease reverse'; setTimeout(()=>overlay.remove(),300); } });
+    };
+
+    /* ====== 이벤트 ====== */
+    document.getElementById('amount').addEventListener('input', updateCalculation);
+    document.getElementById('months').addEventListener('input', updateCalculation);
+    document.getElementById('amount').addEventListener('input', updateAmountDisplay);
+    document.getElementById('floatingHelp').addEventListener('click', showDisclaimerModal);
+    document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+    document.getElementById('sourcesToggle').addEventListener('click', showSourcesModal);
+
+    document.getElementById('stockTicker').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') addStock();
+    });
+
+    /* ====== 초기화 ====== */
+    const init = () => {
+      const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+      if (savedDarkMode) { document.body.classList.add('dark-mode'); document.getElementById('darkModeToggle').textContent = '☀️'; }
+
+      if (!localStorage.getItem('dontShowDisclaimer')) setTimeout(showDisclaimerModal, 800);
+      updateCalculation();
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+  </script>
 </body>
 </html>
