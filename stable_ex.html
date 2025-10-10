@@ -1,3 +1,6 @@
+
+
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -711,7 +714,7 @@
 
         // ============ API 호출 함수 ============
         const getExchangeRate = async () => {
-            const WORKER_URL = 'https://exchange-rate-proxy.least100x.workers.dev/'; // ⚠️ 여기 수정!
+            const WORKER_URL = 'exchange-rate-proxy.least100x.workers.dev'; // ⚠️ 여기 수정!
             
             try {
                 const response = await fetchWithTimeout(WORKER_URL, 10000);
@@ -832,7 +835,8 @@
                 const resultData = {
                     timestamp: Date.now(),
                     usdKrw: usdKrw.toFixed(2),
-                    upbitUsdt: upbitData.usdt.toLocaleString('ko-KR'),
+                    upbitUsdt​​​​​​​​​​​​​​​​```javascript
+: upbitData.usdt.toLocaleString('ko-KR'),
                     upbitUsdc: upbitData.usdc.toLocaleString('ko-KR'),
                     usdtPremium: usdtPremium,
                     usdcPremium: usdcPremium,
@@ -1103,6 +1107,7 @@
             // 기존 타이머 정리
             if (countdownInterval) {
                 clearInterval(countdownInterval);
+                countdownInterval = null;
             }
             
             const updateCountdown = () => {
@@ -1115,10 +1120,7 @@
                         `⏱️ 다음 갱신: ${minutes}:${String(seconds).padStart(2, '0')}`;
                 } else {
                     document.getElementById('updateTime').textContent = '🔄 갱신 중...';
-                    if (countdownInterval) {
-                        clearInterval(countdownInterval);
-                        countdownInterval = null;
-                    }
+                    // 타이머를 멈추지 않음 - displayData가 다시 호출될 때 자동으로 재시작됨
                 }
             };
             
@@ -1253,3 +1255,4 @@
     </script>
 </body>
 </html>
+
