@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>환율 대시보드</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a24;
+            --accent-green: #00ff88;
+            --accent-red: #ff4466;
+            --accent-blue: #4488ff;
+            --accent-gold: #ffcc00;
+            --accent-purple: #aa66ff;
+            --text-primary: #ffffff;
+            --text-secondary: #888899;
+            --text-muted: #555566;
+            --border: #2a2a3a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: clamp(12px, 3vw, 24px);
+            background-image: 
+                radial-gradient(ellipse at 20% 0%, rgba(0, 255, 136, 0.03) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 100%, rgba(68, 136, 255, 0.03) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: clamp(16px, 4vw, 24px);
+            padding-bottom: clamp(12px, 3vw, 20px);
+            border-bottom: 1px solid var(--border);
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .timestamp {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(11px, 2.5vw, 13px);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+            flex-shrink: 0;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+            gap: clamp(10px, 2vw, 16px);
+            margin-bottom: clamp(16px, 3vw, 24px);
+        }
+
+        .grid-4 {
+            grid-template-columns: repeat(auto-fit, minmax(min(45%, 160px), 1fr));
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: clamp(8px, 2vw, 12px);
+            padding: clamp(14px, 3vw, 20px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-green), var(--accent-blue));
+            opacity: 0.6;
+        }
+
+        .card.gold::before {
+            background: linear-gradient(90deg, var(--accent-gold), var(--accent-green));
+            opacity: 1;
+        }
+
+        .card.purple::before {
+            background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue));
+        }
+
+        .card.red::before {
+            background: linear-gradient(90deg, var(--accent-red), var(--accent-gold));
+        }
+
+        .card-label {
+            font-size: clamp(10px, 2.5vw, 11px);
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: clamp(6px, 2vw, 10px);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .card-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(24px, 6vw, 32px);
+            font-weight: 700;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .card-value .unit {
+            font-size: clamp(12px, 3vw, 14px);
+            font-weight: 400;
+            color: var(--text-secondary);
+        }
+
+        .card-change {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(11px, 2.5vw, 13px);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .card-change.positive { color: var(--accent-green); }
+        .card-change.negative { color: var(--accent-red); }
+
+        .card-meta {
+            font-size: clamp(10px, 2vw, 11px);
+            color: var(--text-muted);
+            margin-top: clamp(8px, 2vw, 12px);
+            padding-top: clamp(8px, 2vw, 12px);
+            border-top: 1px solid var(--border);
+        }
+
+        .card-meta a {
+            color: var(--accent-blue);
+            text-decoration: none;
+        }
+
+        .section-title {
+            font-size: clamp(11px, 2.5vw, 13px);
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: clamp(8px, 2vw, 12px);
+            margin-top: clamp(4px, 1vw, 8px);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 3px;
+            height: 14px;
+            background: var(--accent-blue);
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        .wide-card {
+            grid-column: 1 / -1;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .input-row input {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: clamp(4px, 1vw, 6px) clamp(6px, 1.5vw, 10px);
+            border-radius: 4px;
+            width: clamp(70px, 20vw, 100px);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(10px, 2.5vw, 12px);
+        }
+
+        .input-row button {
+            background: var(--accent-blue);
+            border: none;
+            color: white;
+            padding: clamp(4px, 1vw, 6px) clamp(8px, 2vw, 12px);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: clamp(10px, 2.5vw, 11px);
+            transition: opacity 0.2s;
+            white-space: nowrap;
+        }
+
+        .input-row button:hover {
+            opacity: 0.8;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: clamp(8px, 2vw, 12px) 0;
+            border-bottom: 1px solid var(--border);
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .data-row:last-child {
+            border-bottom: none;
+        }
+
+        .data-row .label {
+            font-size: clamp(11px, 2.5vw, 13px);
+            color: var(--text-secondary);
+        }
+
+        .data-row .value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(13px, 3vw, 15px);
+            font-weight: 500;
+            text-align: right;
+        }
+
+        .refresh-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: clamp(4px, 1vw, 6px) clamp(8px, 2vw, 12px);
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(10px, 2.5vw, 11px);
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .refresh-btn:hover {
+            background: var(--border);
+            color: var(--text-primary);
+        }
+
+        .loading {
+            opacity: 0.5;
+            animation: fadeInOut 1s infinite;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 0.8; }
+        }
+
+        .indicator {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-right: 4px;
+            flex-shrink: 0;
+        }
+
+        .indicator.up { background: var(--accent-green); }
+        .indicator.down { background: var(--accent-red); }
+        .indicator.neutral { background: var(--accent-gold); }
+
+        .tag {
+            font-size: clamp(8px, 2vw, 10px);
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .tag.live { background: rgba(0, 255, 136, 0.2); color: var(--accent-green); }
+        .tag.monthly { background: rgba(170, 102, 255, 0.2); color: var(--accent-purple); }
+
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(255,204,0,0.1), rgba(0,255,136,0.05));
+            border: 1px solid rgba(255,204,0,0.3);
+            border-radius: 8px;
+            padding: clamp(12px, 3vw, 16px);
+            margin-top: clamp(12px, 3vw, 16px);
+        }
+
+        .highlight-box .main-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(28px, 8vw, 42px);
+            font-weight: 700;
+            color: var(--accent-gold);
+            text-align: center;
+        }
+
+        .highlight-box .sub-text {
+            font-size: clamp(11px, 2.5vw, 13px);
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 4px;
+        }
+
+        .compare-row {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: clamp(8px, 2vw, 16px);
+            align-items: center;
+            margin-top: clamp(12px, 3vw, 16px);
+        }
+
+        .compare-item {
+            text-align: center;
+            padding: clamp(10px, 2vw, 14px);
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+        }
+
+        .compare-item .label {
+            font-size: clamp(9px, 2vw, 11px);
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .compare-item .value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(18px, 5vw, 24px);
+            font-weight: 600;
+        }
+
+        .compare-arrow {
+            font-size: clamp(16px, 4vw, 24px);
+            color: var(--accent-gold);
+        }
+
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+            gap: clamp(6px, 1.5vw, 10px);
+        }
+
+        .link-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: clamp(8px, 2vw, 12px);
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+
+        .link-item:hover {
+            background: var(--border);
+        }
+
+        .link-item .icon {
+            font-size: clamp(14px, 4vw, 18px);
+            flex-shrink: 0;
+        }
+
+        .link-item .title {
+            font-size: clamp(11px, 2.5vw, 13px);
+            font-weight: 500;
+        }
+
+        footer {
+            margin-top: clamp(20px, 5vw, 32px);
+            padding-top: clamp(12px, 3vw, 20px);
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: clamp(9px, 2vw, 11px);
+            color: var(--text-muted);
+        }
+
+        footer a {
+            color: var(--accent-blue);
+            text-decoration: none;
+        }
+
+        /* 태블릿 */
+        @media (max-width: 768px) {
+            .grid-4 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* 모바일 */
+        @media (max-width: 480px) {
+            .grid-4 {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .compare-row {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            
+            .compare-arrow {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="timestamp">
+                <span class="live-dot"></span>
+                <span id="current-time">Loading...</span>
+            </div>
+            <button class="refresh-btn" onclick="refreshAll()">↻ 새로고침</button>
+        </header>
+
+        <!-- 핵심: 명목 vs 실질 환율 비교 -->
+        <div class="grid">
+            <div class="card wide-card gold">
+                <div class="card-label">💱 USD/KRW 환율 비교</div>
+                <div class="compare-row">
+                    <div class="compare-item">
+                        <div class="label">명목 환율</div>
+                        <div class="value" id="nominal-rate" style="color: var(--text-primary);">---</div>
+                        <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">시장 환율</div>
+                    </div>
+                    <div class="compare-arrow">→</div>
+                    <div class="compare-item">
+                        <div class="label">실질 환율</div>
+                        <div class="value" id="real-rate" style="color: var(--accent-gold);">---</div>
+                        <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">물가 조정</div>
+                    </div>
+                </div>
+                <div class="highlight-box">
+                    <div class="sub-text">물가 차이 반영 시 1달러의 실질 가치</div>
+                    <div class="main-value"><span id="real-rate-big">---</span> <span style="font-size: 0.5em; color: var(--text-secondary);">원</span></div>
+                    <div class="sub-text" id="real-interpretation">계산 중...</div>
+                </div>
+                <div class="card-meta">
+                    한미 CPI 차이 반영 | <a href="https://www.bis.org/statistics/eer.htm" target="_blank">BIS 공식 REER →</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 기본 지표 -->
+        <div class="section-title">기본 지표</div>
+        <div class="grid">
+            <div class="card">
+                <div class="card-label">🇺🇸 USD/KRW <span class="tag live">LIVE</span></div>
+                <div class="card-value">
+                    <span id="usdkrw-value" class="loading">---</span>
+                    <span class="unit">원</span>
+                </div>
+                <div class="card-change" id="usdkrw-change">---</div>
+                <div class="card-meta">ECB 기준</div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">📊 달러 인덱스 (DXY)</div>
+                <div class="card-value">
+                    <span id="dxy-value" class="loading">---</span>
+                </div>
+                <div class="card-change" id="dxy-change">---</div>
+                <div class="input-row">
+                    <input type="number" id="dxy-manual" placeholder="수동입력">
+                    <button onclick="applyManualDxy()">적용</button>
+                </div>
+                <div class="card-meta"><a href="https://www.tradingview.com/symbols/TVC-DXY/" target="_blank">실시간 →</a></div>
+            </div>
+
+            <div class="card purple">
+                <div class="card-label">🇺🇸 미국 M2 <span class="tag monthly">월간</span></div>
+                <div class="card-value">
+                    <span id="us-m2">21.5</span>
+                    <span class="unit">조$</span>
+                </div>
+                <div class="card-change"><span class="indicator up"></span>YoY +3.8%</div>
+                <div class="input-row">
+                    <input type="number" id="us-m2-input" placeholder="업데이트" step="0.1">
+                    <button onclick="updateUsM2()">적용</button>
+                </div>
+            </div>
+
+            <div class="card purple">
+                <div class="card-label">🇰🇷 한국 M2 <span class="tag monthly">월간</span></div>
+                <div class="card-value">
+                    <span id="kr-m2">4,488</span>
+                    <span class="unit">조₩</span>
+                </div>
+                <div class="card-change"><span class="indicator up"></span>YoY +5.2%</div>
+                <div class="input-row">
+                    <input type="number" id="kr-m2-input" placeholder="업데이트">
+                    <button onclick="updateKrM2()">적용</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 금리 -->
+        <div class="section-title">기준금리</div>
+        <div class="grid grid-4">
+            <div class="card">
+                <div class="card-label">🇺🇸 Fed</div>
+                <div class="card-value">
+                    <span id="fed-rate">4.50</span>
+                    <span class="unit">%</span>
+                </div>
+                <div class="card-change negative"><span class="indicator down"></span>-25bp</div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">🇰🇷 한은</div>
+                <div class="card-value">
+                    <span id="bok-rate">3.00</span>
+                    <span class="unit">%</span>
+                </div>
+                <div class="card-change negative"><span class="indicator down"></span>-25bp</div>
+            </div>
+
+            <div class="card red">
+                <div class="card-label">📉 금리차</div>
+                <div class="card-value">
+                    <span id="rate-diff">-1.50</span>
+                    <span class="unit">%p</span>
+                </div>
+                <div class="card-change negative">원화 약세 압력</div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">🇺🇸 10Y</div>
+                <div class="card-value">
+                    <span id="us-10y">4.52</span>
+                    <span class="unit">%</span>
+                </div>
+                <div class="card-change"><a href="https://www.cnbc.com/quotes/US10Y" target="_blank" style="color: var(--accent-blue); font-size: 11px;">실시간 →</a></div>
+            </div>
+        </div>
+
+        <!-- CPI -->
+        <div class="section-title">인플레이션 (CPI YoY)</div>
+        <div class="grid">
+            <div class="card wide-card">
+                <div class="data-row">
+                    <div class="label">🇺🇸 미국 (2025.11)</div>
+                    <div class="value"><span id="us-cpi">2.7</span>%</div>
+                </div>
+                <div class="data-row">
+                    <div class="label">🇰🇷 한국 (2025.11)</div>
+                    <div class="value"><span id="kr-cpi">2.4</span>%</div>
+                </div>
+                <div class="data-row">
+                    <div class="label">📊 한미 CPI 차이</div>
+                    <div class="value" style="color: var(--accent-green);"><span id="cpi-diff">-0.3</span>%p</div>
+                </div>
+                <div class="data-row">
+                    <div class="label">📈 누적 인플레 차이 (2020~)</div>
+                    <div class="value" style="color: var(--accent-gold);"><span id="cumulative-diff">+7.0</span>%p</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 링크 -->
+        <div class="section-title">데이터 소스</div>
+        <div class="grid">
+            <div class="card wide-card">
+                <div class="links-grid">
+                    <a href="https://www.bis.org/statistics/eer.htm" target="_blank" class="link-item">
+                        <span class="icon">🏦</span>
+                        <span class="title">BIS REER</span>
+                    </a>
+                    <a href="https://fred.stlouisfed.org/series/M2SL" target="_blank" class="link-item">
+                        <span class="icon">💵</span>
+                        <span class="title">FRED M2</span>
+                    </a>
+                    <a href="https://ecos.bok.or.kr/" target="_blank" class="link-item">
+                        <span class="icon">🏛️</span>
+                        <span class="title">한국은행</span>
+                    </a>
+                    <a href="https://tradingeconomics.com/south-korea/money-supply-m2" target="_blank" class="link-item">
+                        <span class="icon">📊</span>
+                        <span class="title">Trading Economics</span>
+                    </a>
+                    <a href="https://www.tradingview.com/symbols/TVC-DXY/" target="_blank" class="link-item">
+                        <span class="icon">📈</span>
+                        <span class="title">TradingView</span>
+                    </a>
+                    <a href="https://en.macromicro.me/charts/3439/major-bank-m2-comparsion" target="_blank" class="link-item">
+                        <span class="icon">🌐</span>
+                        <span class="title">MacroMicro</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            ⚠️ 실질환율은 추정치이며 공식 BIS REER과 다를 수 있음
+        </footer>
+    </div>
+
+    <script>
+        // 기준 데이터 (2020년)
+        const BASE_USDKRW = 1180.05;
+        const BASE_US_CPI = 258.811;  // 1982-84=100 기준
+        const BASE_KR_CPI = 100;      // 2020=100 기준
+
+        // 현재 CPI 지수 (2025년 11월)
+        // 미국: 2020년 258.811 → 2025.11 약 324 (YoY 2.7%, 누적 ~25%)
+        // 한국: 2020년 100 → 2025.11 117.20 (YoY 2.4%)
+        let CURRENT_US_CPI_INDEX = 324.0;  // 추정
+        let CURRENT_KR_CPI_INDEX = 117.20; // 실제
+
+        // DXY 기준
+        const DXY_BASE_EURUSD = 1.10;
+        const DXY_BASE_VALUE = 102.5;
+
+        // M2 데이터 (2025년 10월 기준)
+        let usM2 = 21.5;
+        let krM2 = 4488;
+
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleString('ko-KR', {
+                month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false
+            });
+        }
+
+        async function fetchExchangeRates() {
+            try {
+                const response = await fetch('https://api.frankfurter.app/latest?from=USD');
+                const data = await response.json();
+                
+                const krwRate = data.rates.KRW;
+                document.getElementById('usdkrw-value').textContent = krwRate.toFixed(2);
+                document.getElementById('usdkrw-value').classList.remove('loading');
+                document.getElementById('nominal-rate').textContent = krwRate.toFixed(0) + '원';
+                
+                // 전일 대비
+                const prevResponse = await fetch('https://api.frankfurter.app/' + getYesterday() + '?from=USD&to=KRW');
+                const prevData = await prevResponse.json();
+                const prevKrw = prevData.rates.KRW;
+                const krwChange = ((krwRate - prevKrw) / prevKrw * 100).toFixed(2);
+                const krwChangeEl = document.getElementById('usdkrw-change');
+                krwChangeEl.innerHTML = `<span class="indicator ${krwChange >= 0 ? 'up' : 'down'}"></span>${krwChange >= 0 ? '+' : ''}${krwChange}%`;
+                krwChangeEl.className = 'card-change ' + (krwChange >= 0 ? 'negative' : 'positive');
+
+                // DXY 추정
+                const eurUsd = 1 / data.rates.EUR;
+                const jpyFactor = Math.pow(data.rates.JPY / 150, 0.136);
+                const gbpFactor = Math.pow(1.27 / (1/data.rates.GBP), 0.119);
+                const cadFactor = Math.pow(data.rates.CAD / 1.36, 0.091);
+                const sekFactor = Math.pow(data.rates.SEK / 10.5, 0.042);
+                const chfFactor = Math.pow(data.rates.CHF / 0.88, 0.036);
+                const eurFactor = Math.pow(DXY_BASE_EURUSD / eurUsd, 0.576);
+                const dxy = DXY_BASE_VALUE * eurFactor * jpyFactor * gbpFactor * cadFactor * sekFactor * chfFactor;
+
+                document.getElementById('dxy-value').textContent = dxy.toFixed(1);
+                document.getElementById('dxy-value').classList.remove('loading');
+                
+                const dxyChangeEl = document.getElementById('dxy-change');
+                if (dxy > 103) {
+                    dxyChangeEl.innerHTML = `<span class="indicator up"></span>강달러`;
+                } else if (dxy > 98) {
+                    dxyChangeEl.innerHTML = `<span class="indicator neutral"></span>보합`;
+                } else {
+                    dxyChangeEl.innerHTML = `<span class="indicator down"></span>약달러`;
+                }
+
+                // 실질 환율 계산 (원/달러)
+                calculateRealRate(krwRate);
+
+            } catch (error) {
+                console.error('데이터 로드 실패:', error);
+            }
+        }
+
+        function calculateRealRate(nominalRate) {
+            // 실질 환율 = 명목 환율 × (한국 물가 지수 / 미국 물가 지수) × 조정계수
+            // 조정계수: 두 CPI의 기준년도가 다르므로 2020년 기준으로 맞춤
+            
+            const usInflationRatio = CURRENT_US_CPI_INDEX / BASE_US_CPI;  // 1.252
+            const krInflationRatio = CURRENT_KR_CPI_INDEX / BASE_KR_CPI;  // 1.172
+            
+            // 실질 환율 = 명목 환율 × (한국 인플레 / 미국 인플레)
+            // 미국이 더 많이 올랐으면 달러 가치 하락 → 실질 환율 하락
+            const realRate = nominalRate * (krInflationRatio / usInflationRatio);
+            
+            document.getElementById('real-rate').textContent = realRate.toFixed(0) + '원';
+            document.getElementById('real-rate-big').textContent = realRate.toFixed(0);
+            
+            // 해석
+            const diff = nominalRate - realRate;
+            const diffPercent = (diff / nominalRate * 100).toFixed(1);
+            const interpEl = document.getElementById('real-interpretation');
+            
+            if (diff > 0) {
+                interpEl.innerHTML = `명목 대비 <span style="color: var(--accent-green);">${diff.toFixed(0)}원 (${diffPercent}%)</span> 낮음 → 달러 고평가`;
+            } else {
+                interpEl.innerHTML = `명목 대비 <span style="color: var(--accent-red);">${Math.abs(diff).toFixed(0)}원 (${Math.abs(diffPercent)}%)</span> 높음 → 달러 저평가`;
+            }
+
+            // 누적 인플레 차이
+            const usCumulative = ((usInflationRatio - 1) * 100).toFixed(1);
+            const krCumulative = ((krInflationRatio - 1) * 100).toFixed(1);
+            const cumulativeDiff = (usCumulative - krCumulative).toFixed(1);
+            document.getElementById('cumulative-diff').textContent = '+' + cumulativeDiff;
+        }
+
+        function getYesterday() {
+            const date = new Date();
+            date.setDate(date.getDate() - 1);
+            if (date.getDay() === 0) date.setDate(date.getDate() - 2);
+            if (date.getDay() === 6) date.setDate(date.getDate() - 1);
+            return date.toISOString().split('T')[0];
+        }
+
+        function applyManualDxy() {
+            const value = parseFloat(document.getElementById('dxy-manual').value);
+            if (value && value > 80 && value < 130) {
+                document.getElementById('dxy-value').textContent = value.toFixed(1);
+                document.getElementById('dxy-change').innerHTML = `<span style="color: var(--accent-gold)">✓ 수동</span>`;
+            }
+        }
+
+        function updateUsM2() {
+            const value = parseFloat(document.getElementById('us-m2-input').value);
+            if (value && value > 10 && value < 30) {
+                usM2 = value;
+                document.getElementById('us-m2').textContent = value.toFixed(1);
+            }
+        }
+
+        function updateKrM2() {
+            const value = parseFloat(document.getElementById('kr-m2-input').value);
+            if (value && value > 3000 && value < 6000) {
+                krM2 = value;
+                document.getElementById('kr-m2').textContent = value.toLocaleString();
+            }
+        }
+
+        function refreshAll() {
+            document.getElementById('usdkrw-value').classList.add('loading');
+            document.getElementById('dxy-value').classList.add('loading');
+            fetchExchangeRates();
+            updateTime();
+        }
+
+        // 초기화
+        updateTime();
+        setInterval(updateTime, 1000);
+        fetchExchangeRates();
+        setInterval(fetchExchangeRates, 300000);
+    </script>
+</body>
+</html>
